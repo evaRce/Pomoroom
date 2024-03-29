@@ -20,19 +20,12 @@ export default{
 		this.unmountComponent(this.el);
 	},
 
-	// updateCount(newCount) {
-	//   this.pushEventTo(this.el, "log", { newCount: newCount });
-	// },
-
 	submitUser(email_, password_, nickname_) {
 		this.pushEventTo(this.el, "action.save", { email: email_, password: password_, nickname: nickname_ })
 	},
 
 	opts(): SignUpProps {
 		return {
-			email: "defemail",
-			password: "defpassw",
-			nickname: "defnick",
 			submitUser: this.submitUser.bind(this),
 		}
 	},

@@ -6,16 +6,13 @@ import {
   } from 'antd';
 
 export interface SignUpProps {
-    email: string;
-    password: string;
-    nickname: string;
     submitUser(newUsername: string, newPassword: string, newNickname: string): any
 }
 
 export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
     const { submitUser } = props
     const onFinish = (newValues: any) => {
-        submitUser(newValues.email, newValues.password, newValues.nickname)
+        submitUser(newValues.email, newValues.confirmPassword, newValues.nickname)
         console.log('Ejecucion onFinish', props)
     };
 
@@ -63,8 +60,8 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
             </Form.Item>
 
             <Form.Item
-                name="confirm"
                 label="Confirm Password"
+                name="confirmPassword"
                 dependencies={['password']}
                 rules={[
                     {
