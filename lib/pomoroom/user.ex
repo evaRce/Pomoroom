@@ -20,7 +20,7 @@ defmodule Pomoroom.User do
     |> changeset()
     |> validate_required([:email, :password, :nickname])
     |> unique_constraint(:email, message: "Este email ya esta siendo usado", name: :users_email_index)
-    |> unique_constraint(:nickname, message: "Este usuario ya esta asociado a otra cuenta")
+    |> unique_constraint(:nickname, message: "Este nickname ya esta asociado a otra cuenta")
   end
 
   def set_hash_password(changeset) do
@@ -31,8 +31,5 @@ defmodule Pomoroom.User do
       |> Bcrypt.hash_pwd_salt()
     changeset
     |> change(%{password: hashed_password})
-    # |> apply_changes()
-    # No vale porque cast no acepta un esquema como arg. Probar a hacer el cast sobre el esquema que devuelve apply_changes
-    # |> changeset()
   end
 end

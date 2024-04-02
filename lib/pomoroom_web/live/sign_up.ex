@@ -6,22 +6,35 @@ defmodule PomoroomWeb.HomeLive.SignUp do
     {:ok, socket}
   end
 
-  def handle_event("action.save", params, socket) do
+  def handle_event("action.save_user", params, socket) do
     changeset = User.validation(params)
-    constraints = changeset |> Ecto.Changeset.constraints
-    IO.inspect(constraints)
     case (changeset.valid?) do
       true ->
-        changeset
-        |> User.set_hash_password()
-        |> Repo.insert()
-        IO.inspect(Repo.all(User))
-        {:noreply, socket}
+        IO.inspect("************TRUE")
+        new_data =
+          changeset
+          |> User.set_hash_password()
+          |> Repo.insert()
+        case (new_data) do
+          {:ok, _schema} ->
+            IO.inspect("+++++++Se ha insertado")
+            {:noreply, socket}
+          {:error, changeset} ->
+            IO.inspect("+++++++No se puede insertar")
+            errors_as_map =
+              changeset.errors
+              |> simplify_errors()
+              |> Map.new()
+            IO.inspect(errors_as_map)
+            {:noreply, push_event(socket, "react.error_save_user", %{errors: errors_as_map})}
+        end
       _ ->
+        IO.inspect("************FALSE")
         {:noreply, socket}
-
     end
-
   end
 
+  defp simplify_errors(changeset_errors) do
+    Enum.map(changeset_errors, fn {atom, {message, _constraints}} -> {atom, message} end)
+  end
 end
