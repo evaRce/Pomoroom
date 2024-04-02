@@ -1,50 +1,34 @@
 import React from "react";
-import { render, unmountComponentAtNode } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { Login, LoginProps } from "./login";
 
+// const domNode = document.getElementById('login') as HTMLElement;
+// const rootElement = createRoot(domNode);
+
 export default {
-  mounted() {
-    this.handleEvent("react.login", ({ user_log: user_log, passw_log: passw_log }) => {
-      mount(this.el.id, this.opts(user_log, passw_log));
-    });
-    
-    this.unmountComponent = mount(this.el.id, this.opts());
-  },
+	mounted() {
+		render(rootElement, this.opts());
+		this.handleEvent("react.login", ({ user_log: user_log, passw_log: passw_log }) => {
+			render(rootElement, this.opts(user_log, passw_log));
+		});
+	},
 
-  destroyed() {
-    if (!this.unmountComponent) {
-      console.error("Login unmountComponent not set");
-      return;
-    }
-    this.unmountComponent(this.el);
-  },
-
-  // updateCount(newCount) {
-  //   this.pushEventTo(this.el, "log", { newCount: newCount });
-  // },
+	destroyed() {
+		rootElement.unmount()
+	},
   
-
-  opts(): LoginProps {
-    return {
-      username: "Counters",
-      password: "1"
-    };
-  },
+	opts(user_log, pass_log): LoginProps {
+		return {
+			username: user_log,
+			password: pass_log
+		};
+	},
 }
 
-export function mount(id: string, opts: LoginProps) {
-  const rootElement = document.getElementById(id);
-
-  render(
-    <React.StrictMode>
-      <Login {...opts} />
-    </React.StrictMode>,
-    rootElement
-  );
-
-  return (el: Element) => {
-    if (!unmountComponentAtNode(el)) {
-      console.warn("unmount failed", el);
-    }
-  };
+function render(rootElement: any, opts: LoginProps) {
+	rootElement.render(
+		<React.StrictMode>
+			<Login {...opts}/>
+		</React.StrictMode>
+	);
 }

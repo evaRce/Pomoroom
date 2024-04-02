@@ -3,21 +3,33 @@ import {
     Button,
     Form,
     Input,
+    message,
   } from 'antd';
 
 export interface SignUpProps {
-    submitUser(newUsername: string, newPassword: string, newNickname: string): any
+    submitUser(newUsername: string, newPassword: string, newNickname: string): any;
+    errors: object;
 }
 
 export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
-    const { submitUser } = props
+    const { submitUser, errors } = props;
+
+	function show_value_error(map, key) {
+		let value =  Object(map)[key]
+		if (value != undefined) {
+			return value
+		} else {
+			return ""
+		}
+	};
+
     const onFinish = (newValues: any) => {
         submitUser(newValues.email, newValues.confirmPassword, newValues.nickname)
-        console.log('Ejecucion onFinish', props)
     };
-
     return (
         <>
+            <h1>{show_value_error(errors, "email")}</h1>
+            <h1>{show_value_error(errors, "nickname")}</h1>
             <h1>Create your account</h1>
             <Form
                 layout="vertical"
@@ -53,6 +65,11 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
                         required: true,
                         message: 'Please input your password!',
                     },
+                    {
+                        type: 'string',
+                        min: 5,
+                        max: 20,
+                    }
                 ]}
                 hasFeedback
             >
@@ -99,7 +116,7 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
             </Form.Item>
 
             <Form.Item>
-                <Button phx-click="action.save" htmlType="submit" className="signup-form-button">
+                <Button phx-click="action.save_user" htmlType="submit" className="signup-form-button">
                 Sign up
                 </Button>
                 <br></br>

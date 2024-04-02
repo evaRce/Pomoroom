@@ -1,50 +1,38 @@
 import React from "react";
-import { render, unmountComponentAtNode } from "react-dom";
-import { SignUp, SignUpProps } from "./signup"
+import { createRoot } from "react-dom/client";
+import { SignUp, SignUpProps} from "./signup"
+
+const domNode = document.getElementById('signup') as HTMLElement;
+const rootElement = createRoot(domNode);
 
 export default{
     mounted() {
-        this.handleEvent("react.signup", ({email: email_,
-											password: password_,
-											nickname: nickname_}) => {
-            mount(this.el.id, this.opts(email_, password_, nickname_));
+		render(rootElement, this.opts());
+        this.handleEvent("react.error_save_user", ({errors}) => {
+			render(rootElement, this.opts(errors))
 		});
-		this.unmountComponent = mount(this.el.id, this.opts());
 	},
       
 	destroyed() {
-		if (!this.unmountComponent) {
-			console.error("Login unmountComponent not set");
-			return;
-		}
-		this.unmountComponent(this.el);
+		rootElement.unmount()
 	},
 
 	submitUser(email_, password_, nickname_) {
-		this.pushEventTo(this.el, "action.save", { email: email_, password: password_, nickname: nickname_ })
+		this.pushEventTo(this.el, "action.save_user", { email: email_, password: password_, nickname: nickname_ })
 	},
 
-	opts(): SignUpProps {
+	opts(error_save_user = {}): SignUpProps {
 		return {
 			submitUser: this.submitUser.bind(this),
+			errors: error_save_user
 		}
 	},
 }
-	
 
-export function mount(id: string, opts: SignUpProps) {
-	const rootElement = document.getElementById(id);
-
-	render(
+function render(rootElement: any, opts: SignUpProps) {
+	rootElement.render(
 		<React.StrictMode>
-		<SignUp {...opts}/>
-		</React.StrictMode>,
-		rootElement
+			<SignUp {...opts}/>
+		</React.StrictMode>
 	);
-
-	return (el: Element) => {
-		if (!unmountComponentAtNode(el)) {
-		console.warn("unmount failed", el);
-		}
-	};
 }
