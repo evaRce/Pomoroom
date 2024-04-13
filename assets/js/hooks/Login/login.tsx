@@ -3,14 +3,15 @@ import { Button, Checkbox, Form, Input } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 
 export interface LoginProps {
-  username: string;
-  password: string;
+  searchUser(email: string, password: string): any; 
 }
 
 export const Login: React.FC<LoginProps> = (props: LoginProps) => {
+  const {searchUser} = props;
   
-  const onFinish = (props: LoginProps) => {
-    console.log('Received values of form: ', props);
+  const onFinish = (newValues: any) => {
+    searchUser(newValues.email, newValues.password)
+    // console.log(newValues)
   };
 
   return (
@@ -25,9 +26,9 @@ export const Login: React.FC<LoginProps> = (props: LoginProps) => {
         style={{ maxWidth: 400 }}
       >
         <Form.Item
-          label="User"
-          name="username"
-          rules={[{ required: true, message: 'Please input your Username!' }]}
+          label="Email"
+          name="email"
+          rules={[{ required: true, message: 'Please input your Email!' }]}
         >
           <Input 
             prefix={<UserOutlined className="site-form-item-icon" />} 
@@ -45,17 +46,17 @@ export const Login: React.FC<LoginProps> = (props: LoginProps) => {
           />
         </Form.Item>
         <Form.Item>
-          <Form.Item name="remember" valuePropName="checked" noStyle>
+          {/* <Form.Item name="remember" valuePropName="checked" noStyle>
             <Checkbox>Remember me</Checkbox>
-          </Form.Item>
+          </Form.Item> */}
 
-          <a className="login-form-forgot" href="">
+          <a className="login-form-forgot" href="retrieve-password">
             Forgot password
           </a>
         </Form.Item>
 
         <Form.Item>
-          <Button phx-click="action.log_user" htmlType="submit" className="login-form-button">
+          <Button htmlType="submit" className="login-form-button">
             Log in
           </Button>
           <br></br>

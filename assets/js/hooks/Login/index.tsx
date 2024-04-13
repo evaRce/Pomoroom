@@ -9,9 +9,9 @@ export default {
 		const rootElement2 = createRoot(loginDomNode);
 
 		render(rootElement2, this.opts());
-		this.handleEvent("react.login", ({ user_log: user_log, passw_log: passw_log }) => {
-			render(rootElement2, this.opts(user_log, passw_log));
-		});
+		// this.handleEvent("react.login_error", ({ email: email, password: password }) => {
+		// 	render(rootElement2, this.opts(email, password));
+		// });
 	},
 
 	destroyed() {
@@ -19,11 +19,14 @@ export default {
 		const rootElement2 = createRoot(loginDomNode);
 		rootElement2.unmount()
 	},
+
+	searchUser(email, password) {
+		this.pushEventTo(this.el, "action.log_user", {email: email, password: password})
+	},
   
-	opts(user_log, pass_log): LoginProps {
+	opts(): LoginProps {
 		return {
-			username: user_log,
-			password: pass_log
+			searchUser: this.searchUser.bind(this)
 		};
 	},
 }

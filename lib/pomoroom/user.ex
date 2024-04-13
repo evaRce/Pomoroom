@@ -1,6 +1,7 @@
 defmodule Pomoroom.User do
 	use Ecto.Schema
 	import Ecto.Changeset
+	alias Pomoroom.Repo
 
 	schema "users" do
 	field :email, :string
@@ -32,4 +33,11 @@ defmodule Pomoroom.User do
 		changeset
 		|> change(%{password: hashed_password})
 	end
+
+	def register_user(changeset) do
+		changeset
+			|> set_hash_password()
+			|> Repo.insert()
+	end
+
 end

@@ -1,6 +1,6 @@
 defmodule PomoroomWeb.HomeLive.SignUp do
 	use PomoroomWeb, :live_view
-	alias Pomoroom.{User, Repo}
+	alias Pomoroom.User
 
 	def mount(_params, _session, socket) do
 		{:ok, socket}
@@ -10,23 +10,18 @@ defmodule PomoroomWeb.HomeLive.SignUp do
 		changeset = User.validation(params)
 		case (changeset.valid?) do
 			true ->
-			new_data =
-				changeset
-				|> User.set_hash_password()
-				|> Repo.insert()
-			case (new_data) do
-				{:ok, _schema} ->
-				{:noreply, socket}
-				{:error, changeset} ->
-				errors_as_map =
-					changeset.errors
-					|> simplify_errors()
-					|> Map.new()
-				IO.inspect(errors_as_map)
-				{:noreply, push_event(socket, "react.error_save_user", %{errors: errors_as_map})}
-			end
+				case (User.register_user(changeset)) do
+					{:ok, _schema} ->
+						{:noreply, socket}
+					{:error, changeset} ->
+						errors_as_map =
+							changeset.errors
+							|> simplify_errors()
+							|> Map.new()
+						{:noreply, push_event(socket, "react.error_save_user", %{errors: errors_as_map})}
+				end
 			_ ->
-			{:noreply, socket}
+				{:noreply, socket}
 		end
 	end
 
