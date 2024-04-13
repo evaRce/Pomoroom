@@ -2,11 +2,13 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { SignUp, SignUpProps} from "./signup"
 
-const domNode = document.getElementById('signup') as HTMLElement;
-const rootElement = createRoot(domNode);
+
 
 export default{
     mounted() {
+		const domNode = document.getElementById('signup') as Element;
+		const rootElement = createRoot(domNode);
+
 		render(rootElement, this.opts());
         this.handleEvent("react.error_save_user", ({errors}) => {
 			render(rootElement, this.opts(errors))
@@ -14,6 +16,8 @@ export default{
 	},
       
 	destroyed() {
+		const domNode = document.getElementById('signup') as Element;
+		const rootElement = createRoot(domNode);
 		rootElement.unmount()
 	},
 

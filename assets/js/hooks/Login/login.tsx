@@ -7,31 +7,11 @@ export interface LoginProps {
   password: string;
 }
 
-// const ButtonIncr = ({ increment, onClickFunction }) => {
-//   const handleClick = () => {
-//     onClickFunction(increment);
-//   };
-//   return <button onClick={handleClick} >+{increment}</button>;
-// };
-
 export const Login: React.FC<LoginProps> = (props: LoginProps) => {
-  // const { name, updateCount } = props;
-  // const init = 0;
-  // const count = props.count || init;
-  // const incrementCount = (increment) => {
-  //   updateCount(count + increment);
-  // };
   
   const onFinish = (props: LoginProps) => {
-    if (props.username == "hola") {
-      console.log('This is ', props.username);
-    }
-    if (props.password == "123") {
-      console.log("This is the passw", props.password)
-    }
     console.log('Received values of form: ', props);
   };
-
 
   return (
     <>
@@ -75,7 +55,7 @@ export const Login: React.FC<LoginProps> = (props: LoginProps) => {
         </Form.Item>
 
         <Form.Item>
-          <Button htmlType="submit" className="login-form-button">
+          <Button phx-click="action.log_user" htmlType="submit" className="login-form-button">
             Log in
           </Button>
           <br></br>

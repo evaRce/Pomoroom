@@ -2,19 +2,22 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { Login, LoginProps } from "./login";
 
-// const domNode = document.getElementById('login') as HTMLElement;
-// const rootElement = createRoot(domNode);
-
 export default {
+	
 	mounted() {
-		render(rootElement, this.opts());
+		const loginDomNode = document.getElementById('login') as Element;
+		const rootElement2 = createRoot(loginDomNode);
+
+		render(rootElement2, this.opts());
 		this.handleEvent("react.login", ({ user_log: user_log, passw_log: passw_log }) => {
-			render(rootElement, this.opts(user_log, passw_log));
+			render(rootElement2, this.opts(user_log, passw_log));
 		});
 	},
 
 	destroyed() {
-		rootElement.unmount()
+		const loginDomNode = document.getElementById('login') as Element;
+		const rootElement2 = createRoot(loginDomNode);
+		rootElement2.unmount()
 	},
   
 	opts(user_log, pass_log): LoginProps {
@@ -25,8 +28,8 @@ export default {
 	},
 }
 
-function render(rootElement: any, opts: LoginProps) {
-	rootElement.render(
+function render(rootElement2: any, opts: LoginProps) {
+	rootElement2.render(
 		<React.StrictMode>
 			<Login {...opts}/>
 		</React.StrictMode>

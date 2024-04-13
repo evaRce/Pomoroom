@@ -16,7 +16,7 @@ defmodule PomoroomWeb.Router do
 
   scope "/", PomoroomWeb do
     pipe_through :browser
-
+    get "/pomoroom/home", PageController, :home
     live "/pomoroom/login", HomeLive.Login
     live "/pomoroom/signup", HomeLive.SignUp
   end
