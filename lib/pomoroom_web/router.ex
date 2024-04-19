@@ -19,6 +19,7 @@ defmodule PomoroomWeb.Router do
     get "/pomoroom/home", PageController, :home
     live "/pomoroom/login", HomeLive.Login
     live "/pomoroom/signup", HomeLive.SignUp
+    live "/pomoroom/chat", ChatLive.ChatRoot
   end
 
   # Other scopes may use custom stacks.
