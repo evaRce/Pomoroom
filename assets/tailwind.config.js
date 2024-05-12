@@ -4,10 +4,11 @@
 const plugin = require("tailwindcss/plugin")
 const fs = require("fs")
 const path = require("path")
+const { default: daisyui } = require("daisyui")
 
 module.exports = {
   content: [
-    "./js/**/*.js",
+    "./js/**/*.{js,ts,jsx,tsx}",
     "../lib/pomoroom_web.ex",
     "../lib/pomoroom_web/**/*.*ex"
   ],
@@ -18,8 +19,12 @@ module.exports = {
       }
     },
   },
+  daisyui: {
+    logs: false,
+  },
   plugins: [
-    require("@tailwindcss/forms"),
+    require('daisyui'),
+    // require("@tailwindcss/forms"),
     // Allows prefixing tailwind classes with LiveView classes to add rules
     // only when LiveView classes are applied, for example:
     //
