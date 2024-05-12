@@ -1,9 +1,11 @@
 import React from "react";
 import {
+	Card,
 	Button,
 	Form,
 	Input,
 } from 'antd';
+import {LockOutlined, UserOutlined, RobotOutlined} from '@ant-design/icons';
 
 export interface SignUpProps {
 	submitUser(newUsername: string, newPassword: string, newNickname: string): any;
@@ -26,14 +28,13 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 			submitUser(newValues.email, newValues.confirmPassword, newValues.nickname)
 	};
 	return (
-		<>
+		<Card style={{ width: 450 }}>
 			<h1>{show_value_error(errors, "email")}</h1>
 			<h1>{show_value_error(errors, "nickname")}</h1>
-			<h1>Create your account</h1>
+			<h1 style={{textAlign: 'center'}}>Create your account</h1>
 			<Form
 				layout="vertical"
 				name="normal_signup"
-				className="signup-form"
 				onFinish={onFinish}
 				style={{ maxWidth: 400 }}
 				scrollToFirstError
@@ -53,7 +54,9 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 				]}
 				hasFeedback
 			>
-				<Input />
+				<Input 
+					prefix={<UserOutlined className="site-form-item-icon" />} 
+				/>
 			</Form.Item>
 
 			<Form.Item
@@ -72,7 +75,9 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 				]}
 				hasFeedback
 			>
-				<Input.Password />
+				<Input.Password 
+					prefix={<LockOutlined className="site-form-item-icon" />}
+				/>
 			</Form.Item>
 
 			<Form.Item
@@ -95,7 +100,9 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 				]}
 				hasFeedback
 			>
-				<Input.Password />
+				<Input.Password 
+					prefix={<LockOutlined className="site-form-item-icon" />}
+				/>
 			</Form.Item>
 
 			<Form.Item
@@ -111,17 +118,26 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 				]}
 				hasFeedback
 			>
-				<Input />
+				<Input 
+					prefix={<RobotOutlined />}
+				/>
 			</Form.Item>
 
 			<Form.Item>
-				<Button phx-click="action.save_user" htmlType="submit" className="signup-form-button">
+				<Button 
+					htmlType="submit" 
+					className="signup-form-button"
+					style={{ borderColor: "#fdba74" }}
+					block
+				>
 					Sign up
 				</Button>
 				<br></br>
-				<a href="login">Already have an account</a>
+				<a href="login">
+					<h1 style={{textAlign: 'center'}}>Already have an account</h1>
+				</a>
 			</Form.Item>
 			</Form>
-		</>
+		</Card>
 	);
 };

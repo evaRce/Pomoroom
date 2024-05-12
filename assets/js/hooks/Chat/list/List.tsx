@@ -1,16 +1,12 @@
 import React from "react";
-import { Button, Flex, Space } from "antd";
 import UserInfo from "./userInfo/UserInfo";
-import ChatList from "./chatList/ChatList";
-
+import ContactList from "./contactList/ContactList";
 
 export default function List({})  {
 	return(
-		<>
-			<Space direction="vertical" size="middle" >
-				<UserInfo/>
-				<ChatList/>
-			</Space>
-		</>	
+		<div className="hidden max-w-80 lg:block p-5">
+			<UserInfo/>
+			<ContactList/>
+		</div>	
 	);
 }

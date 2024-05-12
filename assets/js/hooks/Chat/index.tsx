@@ -1,6 +1,6 @@
 import React from "react";
 import {createRoot} from "react-dom/client";
-import {Main, MainProps} from "./Main";
+import {ChatRoom, ChatRoomProps} from "./ChatRoom";
 
 export default {
 	mounted(){
@@ -15,15 +15,15 @@ export default {
 		rootElement3.unmount()
 	},
 
-	opts(): MainProps {
+	opts(): ChatRoomProps {
 		return {};
 	},
 }
 
-function render(rootElement3: any, opts: MainProps) {
+function render(rootElement3: any, opts: ChatRoomProps) {
 	rootElement3.render(
 		<React.StrictMode>
-			<Main {...opts}/>
+			<ChatRoom {...opts}/>
 		</React.StrictMode>
 	);
 }
