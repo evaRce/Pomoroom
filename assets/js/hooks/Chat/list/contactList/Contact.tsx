@@ -7,9 +7,9 @@ const Contact = ({ contact }) => {
       <div className="flex-shrink-0"> 
         <img 
           className="h-10 w-10 rounded-full"
-          src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"/> 
+          src={contact.image}/> 
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-20">
         <a href="#" className="focus:outline-none">
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-red-600 pb-0">
