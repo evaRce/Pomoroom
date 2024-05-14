@@ -9,15 +9,12 @@ export interface ChatRoomProps {
 }
 
 export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
-
+	const isChatAlone = true;
 	return (
-		<div className='h-full'>
-			<Navbar />
-			<div className="flex w-full">
+		<div className="flex h-screen w-screen min-h-screen md:min-h-48">
 				<List />
 				<Chat />
 				<Detail />
-			</div>
 		</div>
 	);
 }

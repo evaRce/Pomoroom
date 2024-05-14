@@ -105,21 +105,19 @@ export default function ChatList({ }) {
 	]
 
 	return (
-		<div className="flex flex-col h-[80vh] w-[20vw]">
-			<div className="flex h-auto">
-				<div className="flex py-2 px-1 w-[20vw] justify-center">
-					<input
-						className="input h-auto w-[17vw] focus:outline-none bg-gray-100 rounded-r-none"
-						type="text"
-						placeholder="Search"
-					/>
-					<Button
-						className=" bg-gray-100 w-[3vw] rounded-l-none rounded-r-lg px-3 text-sm"
-						icon={<SearchOutlined />}
-					/>
-				</div>
+		<div className="flex flex-col h-[90vh] w-[20vw]">
+			<div className="flex py-2 px-1 w-[20vw] justify-center">
+				<input
+					className="input h-auto w-[17vw] focus:outline-none bg-gray-100 rounded-r-none"
+					type="text"
+					placeholder="Search"
+				/>
+				<Button
+					className=" bg-gray-100 h-auto w-[3vw] rounded-l-none rounded-r-lg px-3 text-sm"
+					icon={<SearchOutlined />}
+				/>
 			</div>
-			<div className="overflow-auto w-[20vw] p-1" >
+			<div className="overflow-auto w-[20vw] p-1" style={{ scrollbarWidth: 'thin'}}>
 				{contacts.map(contact => (
 					<>
 						<Contact key={contact.id} contact={contact} />

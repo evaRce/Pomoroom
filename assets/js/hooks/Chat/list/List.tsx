@@ -4,7 +4,7 @@ import ContactList from "./contactList/ContactList";
 
 export default function List({})  {
 	return(
-		<div className="hidden h-[90vh] w-[20vw] lg:block ">
+		<div className="hidden min-w-[20vw] lg:block">
 			<UserInfo/>
 			<ContactList/>
 		</div>	

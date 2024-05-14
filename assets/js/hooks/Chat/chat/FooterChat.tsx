@@ -25,32 +25,31 @@ export default function FooterChat({})  {
   };
 
 	return(
-		<footer className="bg-gray-200 h-auto w-full p-5">
-      <form className="flex gap-5" onSubmit={handleSendMessage}>
-        <div className="flex h-auto gap-3">
-          <Button className="w-auto bg-gray-100" icon={<PictureOutlined />}/>
-          {/* <Button className="w-auto bg-gray-100" icon={<CameraOutlined />} /> */}
+		<footer className="flex justify-between bg-gray-300 h-[7vh] px-4">
+      <form className="flex w-full gap-3" onSubmit={handleSendMessage}>
+        <div className="flex items-center gap-2">
+          <Button className="bg-gray-100" icon={<PictureOutlined />}/>
           <Button
-            className="w-auto bg-gray-100"
+            className="bg-gray-100"
             icon={addMode ? <AudioOutlined /> : <AudioMutedOutlined />}
             onClick={() => setAddMode((prev) => !prev)} 
           />
         </div>
-        <div className="flex w-full">
+        <div className="flex items-center w-full justify-center">
           <input
-            className="input w-full h-auto focus:outline-none bg-gray-100 rounded-r-none"
+            className="input bg-gray-100 h-8 w-full focus:outline-none rounded-r-none"
             type="text"
             value={inputStr}
             onChange={e => setInputStr(e.target.value)}
             placeholder="Type a message..."
           />
-          <button className="h-auto bg-gray-100 rounded-none px-5 text-sm" onClick={() => setShowPicker(val => !val)}><SmileOutlined /></button>
-          <button className="h-auto bg-blue-300 rounded-l-none rounded-r-lg px-5 text-sm" type="submit"><SendOutlined /></button>
-          {showPicker && (
-            <Flex gap="small">
-              <EmojiPicker  onEmojiClick={onEmojiClick} />
-            </Flex>
-          )}
+          <div className="flex">
+            <Button className="bg-gray-100 rounded-none" onClick={() => setShowPicker(val => !val)} icon={<SmileOutlined />}/>
+            <Button className="bg-blue-300 rounded-l-none rounded-r-lg" icon={<SendOutlined />} onClick={(e) => handleSendMessage(e)}/>
+            {showPicker && (
+                <EmojiPicker  onEmojiClick={onEmojiClick} />
+            )}
+          </div>
         </div>
       </form>
 		</footer>	

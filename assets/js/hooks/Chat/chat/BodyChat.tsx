@@ -22,10 +22,10 @@ export default function BodyChat({})  {
 	]
 
 	return (
-		<div className="flex flex-col space-y-4 overflow-y-auto p-5 border-t-4 border-b-4">
+		<main className="flex flex-col h-[83vh] overflow-y-auto p-5 border-t border-b" style={{ scrollbarWidth: 'thin'}}>
 			{messages.map(message => (
 				<Message key={message.id} message={message} />
 			))}
-		</div>
+		</main>
 	);
 }
