@@ -1,14 +1,13 @@
 defmodule Pomoroom.User do
 	use Ecto.Schema
 	import Ecto.Changeset
-	alias Pomoroom.Repo
 
 	schema "users" do
-	field :email, :string
-	field :password, :string
-	field :nickname, :string
+		field :email, :string
+		field :password, :string
+		field :nickname, :string
 
-	timestamps(type: :utc_datetime)
+		timestamps(type: :utc_datetime)
 	end
 
 	def changeset(args) do
@@ -35,9 +34,18 @@ defmodule Pomoroom.User do
 	end
 
 	def register_user(changeset) do
-		changeset
+		hash_passw_changeset =
+			changeset
 			|> set_hash_password()
-			|> Repo.insert()
+		Mongo.insert_one(:mongo, "users", hash_passw_changeset.changes)
 	end
 
+	def get_by(args) do
+		changeset =
+			args
+			|> Map.new()
+			|> changeset()
+		(Mongo.find_one(:mongo, "users", changeset.changes)
+		|> changeset()).changes
+	end
 end
