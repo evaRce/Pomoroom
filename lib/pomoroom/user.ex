@@ -41,11 +41,25 @@ defmodule Pomoroom.User do
 	end
 
 	def get_by(args) do
-		changeset =
-			args
-			|> Map.new()
-			|> changeset()
-		(Mongo.find_one(:mongo, "users", changeset.changes)
-		|> changeset()).changes
+		find_one = Mongo.find_one(:mongo, "users", get_changes_from_changeset(args))
+		case find_one do
+			nil ->
+				{:error, :not_found}
+			user_data when is_map(user_data) ->
+				{:ok, get_changes_from_changeset(user_data)}
+			error ->
+				{:error, error}
+		end
 	end
+
+	defp to_changeset(args) do
+		args
+		|> Map.new()
+		|> changeset()
+	end
+
+	defp get_changes_from_changeset(args) do
+		to_changeset(args).changes
+	end
+
 end
