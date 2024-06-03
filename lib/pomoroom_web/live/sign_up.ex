@@ -3,7 +3,7 @@ defmodule PomoroomWeb.HomeLive.SignUp do
 	alias Pomoroom.User
 
 	def mount(_params, _session, socket) do
-		{:ok, socket}
+		{:ok, socket, layout: false}
 	end
 
 	def handle_event("action.save_user", params, socket) do

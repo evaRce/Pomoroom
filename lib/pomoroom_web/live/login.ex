@@ -5,7 +5,7 @@ defmodule PomoroomWeb.HomeLive.Login do
 	# Asignamos el estado inicial del proceso
 	def mount(_params, _session, socket) do
 		socket = assign(socket, :count, 0)
-		{:ok, socket}
+		{:ok, socket, layout: false}
 	end
 
 	def handle_event("action.log_user", %{"email" => email, "password"=> password}, socket) do

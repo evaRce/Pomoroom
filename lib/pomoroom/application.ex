@@ -31,7 +31,7 @@ defmodule Pomoroom.Application do
     opts = [strategy: :one_for_one, name: Pomoroom.Supervisor]
     result = Supervisor.start_link(children, opts)
 
-    Pomoroom.Startup.ensure_indexes
+    Pomoroom.Startup.ensure_indexes()
     result
   end
 
