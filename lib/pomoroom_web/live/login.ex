@@ -12,15 +12,18 @@ defmodule PomoroomWeb.HomeLive.Login do
     user = User.get_by(email: email)
 
     case user do
-      nil ->
+      {:error, :not_found} ->
+        IO.inspect("Usuario no encontrado")
         {:noreply, assign(socket, error: "Usuario no encontrado")}
-      _ ->
-        if Bcrypt.verify_pass(password, user.password) do
-          IO.inspect("ENTRO")
+      {:ok, user_changes} ->
+        if Bcrypt.verify_pass(password, user_changes.password) do
           {:noreply, redirect(socket, to: "/pomoroom/home")}
         else
           {:noreply, assign(socket, error: "Contraseña incorrecta")}
         end
+      {:error, error} ->
+        IO.inspect(error)
+        {:noreply, assign(socket, error: error)}
     end
 	end
 end
