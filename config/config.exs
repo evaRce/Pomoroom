@@ -8,6 +8,7 @@
 import Config
 
 config :pomoroom,
+  ecto_repos: [Pomoroom.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint

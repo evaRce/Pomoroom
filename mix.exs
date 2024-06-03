@@ -19,7 +19,7 @@ defmodule Pomoroom.MixProject do
   def application do
     [
       mod: {Pomoroom.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :mongodb_ecto, :ecto, :runtime_tools]
     ]
   end
 
@@ -37,7 +37,8 @@ defmodule Pomoroom.MixProject do
       {:phoenix_html, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 0.20.2"},
-      {:mongodb, ">= 1.0.0"},
+      {:mongodb_ecto, "~> 1.1.2"},
+      {:ecto_sql, "~> 3.11"},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},

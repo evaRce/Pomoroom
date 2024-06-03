@@ -7,15 +7,9 @@ defmodule Pomoroom.Application do
 
   @impl true
   def start(_type, _args) do
-    db_config = Application.get_env(:pomoroom, :db)
     children = [
       PomoroomWeb.Telemetry,
-      {Mongo,
-        database: db_config[:database] ,
-        name: :mongo,
-        username: db_config[:username],
-        password: db_config[:password]
-      },
+      Pomoroom.Repo,
       {DNSCluster, query: Application.get_env(:pomoroom, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Pomoroom.PubSub},
       # Start the Finch HTTP client for sending emails
@@ -30,8 +24,7 @@ defmodule Pomoroom.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Pomoroom.Supervisor]
     result = Supervisor.start_link(children, opts)
-
-    Pomoroom.Startup.ensure_indexes
+    # Pomoroom.CreateIndexes.create_indexes()  # Crea los indices al arrancar el proyecto
     result
   end
 

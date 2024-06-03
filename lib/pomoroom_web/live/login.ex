@@ -1,5 +1,6 @@
 defmodule PomoroomWeb.HomeLive.Login do
 	use PomoroomWeb, :live_view
+  alias Pomoroom.Repo
 	alias Pomoroom.User
 
 	# Asignamos el estado inicial del proceso
@@ -9,7 +10,7 @@ defmodule PomoroomWeb.HomeLive.Login do
 	end
 
 	def handle_event("action.log_user", %{"email" => email, "password"=> password}, socket) do
-    user = User.get_by(email: email)
+    user = Repo.get_by(User, email: email)
 
     case user do
       nil ->
