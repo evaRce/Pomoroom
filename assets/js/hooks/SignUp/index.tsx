@@ -10,7 +10,7 @@ export default{
 		const rootElement = createRoot(domNode);
 
 		render(rootElement, this.opts());
-        this.handleEvent("react.error_save_user", ({errors}) => {
+    this.handleEvent("react.error_save_user", ({errors}) => {
 			render(rootElement, this.opts(errors))
 		});
 	},

@@ -1,5 +1,6 @@
 import React from "react";
 import {
+	Alert,
 	Card,
 	Button,
 	Form,
@@ -17,21 +18,18 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 
 	function show_value_error(map, key) {
 		let value =  Object(map)[key]
-		if (value != undefined) {
-			return value
-		} else {
-			return ""
-		}
+		return value !== undefined ? value : "";
 	};
 
 	const onFinish = (newValues: any) => {
-			submitUser(newValues.email, newValues.confirmPassword, newValues.nickname)
+		submitUser(newValues.email, newValues.confirmPassword, newValues.nickname)
 	};
+	const emailError = show_value_error(errors, "email");
+  const nicknameError = show_value_error(errors, "nickname");
+
 	return (
 		<Card style={{ width: 450 }}>
-			<h1>{show_value_error(errors, "email")}</h1>
-			<h1>{show_value_error(errors, "nickname")}</h1>
-			<h1 style={{textAlign: 'center'}}>Create your account</h1>
+			<h1 style={{textAlign: 'center'}}>Crea tu cuenta</h1>
 			<Form
 				layout="vertical"
 				name="normal_signup"
@@ -40,16 +38,18 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 				scrollToFirstError
 			>
 			<Form.Item
-				label="E-mail"
+				label="Email"
 				name="email"
+				validateStatus={emailError ? "error" : ""}
+				help={emailError}
 				rules={[
 						{
-								type: 'email',
-								message: 'The input is not valid E-mail!',
+							type: 'email',
+							message: '¡La entrada no es un email válido!',
 						},
 						{
-								required: true,
-								message: 'Please input your E-mail!',
+							required: true,
+							message: '¡Por favor ingrese su email!',
 						},
 				]}
 				hasFeedback
@@ -60,17 +60,17 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 			</Form.Item>
 
 			<Form.Item
-				label="Password"
+				label="Contraseña"
 				name="password"            
 				rules={[
 					{
-							required: true,
-							message: 'Please input your password!',
+						required: true,
+						message: '¡Por favor ingrese su contraseña!',
 					},
 					{
-							type: 'string',
-							min: 5,
-							max: 20,
+						type: 'string',
+						min: 5,
+						max: 20,
 					}
 				]}
 				hasFeedback
@@ -81,20 +81,20 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 			</Form.Item>
 
 			<Form.Item
-				label="Confirm Password"
+				label="Confirmar contraseña"
 				name="confirmPassword"
 				dependencies={['password']}
 				rules={[
 					{
-							required: true,
-							message: 'Please confirm your password!',
+						required: true,
+						message: '¡Por favor, confirme su contraseña!',
 					},
 					({ getFieldValue }) => ({
 						validator(_, value) {
 						if (!value || getFieldValue('password') === value) {
 							return Promise.resolve();
 						}
-						return Promise.reject(new Error('The new password that you entered do not match!'));
+						return Promise.reject(new Error('¡La nueva contraseña que ingresó no coincide!'));
 						},
 					}),
 				]}
@@ -106,13 +106,15 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 			</Form.Item>
 
 			<Form.Item
+			label="Apodo"
 				name="nickname"
-				label="Nickname"
-				tooltip="What do you want others to call you?"
+				tooltip="¿Cómo quieres que te llamen los demás?"
+				validateStatus={nicknameError ? "error" : ""}
+				help={nicknameError}
 				rules={[
 					{ 
 						required: true,
-						message: 'Please input your nickname!', 
+						message: '¡Por favor ingresa tu apodo!', 
 						whitespace: true 
 					}
 				]}
@@ -130,11 +132,11 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 					style={{ borderColor: "#fdba74" }}
 					block
 				>
-					Sign up
+					Crear cuenta
 				</Button>
 				<br></br>
 				<a href="login">
-					<h1 style={{textAlign: 'center'}}>Already have an account</h1>
+					<h1 style={{textAlign: 'center'}}>Ya tengo una cuenta</h1>
 				</a>
 			</Form.Item>
 			</Form>

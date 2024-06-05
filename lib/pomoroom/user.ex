@@ -6,7 +6,6 @@ defmodule Pomoroom.User do
 		field :email, :string
 		field :password, :string
 		field :nickname, :string
-
 		timestamps(type: :utc_datetime)
 	end
 
@@ -37,8 +36,25 @@ defmodule Pomoroom.User do
 		hash_passw_changeset =
 			changeset
 			|> set_hash_password()
-		Mongo.insert_one(:mongo, "users", hash_passw_changeset.changes)
-	end
+		insert_one = Mongo.insert_one(:mongo, "users", hash_passw_changeset.changes)
+		case insert_one do
+      {:ok, result} ->
+				{:ok, result}
+      {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => errmsg}]}} ->
+        {:error, parse_duplicate_key_error(errmsg)}
+    end
+  end
+
+  defp parse_duplicate_key_error(errmsg) do
+    cond do
+      String.contains?(errmsg, "email") ->
+				%{email: "Este email ya está siendo usado"}
+      String.contains?(errmsg, "nickname") ->
+				%{nickname: "Este nickname ya está asociado a otra cuenta"}
+      true ->
+				%{database: "Error de clave duplicada no identificado"}
+    end
+  end
 
 	def get_by(args) do
 		find_one = Mongo.find_one(:mongo, "users", get_changes_from_changeset(args))
@@ -58,8 +74,7 @@ defmodule Pomoroom.User do
 		|> changeset()
 	end
 
-	defp get_changes_from_changeset(args) do
+	def get_changes_from_changeset(args) do
 		to_changeset(args).changes
 	end
-
 end

@@ -1,9 +1,18 @@
 defmodule Pomoroom.Startup do
-  def ensure_indexes do
+  def create_indexes do
     IO.puts "Using database #{Application.get_env(:pomoroom, :db)[:database]}"
-    Mongo.command(:mongo, %{createIndexes: "users",
-      indexes: [ %{ key: %{ email: 1 },
-                    name: "email_idx",
-                    unique: true} ] })
+    indexes = [
+      %{
+        key: %{ email: 1 },
+        name: "email_index",
+        unique: true
+      },
+      %{
+        key: %{ nickname: 1 },
+        name: "nickname_index",
+        unique: true
+      }
+    ]
+    Mongo.create_indexes(:mongo, "users", indexes)
   end
 end

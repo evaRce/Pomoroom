@@ -13,16 +13,17 @@ defmodule PomoroomWeb.HomeLive.Login do
 
     case user do
       {:error, :not_found} ->
-        IO.inspect("Usuario no encontrado")
-        {:noreply, assign(socket, error: "Usuario no encontrado")}
+        IO.inspect("User no encontrado")
+        {:noreply, push_event(socket, "react.error_login_user", %{errors: %{email: "Usuario no encontrado"}})}
       {:ok, user_changes} ->
         if Bcrypt.verify_pass(password, user_changes.password) do
           {:noreply, redirect(socket, to: "/pomoroom/home")}
         else
-          {:noreply, assign(socket, error: "Contraseña incorrecta")}
+          IO.inspect("Mala contraseña")
+          {:noreply, push_event(socket, "react.error_login_user", %{errors: %{password: "Contraseña incorrecta"}})}
         end
       {:error, error} ->
-        IO.inspect(error)
+        IO.inspect("Otro error")
         {:noreply, assign(socket, error: error)}
     end
 	end
