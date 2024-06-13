@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Alert, Card, Button, Form, Input } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 
@@ -9,22 +9,30 @@ export interface LoginProps {
 
 export const Login: React.FC<LoginProps> = (props: LoginProps) => { 
   const {searchUser, errors} = props;
+	const [form] = Form.useForm();
   
-  function show_value_error(map, key, message = "") {
-    let value = Object(map)[key]
-    return value !== undefined ? value : message;
-  }
-
   const onFinish = (newValues: any) => {
     searchUser(newValues.email, newValues.password)  
   };
-  const emailError = show_value_error(errors, "email");
-  const passwordError = show_value_error(errors, "password");
 
+  useEffect(() => {
+    // Set custom backend errors to the form fields
+    if (errors) {
+      const commonError = errors['email'] || errors['password'];
+      if (commonError) {
+        form.setFields([
+          { name: 'email', errors: [commonError] },
+          { name: 'password', errors: [commonError] },
+        ]);
+      }
+    }
+  }, [errors, form]);
+  
   return (
     <Card style={{ width: 450 }}>
-      <h1 style={{textAlign: 'center'}}>¡Bienvenido de nuevo!</h1>
+      <h1 style={{textAlign: 'center'}}>¡Nos alegra verte otra vez! Ingresa tus datos para comenzar.</h1>
       <Form
+        form={form}
         layout="vertical"
         name="normal_login"
         initialValues={{ remember: true }}
@@ -34,9 +42,9 @@ export const Login: React.FC<LoginProps> = (props: LoginProps) => {
         <Form.Item
           label="Email" 
           name="email"
-          validateStatus={emailError ? "error" : ""}
-          help={emailError}
-          rules={[{ required: true, message: '¡Por favor ingrese su correo electrónico!' }]}
+          rules={[
+            { required: true, message: '¡Por favor ingrese su correo electrónico!' }
+          ]}
         >
           <Input 
             prefix={<UserOutlined className="site-form-item-icon" />} 
@@ -45,9 +53,9 @@ export const Login: React.FC<LoginProps> = (props: LoginProps) => {
         <Form.Item
           label="Contraseña"
           name="password"
-          validateStatus={passwordError ? "error" : ""}
-          help={passwordError}
-          rules={[{ required: true, message: '¡Por favor ingrese su contraseña!' }]}
+          rules={[
+            { required: true, message: '¡Por favor ingrese su contraseña!' }
+          ]}
         >
           <Input.Password
             prefix={<LockOutlined className="site-form-item-icon" />}

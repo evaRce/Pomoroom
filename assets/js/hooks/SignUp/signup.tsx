@@ -1,12 +1,6 @@
-import React from "react";
-import {
-	Alert,
-	Card,
-	Button,
-	Form,
-	Input,
-} from 'antd';
-import {LockOutlined, UserOutlined, RobotOutlined} from '@ant-design/icons';
+import React, { useEffect } from "react";
+import { Card, Button, Form, Input } from 'antd';
+import { LockOutlined, UserOutlined, RobotOutlined } from '@ant-design/icons';
 
 export interface SignUpProps {
 	submitUser(newUsername: string, newPassword: string, newNickname: string): any;
@@ -15,22 +9,28 @@ export interface SignUpProps {
 
 export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 	const { submitUser, errors } = props;
-
-	function show_value_error(map, key) {
-		let value =  Object(map)[key]
-		return value !== undefined ? value : "";
-	};
+	const [form] = Form.useForm();
+	const nicknameRegex = new RegExp(/^\w[\w.]{2,18}\w$/);
 
 	const onFinish = (newValues: any) => {
 		submitUser(newValues.email, newValues.confirmPassword, newValues.nickname)
 	};
-	const emailError = show_value_error(errors, "email");
-  const nicknameError = show_value_error(errors, "nickname");
+
+	useEffect(() => {
+    // Set custom backend errors to the form fields
+    if (errors) {
+      form.setFields(Object.keys(errors).map(key => ({
+        name: key,
+        errors: [errors[key]],
+      })));
+    }
+  }, [errors, form]);
 
 	return (
 		<Card style={{ width: 450 }}>
-			<h1 style={{textAlign: 'center'}}>Crea tu cuenta</h1>
+			<h1 style={{textAlign: 'center'}}>¡Es fácil empezar! Crea tu cuenta y empieza a ser más productivo.</h1>
 			<Form
+				form={form}
 				layout="vertical"
 				name="normal_signup"
 				onFinish={onFinish}
@@ -40,17 +40,9 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 			<Form.Item
 				label="Email"
 				name="email"
-				validateStatus={emailError ? "error" : ""}
-				help={emailError}
 				rules={[
-						{
-							type: 'email',
-							message: '¡La entrada no es un email válido!',
-						},
-						{
-							required: true,
-							message: '¡Por favor ingrese su email!',
-						},
+					{ required: true, message: '¡Por favor ingrese su email!' },
+					{ type: 'email', message: '¡La entrada no es un email válido!' }
 				]}
 				hasFeedback
 			>
@@ -61,17 +53,10 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 
 			<Form.Item
 				label="Contraseña"
-				name="password"            
+				name="password"
 				rules={[
-					{
-						required: true,
-						message: '¡Por favor ingrese su contraseña!',
-					},
-					{
-						type: 'string',
-						min: 5,
-						max: 20,
-					}
+					{ required: true, 	message: '¡Por favor ingrese su contraseña!' },
+					{ type: 'string', min: 8, max: 64, message: '¡La contraseña debe tener entre 8 y 64 caracteres!' }
 				]}
 				hasFeedback
 			>
@@ -85,16 +70,13 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 				name="confirmPassword"
 				dependencies={['password']}
 				rules={[
-					{
-						required: true,
-						message: '¡Por favor, confirme su contraseña!',
-					},
+					{ required: true, message: '¡Por favor, confirme su contraseña!' },
 					({ getFieldValue }) => ({
 						validator(_, value) {
 						if (!value || getFieldValue('password') === value) {
 							return Promise.resolve();
 						}
-						return Promise.reject(new Error('¡La nueva contraseña que ingresó no coincide!'));
+						return Promise.reject(new Error('¡La contraseña que ingresó no coincide con la anterior!'));
 						},
 					}),
 				]}
@@ -106,17 +88,13 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
 			</Form.Item>
 
 			<Form.Item
-			label="Apodo"
+				label="Apodo"
 				name="nickname"
 				tooltip="¿Cómo quieres que te llamen los demás?"
-				validateStatus={nicknameError ? "error" : ""}
-				help={nicknameError}
 				rules={[
-					{ 
-						required: true,
-						message: '¡Por favor ingresa tu apodo!', 
-						whitespace: true 
-					}
+					{ required: true, message: '¡Por favor ingresa tu apodo!', whitespace: true },
+					{ pattern: nicknameRegex, message: '¡La entrada no es un apodo válido!' },
+					{ min: 2, max: 64, message: 'El apodo debe tener entre 2 y 64 caracteres' }
 				]}
 				hasFeedback
 			>

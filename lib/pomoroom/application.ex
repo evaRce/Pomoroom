@@ -30,7 +30,6 @@ defmodule Pomoroom.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Pomoroom.Supervisor]
     result = Supervisor.start_link(children, opts)
-
     Pomoroom.Startup.create_indexes()
     result
   end

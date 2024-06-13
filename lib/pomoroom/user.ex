@@ -17,9 +17,30 @@ defmodule Pomoroom.User do
 	def validation(args) do
 		args
 		|> changeset()
-		|> validate_required([:email, :password, :nickname])
-		|> unique_constraint(:email, message: "Este email ya esta siendo usado", name: :users_email_index)
-		|> unique_constraint(:nickname, message: "Este nickname ya esta asociado a otra cuenta")
+		# |> validate_required([:email, :password, :nickname])
+		|> validate_email()
+    |> validate_password()
+    |> validate_nickname()
+	end
+
+	defp validate_email(changeset) do
+		changeset
+		|> validate_required([:email])
+		|> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "Debe tener el signo @ y sin espacios")
+		|> validate_length(:email, max: 64, message: "No debe exceder los 64 caracteres")
+	end
+
+	defp validate_password(changeset) do
+		changeset
+		|> validate_required([:password])
+		|> validate_length(:password, min: 8, max: 64, message: "La contraseña debe tener entre 8 y 64 caracteres")
+	end
+
+	defp validate_nickname(changeset) do
+		changeset
+		|> validate_required([:nickname])
+    |> validate_format(:nickname, ~r/^[a-zA-Z0-9_]+$/, message: "El nickname solo puede contener letras, números y guiones bajos, sin espacios")
+		|> validate_length(:password, min: 2, max: 64)
 	end
 
 	def set_hash_password(changeset) do
@@ -37,6 +58,7 @@ defmodule Pomoroom.User do
 			changeset
 			|> set_hash_password()
 		insert_one = Mongo.insert_one(:mongo, "users", hash_passw_changeset.changes)
+		
 		case insert_one do
       {:ok, result} ->
 				{:ok, result}
@@ -51,8 +73,6 @@ defmodule Pomoroom.User do
 				%{email: "Este email ya está siendo usado"}
       String.contains?(errmsg, "nickname") ->
 				%{nickname: "Este nickname ya está asociado a otra cuenta"}
-      true ->
-				%{database: "Error de clave duplicada no identificado"}
     end
   end
 
@@ -77,4 +97,10 @@ defmodule Pomoroom.User do
 	def get_changes_from_changeset(args) do
 		to_changeset(args).changes
 	end
+
+	# def get_errors_from_changeset(changeset) do
+	# 	changeset.errors
+	# 	|> Enum.map(fn {atom, {message, _constraints}} -> {atom, message} end)
+	# 	|> Map.new()
+	# end
 end
