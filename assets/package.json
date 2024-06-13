@@ -4,6 +4,7 @@
     "@ant-design/web3-wagmi": "^2.4.1",
     "@tanstack/react-query": "^5.28.8",
     "antd": "^5.15.4",
+    "emoji-picker-react": "^4.10.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "remount": "^1.0.0",
@@ -14,6 +15,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.2.69",
-    "@types/react-dom": "^18.2.22"
+    "@types/react-dom": "^18.2.22",
+    "daisyui": "^4.12.2"
   }
 }
