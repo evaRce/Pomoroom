@@ -14,11 +14,11 @@ export default function Message({ message }) {
 				<div className="chat-header">
 					{message.name}
 				</div>
-				<div className="chat-bubble">
+				<div className="chat-bubble" style={{ maxWidth: "70%", wordWrap: "break-word" }}>
 					{message.text}
-					<div>
+					{/* <div>
 						<time className="text-xs opacity-50">12:45</time>
-					</div>
+					</div> */}
 				</div>
 			</div>
 			<div className="chat chat-end">
@@ -28,11 +28,11 @@ export default function Message({ message }) {
 				<div className="chat-header">
 					{message.name}
 				</div>
-				<div className="chat-bubble">
+				<div className="chat-bubble" style={{ maxWidth: "70%", wordWrap: "break-word" }}>
 					{message.text}
-					<div>
+					{/* <div>
 						<time className="text-xs opacity-50">12:46</time>
-					</div>
+					</div> */}
 				</div>
 			</div>
 		</>

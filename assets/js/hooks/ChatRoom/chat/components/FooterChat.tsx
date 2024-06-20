@@ -8,7 +8,7 @@ import {
   SendOutlined,
   SmileOutlined } from '@ant-design/icons';
 
-export default function FooterChat({})  {
+export default function FooterChat({addMessage})  {
   const [addMode, setAddMode] = useState(true);
   const [inputStr, setInputStr] = useState("");
   const [showPicker, setShowPicker] = useState(false);
@@ -21,6 +21,7 @@ export default function FooterChat({})  {
   const handleSendMessage = (e) => {
     e.preventDefault();
     console.log(inputStr);
+    addMessage(inputStr);
     setInputStr("");
   };
 
@@ -44,8 +45,14 @@ export default function FooterChat({})  {
             placeholder="Type a message..."
           />
           <div className="flex">
-            <Button className="bg-gray-100 rounded-none" onClick={() => setShowPicker(val => !val)} icon={<SmileOutlined />}/>
-            <Button className="bg-blue-300 rounded-l-none rounded-r-lg" icon={<SendOutlined />} onClick={(e) => handleSendMessage(e)}/>
+            <Button 
+              className="bg-gray-100 rounded-none" 
+              onClick={() => setShowPicker(val => !val)} 
+              icon={<SmileOutlined />}/>
+            <Button 
+              className="bg-blue-300 rounded-l-none rounded-r-lg" 
+              icon={<SendOutlined />} 
+              onClick={(e) => handleSendMessage(e)}/>
             {showPicker && (
                 <EmojiPicker  onEmojiClick={onEmojiClick} />
             )}
