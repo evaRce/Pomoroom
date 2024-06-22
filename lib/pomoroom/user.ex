@@ -17,30 +17,7 @@ defmodule Pomoroom.User do
 	def validation(args) do
 		args
 		|> changeset()
-		# |> validate_required([:email, :password, :nickname])
-		|> validate_email()
-    |> validate_password()
-    |> validate_nickname()
-	end
-
-	defp validate_email(changeset) do
-		changeset
-		|> validate_required([:email])
-		|> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "Debe tener el signo @ y sin espacios")
-		|> validate_length(:email, max: 64, message: "No debe exceder los 64 caracteres")
-	end
-
-	defp validate_password(changeset) do
-		changeset
-		|> validate_required([:password])
-		|> validate_length(:password, min: 8, max: 64, message: "La contraseña debe tener entre 8 y 64 caracteres")
-	end
-
-	defp validate_nickname(changeset) do
-		changeset
-		|> validate_required([:nickname])
-    |> validate_format(:nickname, ~r/^[a-zA-Z0-9_]+$/, message: "El nickname solo puede contener letras, números y guiones bajos, sin espacios")
-		|> validate_length(:password, min: 2, max: 64)
+		|> validate_required([:email, :password, :nickname])
 	end
 
 	def set_hash_password(changeset) do
@@ -54,12 +31,12 @@ defmodule Pomoroom.User do
 	end
 
 	def register_user(changeset) do
-		hash_passw_changeset =
+		user_changeset =
 			changeset
 			|> set_hash_password()
-		insert_one = Mongo.insert_one(:mongo, "users", hash_passw_changeset.changes)
-		
-		case insert_one do
+		insert_user = Mongo.insert_one(:mongo, "users", user_changeset.changes)
+
+		case insert_user do
       {:ok, result} ->
 				{:ok, result}
       {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => errmsg}]}} ->
@@ -76,9 +53,10 @@ defmodule Pomoroom.User do
     end
   end
 
-	def get_by(args) do
-		find_one = Mongo.find_one(:mongo, "users", get_changes_from_changeset(args))
-		case find_one do
+	def get_by_email(""), do: {:error, :not_found}
+	def get_by_email(email) do
+		find_user = Mongo.find_one(:mongo, "users", get_changes_from_changeset(email: email))
+		case find_user do
 			nil ->
 				{:error, :not_found}
 			user_data when is_map(user_data) ->
@@ -88,14 +66,12 @@ defmodule Pomoroom.User do
 		end
 	end
 
-	defp to_changeset(args) do
-		args
-		|> Map.new()
-		|> changeset()
-	end
-
 	def get_changes_from_changeset(args) do
-		to_changeset(args).changes
+		args =
+			args
+			|> Map.new()
+			|> changeset()
+		args.changes
 	end
 
 	# def get_errors_from_changeset(changeset) do
