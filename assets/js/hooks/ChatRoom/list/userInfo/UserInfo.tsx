@@ -4,7 +4,7 @@ import { UserOutlined, MoreOutlined, UsergroupAddOutlined, SettingOutlined} from
 
 const { Text } = Typography;
 
-export default function UserInfo({})  {
+export default function UserInfo({ user_info })  {
 	return(
 		<div className="flex h-[10vh] w-[20vw] gap-2 justify-between items-center">
 			<div className="flex relative p-1 rounded-lg items-center space-x-2 mb-1">
@@ -15,7 +15,7 @@ export default function UserInfo({})  {
 				</div>
 				<div className="flex w-[18vw] items-center justify-between">
 					<span className="text-sm max-h-[8vh] max-w-[7vw]">
-					John Carter
+					{user_info.nickname}
 					</span>
 					<div className="flex gap-1 ">
 						<Button className="rounded-md" icon={<UsergroupAddOutlined/>} />

@@ -3,7 +3,7 @@ import { Button } from "antd";
 import { SearchOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import Contact from "./Contact";
 
-export default function ChatList({ }) {
+export default function ContactList({ }) {
 	const [addMode, setAddMode] = useState(false);
 
 	const contacts = [

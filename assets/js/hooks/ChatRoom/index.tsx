@@ -1,22 +1,29 @@
 import React from "react";
 import {createRoot} from "react-dom/client";
-import {ChatRoom, ChatRoomProps} from "./ChatRoom";
+import {ChatRoom, ChatRoomProps } from "./ChatRoom";
 
 export default {
 	mounted(){
 		const chatDomNode = document.getElementById('chat_container') as Element;
-		const rootElement3 = createRoot(chatDomNode);
-		render(rootElement3, this.opts());
+		const rootElementChat = createRoot(chatDomNode);
+		
+		render(rootElementChat, this.opts());
+		this.pushEventTo(this.el, "action.initialize_user_info")
+    this.handleEvent("react.initialize_user_info", ({user_info}) => {
+			render(rootElementChat, this.opts(user_info))
+		});
 	},
 
 	destroyed() {
 		const chatDomNode = document.getElementById('chat_container') as Element;
-		const rootElement3 = createRoot(chatDomNode);
-		rootElement3.unmount()
+		const rootElementChat = createRoot(chatDomNode);
+		rootElementChat.unmount()
 	},
 
-	opts(): ChatRoomProps {
-		return {};
+	opts(user_info = {}) {
+		return { 
+			user_info: user_info
+		};
 	},
 }
 
