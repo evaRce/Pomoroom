@@ -1,29 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "antd";
 import { UserOutlined, MoreOutlined, UsergroupAddOutlined } from '@ant-design/icons';
-import AddGroup from "./AddGroup";
 import AddContact from "./AddContact";
+import { useEventContext } from "../../EventContext";
 
-export default function UserInfo({ user_info }) {
-	const [showModalContact, setShowModalContact] = useState(false);
-	const [showModalGroup, setShowModalGroup] = useState(false);
-	
+export default function UserInfo({ }) {
+	const [nickname, setNickname] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const { getEventData } = useEventContext();
 
-	const showAddContactModal = () => {
-		setShowModalContact(true)
-	};
+	useEffect(() => {
+    const user_nickname = getEventData("react.show_user_info");
+    if (user_nickname) {
+      setNickname(user_nickname);
+    }
+  }, [getEventData]);
 
-	const showAddGroupModal = () => {
-		setShowModalGroup(true)
-	};
+  const showAddEntryModal = () => {
+    setShowModal(true);
+  };
 
-	function handleDataFromChild1(showModal) {
-    setShowModalContact(showModal);
-  }
-
-	function handleDataFromChild2(showModal) {
-		setShowModalGroup(showModal);
-  }
+  const handleDataFromChild = (showModal) => {
+    setShowModal(showModal);
+  };
 
 	return(
 		<div className="flex h-[10vh] w-[20vw] gap-2 justify-between items-center">
@@ -35,17 +34,15 @@ export default function UserInfo({ user_info }) {
 				</div>
 				<div className="flex w-[18vw] items-center justify-between">
 					<span className="text-sm max-h-[8vh] max-w-[7vw]">
-					{user_info.nickname}
+					{nickname}
 					</span>
 					<div className="flex gap-1">
-						<Button className="rounded-md" icon={<UserOutlined/>} onClick={showAddContactModal}/>
-						<Button className="rounded-md" icon={<UsergroupAddOutlined/>} onClick={showAddGroupModal}/>
+						<Button className="rounded-md" icon={<UsergroupAddOutlined/>} onClick={showAddEntryModal}/>
 						<Button className="rounded-md" icon={<MoreOutlined/>} />
 					</div>
 				</div>
 			</div>
-			<AddContact sendDataToParent={handleDataFromChild1} receiveDataFromParent={showModalContact}/>
-			<AddGroup sendDataToParent={handleDataFromChild2} receiveDataFromParent={showModalGroup} />
+			<AddContact sendDataToParent={handleDataFromChild} receiveDataFromParent={showModal} />
 		</div>
 	);
 }

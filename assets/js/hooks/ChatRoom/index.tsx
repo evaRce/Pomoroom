@@ -1,5 +1,6 @@
 import React from "react";
 import {createRoot} from "react-dom/client";
+import { EventProvider } from "./EventContext";
 import {ChatRoom, ChatRoomProps } from "./ChatRoom";
 
 export default {
@@ -8,9 +9,8 @@ export default {
 		const rootElementChat = createRoot(chatDomNode);
 		
 		render(rootElementChat, this.opts());
-		this.pushEventTo(this.el, "action.initialize_user_info")
-    this.handleEvent("react.initialize_user_info", ({user_info}) => {
-			render(rootElementChat, this.opts(user_info))
+    this.handleEvent("react.show_user_info", ({user_email, user_nickname}) => {
+			render(rootElementChat, this.opts(user_email, user_nickname))
 		});
 	},
 
@@ -20,9 +20,15 @@ export default {
 		rootElementChat.unmount()
 	},
 
-	opts(user_info = {}) {
+	pushEventToLiveView(event, payload) {
+		this.pushEventTo(this.el, event, payload);
+	},
+
+	opts(user_email = "", user_nickname = "") {
 		return { 
-			user_info: user_info
+			user_email: user_email,
+			user_nickname: user_nickname,
+			pushEventToLiveView: this.pushEventToLiveView.bind(this)
 		};
 	},
 }
@@ -30,7 +36,9 @@ export default {
 function render(rootElement3: any, opts: ChatRoomProps) {
 	rootElement3.render(
 		<React.StrictMode>
-			<ChatRoom {...opts}/>
-		</React.StrictMode>
+      <EventProvider>
+        <ChatRoom {...opts}/>
+      </EventProvider>
+    </React.StrictMode>
 	);
 }
