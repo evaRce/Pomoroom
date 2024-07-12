@@ -5,21 +5,20 @@ import Contact from "./Contact";
 import { useEventContext } from "../../EventContext";
 
 export default function ContactList({ }) {
-	const [addMode, setAddMode] = useState(false);
-	const { getEventData } = useEventContext();
+	const { getEventData, removeEvent } = useEventContext();
 	const [contacts, setContacts] = useState([]);
 
 	useEffect(() => {
-    const eventData = getEventData("add_contact");
-		if (eventData) {
-			addContact(eventData);
+    const nameContact = getEventData("add_contact_to_list");
+		if (nameContact) {
+			addContact(nameContact);
+			removeEvent("add_contact_to_list");
 		}
   }, [getEventData]);
 
-	const addContact = (eventData) => {
+	const addContact = (nameContact) => {
     const newContact = {
-      name: eventData["name"],
-			type: eventData["type"],
+      name: nameContact,
       text: "hola",
       image: "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
     };

@@ -1,9 +1,17 @@
 import React, { createContext, useState, useContext } from "react";
 
+type EventContext = {
+  eventsData: any,
+  addEvent: (eventName: string, eventData: object) => void,
+  getEventData: (eventName:string) => object,
+  removeEvent: (eventName: string) => void
+};
+
 const EventContext = createContext({
   eventsData: {},
   addEvent: (eventName, eventData) => {},
   getEventData: (eventName) => {},
+  removeEvent: (eventName) => {},
 });
 
 export const EventProvider = ({ children }) => {
@@ -20,8 +28,16 @@ export const EventProvider = ({ children }) => {
     return eventsData[eventName];
   };
 
+  const removeEvent = (eventName) => {
+    setEventsData((prevEventsData) => {
+      const newEventsData = { ...prevEventsData };
+      delete newEventsData[eventName];
+      return newEventsData;
+    });
+  };
+
   return (
-    <EventContext.Provider value={{ eventsData, addEvent, getEventData }}>
+    <EventContext.Provider value={{ eventsData, addEvent, getEventData, removeEvent }}>
       {children}
     </EventContext.Provider>
   );

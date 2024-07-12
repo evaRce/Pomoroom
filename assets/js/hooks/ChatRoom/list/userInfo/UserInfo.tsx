@@ -10,7 +10,7 @@ export default function UserInfo({ }) {
   const { getEventData } = useEventContext();
 
 	useEffect(() => {
-    const user_nickname = getEventData("react.show_user_info");
+    const user_nickname = getEventData("show_user_info");
     if (user_nickname) {
       setNickname(user_nickname);
     }
