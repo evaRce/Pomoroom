@@ -74,9 +74,26 @@ defmodule Pomoroom.User do
 		args.changes
 	end
 
-	# def get_errors_from_changeset(changeset) do
-	# 	changeset.errors
-	# 	|> Enum.map(fn {atom, {message, _constraints}} -> {atom, message} end)
-	# 	|> Map.new()
-	# end
+  def get_contacts_by_user(belongs_to_user) do
+    contacts_query = %{
+      "belongs_to_user" => belongs_to_user
+    }
+
+    search_contacts = Mongo.find(:mongo, "contacts", contacts_query)
+
+    case search_contacts do
+      cursor ->
+        contacts = Enum.to_list(cursor)
+
+        case contacts do
+          [] ->
+            {:not_found, []}
+
+          contact_list ->
+            names = Enum.map(contact_list, fn contact -> contact["name"] end)
+            
+            {:ok, %{contacts: names}}
+        end
+    end
+  end
 end

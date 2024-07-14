@@ -14,6 +14,14 @@ export default function ContactList({ }) {
 			addContact(nameContact);
 			removeEvent("add_contact_to_list");
 		}
+
+		const contactList = getEventData("show_list_contact");
+    if (contactList) {
+      contactList.map(name => 
+        addContact(name)
+      );
+      removeEvent("show_list_contact");
+    }
   }, [getEventData]);
 
 	const addContact = (nameContact) => {

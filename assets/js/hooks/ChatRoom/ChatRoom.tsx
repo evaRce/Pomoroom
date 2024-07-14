@@ -23,22 +23,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
   }, [addEvent]);
 
 	useEffect(() => {
-    if (eventName === "show_user_info" && eventData.nickname) {
-      addEvent(eventName, eventData.nickname);
+    switch (eventName) {
+      case "show_user_info":
+        if (eventData.nickname) {
+          addEvent(eventName, eventData.nickname);
+        }
+        break;
+      case "add_contact_to_list":
+        if (eventData.name) {
+          addEvent(eventName, eventData.name);
+        }
+        break;
+      case "error_adding_contact":
+        if (eventData.error) {
+          addEvent(eventName, eventData.error);
+        }
+        break;
+			case "show_list_contact":
+				if (eventData.contacts) {
+					addEvent(eventName, eventData.contacts);
+				}
+				break;
+      default:
+        break;
     }
-  }, [eventData.nickname]);
-
-	useEffect(() => {
-		if (eventName === "add_contact_to_list" && eventData.name) {
-      addEvent(eventName, eventData.name);
-    }
-	}, [eventData.name])
-
-	useEffect(() => {
-		if (eventName === "error_adding_contact" && eventData.error) {
-      addEvent(eventName, eventData.error);
-    }
-  }, [eventData.error]);
+  }, [eventName, eventData]);
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">

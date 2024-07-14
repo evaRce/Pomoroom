@@ -1,7 +1,7 @@
 defmodule PomoroomWeb.ChatLive.ChatRoom do
   alias Expo.Message
 	use PomoroomWeb, :live_view
-  alias Pomoroom.Contact
+  alias Pomoroom.{Contact, User}
 
   def mount(_params, session, socket) do
     socket =
@@ -11,6 +11,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
     # IO.inspect(socket, structs: false, limit: :infinity)
     send(self(), :init_info_user)
+    send(self(), :init_list_contact)
     {:ok, socket, layout: false}
   end
 
@@ -20,9 +21,23 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     {:noreply, push_event(socket, "react", payload)}
   end
 
+  def handle_info(:init_list_contact, socket) do
+    user = socket.assigns.user_info.nickname
+    contact_list = User.get_contacts_by_user(user)
+
+    case contact_list do
+      {:ok, result} ->
+        payload = %{event_name: "show_list_contact", event_data: result}
+        {:noreply, push_event(socket, "react", payload)}
+
+      {:not_found, []} ->
+        {:noreply, socket}
+    end
+  end
+
   def handle_event("action.add_contact", %{"is_group" => is_group, "name" => contact_name}, socket) do
-    belongs_to_user = socket.assigns.user_info.nickname
-    add_contact = Contact.add_contact(contact_name, belongs_to_user, is_group)
+    user = socket.assigns.user_info.nickname
+    add_contact = Contact.add_contact(contact_name, user, is_group)
 
     case add_contact do
       {:ok, result} ->
