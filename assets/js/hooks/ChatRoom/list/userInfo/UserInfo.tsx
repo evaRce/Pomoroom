@@ -7,12 +7,13 @@ import { useEventContext } from "../../EventContext";
 export default function UserInfo({ }) {
 	const [nickname, setNickname] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const { getEventData } = useEventContext();
+  const { getEventData, removeEvent } = useEventContext();
 
 	useEffect(() => {
     const user_nickname = getEventData("show_user_info");
     if (user_nickname) {
       setNickname(user_nickname);
+			removeEvent("show_user_info");
     }
   }, [getEventData]);
 
