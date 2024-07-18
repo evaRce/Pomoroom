@@ -16,9 +16,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
   useEffect(() => {
 		const contactInfo = getEventData("add_contact");
+		const contactToDelete = getEventData("delete_contact");
+	
 		if (contactInfo) {
 			pushEventToLiveView("action.add_contact", contactInfo);
 			removeEvent("add_contact");
+		}
+		if (contactToDelete) {
+			pushEventToLiveView("action.delete_contact", contactToDelete);
+			removeEvent("delete_contact");
 		}
   }, [addEvent]);
 

@@ -1,4 +1,4 @@
-defmodule Pomoroom.Contact do
+defmodule Pomoroom.ChatRoom.Contact do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -12,7 +12,7 @@ defmodule Pomoroom.Contact do
   def contact_changeset(contact_name, belongs_to_user, is_group) do
     contact = %{name: contact_name, belongs_to_user: belongs_to_user, is_group: is_group}
 
-    %Pomoroom.Contact{}
+    %Pomoroom.ChatRoom.Contact{}
     |> cast(contact, [:name, :belongs_to_user, :is_group])
     |> validate_required([:name, :belongs_to_user, :is_group])
   end

@@ -1,7 +1,8 @@
 defmodule PomoroomWeb.ChatLive.ChatRoom do
   alias Expo.Message
 	use PomoroomWeb, :live_view
-  alias Pomoroom.{Contact, User}
+  alias Pomoroom.User
+  alias Pomoroom.ChatRoom.Contact
 
   def mount(_params, session, socket) do
     socket =
@@ -48,6 +49,13 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         payload = %{event_name: "error_adding_contact", event_data: reason}
         {:noreply, push_event(socket, "react", payload)}
     end
+  end
+
+  def handle_event("action.delete_contact", contact_name, socket) do
+    user = socket.assigns.user_info.nickname
+
+    Contact.delete_contact(contact_name, user)
+    {:noreply, socket}
   end
 
   def put_session_assigns(socket, session) do
