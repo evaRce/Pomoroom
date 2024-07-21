@@ -30,8 +30,8 @@ export default function UserInfo({ }) {
 			<div className="flex relative p-1 rounded-lg items-center space-x-2 mb-1">
 				<div className="flex-shrink-0"> 
 					<img 
-						className="h-10 w-10 rounded-full"
-						src="https://upload.wikimedia.org/wikipedia/en/9/99/Dr_carter.jpg"/> 
+						className="h-10 w-10 rounded-full bg-red-100"
+						src="/images/default_user/default_user-05.svg"/> 
 				</div>
 				<div className="flex w-[18vw] items-center justify-between">
 					<span className="text-sm max-h-[8vh] max-w-[7vw]">

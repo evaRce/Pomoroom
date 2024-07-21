@@ -10,6 +10,7 @@ export default function ContactList({ }) {
 	const [filteredContacts, setFilteredContacts] = useState([]);
 	const [searchTerm, setSearchTerm] = useState("");
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, contact: null });
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, contact: null });
 
 	useEffect(() => {
     const nameContact = getEventData("add_contact_to_list");
@@ -38,7 +39,7 @@ export default function ContactList({ }) {
     const newContact = {
       name: nameContact,
       text: "hola",
-      image: "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
+      image: "/images/default_user/default_user-02.svg"
     };
     setContacts(prevContacts => [...prevContacts, newContact]);
   };

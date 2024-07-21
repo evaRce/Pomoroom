@@ -1,6 +1,16 @@
 import React from "react";
+import { Avatar } from "antd";
+import { useEventContext } from "../../EventContext";
 
-const Contact = ({ contact }) => {
+export default function Contact ({ contact }) {
+  const { addEvent } = useEventContext();
+
+  const handleChat = () => {
+    console.log("OPEN CHAT");
+    addEvent("selected_chat", { contact_name: contact.name });
+    addEvent("show_chat", contact.name);
+  };
+
   return (
     <div className="relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-200">
       <div className="flex-shrink-0"> 
@@ -9,7 +19,7 @@ const Contact = ({ contact }) => {
           src={contact.image}/> 
       </div>
       <div className="flex-1 min-w-20">
-        <a href="#" className="focus:outline-none">
+        <a className="focus:outline-none" onClick={handleChat}>
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-red-600 pb-0">
               {contact.name}
@@ -32,5 +42,3 @@ const Contact = ({ contact }) => {
     </div>
   )
 }
-
-export default Contact

@@ -1,7 +1,8 @@
-import React, { useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import ChatList from "./list/ChatList";
 import Chat from "./chat/Chat";
 import Detail from "./detail/Detail";
+import BackGround from "./chat/BackGround";
 import { useEventContext } from "./EventContext";
 
 export interface ChatRoomProps {
@@ -13,6 +14,7 @@ export interface ChatRoomProps {
 export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	const { eventName, eventData, pushEventToLiveView } = props;
 	const { addEvent, getEventData, removeEvent } = useEventContext();
+	const [selectedContact, setSelectedContact] = useState(false);
 
   useEffect(() => {
 		const contactInfo = getEventData("add_contact");
@@ -28,8 +30,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		}
   }, [addEvent]);
 
+
 	useEffect(() => {
     if (eventName === "show_user_info" && eventData.nickname) {
+			setSelectedContact(false);
       addEvent(eventName, eventData.nickname);
     }
   }, [eventData.nickname]);
@@ -52,10 +56,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
     }
   }, [eventData.contacts]);
 
+	useEffect(() => {
+		if (eventName === "open_chat" && eventData.users) {
+      addEvent(eventName, eventData.users);
+    }
+  }, [eventData.users]);
+
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">
 				<ChatList />
-				<Chat />
+				{selectedContact ? (<Chat />) : (<BackGround />)}
 				<Detail />
 		</div>
 	);

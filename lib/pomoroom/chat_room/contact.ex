@@ -1,6 +1,7 @@
 defmodule Pomoroom.ChatRoom.Contact do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Pomoroom.ChatRoom.Chat
 
   schema "contacts" do
     field :name, :string
@@ -31,8 +32,8 @@ defmodule Pomoroom.ChatRoom.Contact do
           {:ok, _result} ->
             {:ok, %{name: contact_name}}
 
-          {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => errmsg}]}} ->
-            {:error, %{error: "El contacto #{contact_name} ya esta añadido"}}
+          {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => _errmsg}]}} ->
+            {:error, %{error: "El contacto #{contact_name} ya está añadido"}}
         end
 
       false ->
@@ -47,6 +48,7 @@ defmodule Pomoroom.ChatRoom.Contact do
     }
 
     Mongo.delete_one(:mongo, "contacts", delete_query)
+    Chat.delete_chat(contact_name, belongs_to_user)
   end
 
   def contact_exists?(contact_name, belongs_to_user) do
@@ -63,6 +65,25 @@ defmodule Pomoroom.ChatRoom.Contact do
 
       _ ->
         true
+    end
+  end
+
+  def is_group?(contact_name, belongs_to_user) do
+    query = %{
+      name: contact_name,
+      belongs_to_user: belongs_to_user
+    }
+
+    case Mongo.find_one(:mongo, "contacts", query) do
+      nil ->
+        {:error, "Contacto no encontrado"}
+
+      contact ->
+        if Map.get(contact, "is_group") do
+          true
+        else
+          false
+        end
     end
   end
 end

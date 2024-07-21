@@ -2,7 +2,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   alias Expo.Message
 	use PomoroomWeb, :live_view
   alias Pomoroom.User
-  alias Pomoroom.ChatRoom.Contact
+  alias Pomoroom.ChatRoom.{Contact, Chat}
 
   def mount(_params, session, socket) do
     socket =
