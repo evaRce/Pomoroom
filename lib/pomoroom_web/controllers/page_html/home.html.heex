@@ -8,7 +8,7 @@
   <p class="mt-4 text-base leading-7 text-zinc-600" id="eslogan">
     Aula de estudio para organizarte solo o con tus panas
   </p>
-  <script> 
+  <script>
     const options_list = [ 
       'Aula de estudio para organizarte sola o con tus panas', 
       'Aula de estudio para organizarte sole o con tus panas',
@@ -20,23 +20,32 @@
       index = (index + 1) % options_list.length; 
     } 
     setInterval(changeText, 5000); 
-  </script> 
+  </script>
   <div class="flex ">
     <div class="w-full sm:w-auto">
       <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-        <p class="group relative rounded-2xl px-6 py-4 text-sm font-semibold leading-6 text-zinc-900 sm:py-6" style="max-width: 300px;">
+        <p
+          class="group relative rounded-2xl px-6 py-4 text-sm font-semibold leading-6 text-zinc-900 sm:py-6"
+          style="max-width: 300px;"
+        >
           <span class="absolute inset-0 rounded-2xl bg-zinc-50 transition group-hover:bg-zinc-100 sm:group-hover:scale-105">
           </span>
           <span class="relative flex items-center gap-4 sm:flex-col">
             Administra tu tiempo de forma más eficiente y ordenada
           </span>
         </p>
-        <p class="group relative rounded-2xl px-6 py-4 text-sm font-semibold leading-6 text-zinc-900 sm:py-6" style="max-width: 300px;">
+        <p
+          class="group relative rounded-2xl px-6 py-4 text-sm font-semibold leading-6 text-zinc-900 sm:py-6"
+          style="max-width: 300px;"
+        >
           <span class="absolute inset-0 rounded-2xl bg-zinc-50 transition group-hover:bg-zinc-100 sm:group-hover:scale-105">
           </span>
           <span class="relative flex items-center gap-4 sm:flex-col">
-            <img id='image' src="https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU">
-            <script> 
+            <img
+              id="image"
+              src="https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU"
+            />
+            <script>
               const options_list2 = [ 
                 'https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU', 
                 'https://fastly.picsum.photos/id/12/2500/1667.jpg?hmac=Pe3284luVre9ZqNzv1jMFpLihFI6lwq7TPgMSsNXw2w',
@@ -48,11 +57,10 @@
                 index2 = (index2 + 1) % options_list2.length; 
               } 
               setInterval(changeImage, 5000); 
-            </script> 
+            </script>
           </span>
         </p>
       </div>
-      
     </div>
   </div>
 </div>

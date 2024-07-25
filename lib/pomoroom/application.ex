@@ -8,14 +8,14 @@ defmodule Pomoroom.Application do
   @impl true
   def start(_type, _args) do
     db_config = Application.get_env(:pomoroom, :db)
+
     children = [
       PomoroomWeb.Telemetry,
       {Mongo,
-        database: db_config[:database] ,
-        name: :mongo,
-        username: db_config[:username],
-        password: db_config[:password]
-      },
+       database: db_config[:database],
+       name: :mongo,
+       username: db_config[:username],
+       password: db_config[:password]},
       {DNSCluster, query: Application.get_env(:pomoroom, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Pomoroom.PubSub},
       PomoroomWeb.Presence,

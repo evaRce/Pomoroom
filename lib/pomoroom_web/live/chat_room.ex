@@ -1,6 +1,6 @@
 defmodule PomoroomWeb.ChatLive.ChatRoom do
   alias Expo.Message
-	use PomoroomWeb, :live_view
+  use PomoroomWeb, :live_view
   alias Pomoroom.User
   alias Pomoroom.ChatRoom.{Contact, Chat}
 
@@ -36,7 +36,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     end
   end
 
-  def handle_event("action.add_contact", %{"is_group" => is_group, "name" => contact_name}, socket) do
+  def handle_event(
+        "action.add_contact",
+        %{"is_group" => is_group, "name" => contact_name},
+        socket
+      ) do
     user = socket.assigns.user_info.nickname
     add_contact = Contact.add_contact(contact_name, user, is_group)
 
@@ -68,7 +72,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
         case chat_users do
           {:ok, users} ->
-            payload = %{event_name: "open_chat", event_data: %{chat_users: users, contact_name: contact_name}}
+            payload = %{
+              event_name: "open_chat",
+              event_data: %{chat_users: users, contact_name: contact_name}
+            }
+
             {:noreply, push_event(socket, "react", payload)}
 
           {:error, reason} ->

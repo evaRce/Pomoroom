@@ -32,6 +32,7 @@ defmodule Pomoroom.ChatRoom.Chat do
     case chat_changst.valid? do
       true ->
         new_chat = Mongo.insert_one(:mongo, "chats", chat_changst.changes)
+
         case new_chat do
           {:ok, %{inserted_id: inserted_id}} ->
             case Mongo.find_one(:mongo, "chats", %{_id: inserted_id}) do
