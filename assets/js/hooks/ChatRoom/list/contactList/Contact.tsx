@@ -6,9 +6,7 @@ export default function Contact ({ contact }) {
   const { addEvent } = useEventContext();
 
   const handleChat = () => {
-    console.log("OPEN CHAT");
     addEvent("selected_chat", { contact_name: contact.name });
-    addEvent("show_chat", contact.name);
   };
 
   return (

@@ -39,7 +39,6 @@ defmodule Pomoroom.ChatRoom.Chat do
                 {:error, %{error: "Chat no encontrado después de la inserción"}}
 
               chat ->
-                IO.inspect( Map.get(chat, "public_id_chat"), label: "nuevo chat")
                 {:ok, Map.get(chat, "public_id_chat")}
             end
 
@@ -63,7 +62,6 @@ defmodule Pomoroom.ChatRoom.Chat do
         create_chat(%{users: [contact_name, belongs_to_user]})
 
       chat ->
-        IO.inspect(Map.get(chat, "public_id_chat"), label: "chat existente")
         {:ok, Map.get(chat, "public_id_chat")}
     end
   end

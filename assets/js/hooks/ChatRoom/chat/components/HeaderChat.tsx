@@ -12,10 +12,10 @@ export default function HeaderChat({ }) {
 	const [nickname, setNickname] = useState("");
 
 	useEffect(() => {
-		const show = getEventData("show_chat");
+		const show = getEventData("open_chat");
 		if (show) {
-			setNickname(show);
-			removeEvent("show_chat")
+			setNickname(show.contact_name);
+			removeEvent("open_chat");
 		}
 	}, [getEventData]);
 
