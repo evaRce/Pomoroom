@@ -24,7 +24,9 @@ defmodule Pomoroom.Application do
       # Start a worker by calling: Pomoroom.Worker.start_link(arg)
       # {Pomoroom.Worker, arg},
       # Start to serve requests, typically the last entry
-      PomoroomWeb.Endpoint
+      PomoroomWeb.Endpoint,
+      # {DynamicSupervisor, strategy: :one_for_one, name: Pomoroom.ChatRoom.ChatSupervisor},
+      {Registry, keys: :unique, name: Registry.Chat}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

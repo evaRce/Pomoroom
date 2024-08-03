@@ -1,8 +1,10 @@
 defmodule PomoroomWeb.ChatLive.ChatRoom do
-  alias Expo.Message
+  alias Pomoroom.ChatRoom.ChatServer
   use PomoroomWeb, :live_view
   alias Pomoroom.User
   alias Pomoroom.ChatRoom.{Contact, Chat}
+  alias Registry
+  alias Pomoroom.ChatRoom.ChatSupervisor
 
   def mount(_params, session, socket) do
     socket =
@@ -11,6 +13,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       |> put_session_assigns(session)
 
     # IO.inspect(socket, structs: false, limit: :infinity)
+    ChatSupervisor.start_link()
     send(self(), :init_info_user)
     send(self(), :init_list_contact)
     {:ok, socket, layout: false}
@@ -46,6 +49,9 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
     case add_contact do
       {:ok, result} ->
+        name = contact_name
+        add_child_process(name)
+        IO.inspect("PASO6: TERMINA start_chat_process/1")
         payload = %{event_name: "add_contact_to_list", event_data: result}
         {:noreply, push_event(socket, "react", payload)}
 
@@ -76,7 +82,6 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               event_name: "open_chat",
               event_data: %{chat_users: users, contact_name: contact_name}
             }
-
             {:noreply, push_event(socket, "react", payload)}
 
           {:error, reason} ->
@@ -91,5 +96,35 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   def put_session_assigns(socket, session) do
     socket
     |> assign(:user_info, Map.get(session, "user_info", %{}))
+  end
+
+  # def handle_event("action.send_message", %{"message" => message}, socket) do
+  #   user = socket.assigns.user_info.nickname
+  #   chat_id = socket.assigns.chat_id
+  #   ChatServer.send_message(via_tuple(chat_id), user, message)
+  #   {:noreply, socket}
+  # end
+
+  # def handle_info({:new_message, message}, socket) do
+  #   payload = %{event_name: "new_message", event_data: message}
+  #   {:noreply, push_event(socket, "react", payload)}
+  # end
+
+  # Funciones para manejar Registry, ...
+
+  defp add_child_process(name) do
+    IO.inspect("start_chat_process/1 ChatLive.chatRoom")
+    case Registry.lookup(Registry.Chat, name) do
+      [] ->
+        process = ChatSupervisor.add_child(name)
+        {:ok, process}
+      _ ->
+        IO.inspect("ENTRO en error")
+        :ok
+    end
+  end
+
+  def via_tuple(name) do
+    {:via, Registry, {Registry.Chat, name}}
   end
 end
