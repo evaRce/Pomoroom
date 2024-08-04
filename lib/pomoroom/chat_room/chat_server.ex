@@ -30,8 +30,8 @@ defmodule Pomoroom.ChatRoom.ChatServer do
     {:reply, state, state}
   end
 
-  def handle_call(:created_chat_process, _from, state) do
-    {:reply, state, state}
+  def handle_call(:created_chat_process, _from, [head|tail]) do
+    {:reply, head, tail}
   end
 
   def via_tuple(name) do

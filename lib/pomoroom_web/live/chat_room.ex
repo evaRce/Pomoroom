@@ -2,9 +2,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   alias Pomoroom.ChatRoom.ChatServer
   use PomoroomWeb, :live_view
   alias Pomoroom.User
-  alias Pomoroom.ChatRoom.{Contact, Chat}
-  alias Registry
-  alias Pomoroom.ChatRoom.ChatSupervisor
+  alias Pomoroom.ChatRoom.{Contact, Chat, ChatServer}
 
   def mount(_params, session, socket) do
     socket =
@@ -13,7 +11,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       |> put_session_assigns(session)
 
     # IO.inspect(socket, structs: false, limit: :infinity)
-    ChatSupervisor.start_link()
+
     send(self(), :init_info_user)
     send(self(), :init_list_contact)
     {:ok, socket, layout: false}
@@ -49,9 +47,6 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
     case add_contact do
       {:ok, result} ->
-        name = contact_name
-        add_child_process(name)
-        IO.inspect("PASO6: TERMINA start_chat_process/1")
         payload = %{event_name: "add_contact_to_list", event_data: result}
         {:noreply, push_event(socket, "react", payload)}
 
@@ -82,6 +77,8 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               event_name: "open_chat",
               event_data: %{chat_users: users, contact_name: contact_name}
             }
+
+            ensure_chat_server_exists(contact_name)
             {:noreply, push_event(socket, "react", payload)}
 
           {:error, reason} ->
@@ -112,14 +109,12 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
   # Funciones para manejar Registry, ...
 
-  defp add_child_process(name) do
-    IO.inspect("start_chat_process/1 ChatLive.chatRoom")
+  def ensure_chat_server_exists(name) do
     case Registry.lookup(Registry.Chat, name) do
       [] ->
-        process = ChatSupervisor.add_child(name)
-        {:ok, process}
-      _ ->
-        IO.inspect("ENTRO en error")
+        DynamicSupervisor.start_child(Pomoroom.ChatRoom.ChatSupervisor, {ChatServer, name})
+        :ok
+      [_process] ->
         :ok
     end
   end
