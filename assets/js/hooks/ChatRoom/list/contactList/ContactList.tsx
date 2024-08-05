@@ -10,6 +10,7 @@ export default function ContactList({ }) {
 	const [filteredContacts, setFilteredContacts] = useState([]);
 	const [searchTerm, setSearchTerm] = useState("");
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, contact: null });
+  const [selectedContact, setSelectedContact] = useState(null);
 
 	useEffect(() => {
     const nameContact = getEventData("add_contact_to_list");
@@ -91,7 +92,11 @@ export default function ContactList({ }) {
         {filteredContacts.map(contact => (
           <Fragment key={contact.name}>
             <div onContextMenu={(event) => handleContextMenu(event, contact)}>
-              <Contact contact={contact} />
+              <Contact 
+                contact={contact} 
+                isSelected={selectedContact === contact.name} 
+                onSelect={() => setSelectedContact(contact.name)} 
+              />
             </div>
             <div className='border-t-2 mb-1'></div>
           </Fragment>

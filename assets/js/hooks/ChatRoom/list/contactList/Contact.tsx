@@ -2,15 +2,21 @@ import React from "react";
 import { Avatar } from "antd";
 import { useEventContext } from "../../EventContext";
 
-export default function Contact ({ contact }) {
+export default function Contact ({ contact, isSelected, onSelect }) {
   const { addEvent } = useEventContext();
 
   const handleChat = () => {
-    addEvent("selected_chat", { contact_name: contact.name });
+    if (!isSelected) {
+      addEvent("selected_chat", { contact_name: contact.name });
+      onSelect();
+    }
   };
 
   return (
-    <div className="relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-200">
+    <div 
+      className={`relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-200 ${isSelected ? 'bg-gray-300' : ''}`} 
+      onClick={handleChat}
+    >
       <div className="flex-shrink-0"> 
         <img 
           className="h-10 w-10 rounded-full"
