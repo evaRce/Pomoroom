@@ -20,6 +20,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const contactInfo = getEventData("add_contact");
 		const contactToDelete = getEventData("delete_contact");
 		const selectedChat = getEventData("selected_chat");
+		const sendMessage = getEventData("send_message");
 	
 		if (contactInfo) {
 			pushEventToLiveView("action.add_contact", contactInfo);
@@ -33,6 +34,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			setSelectedContact(true);
 			pushEventToLiveView("action.selected_chat", selectedChat);
 			removeEvent("selected_chat");
+		}
+		if (sendMessage) {
+			pushEventToLiveView("action.send_message", sendMessage);
+			removeEvent("send_message");
 		}
   }, [addEvent]);
 
@@ -67,6 +72,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
       addEvent(eventName, eventData);
     }
   }, [eventData.chat_users]);
+
+	useEffect(() => {
+		if (eventName === "show_message_to_send" && eventData.public_id_msg) {
+			addEvent(eventName, eventData);
+		}
+	}, [eventData.public_id_msg])
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">

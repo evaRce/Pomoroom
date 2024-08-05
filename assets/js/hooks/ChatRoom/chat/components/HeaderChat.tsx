@@ -1,30 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Button, Avatar, Flex } from "antd";
-import {
-	PhoneFilled,
-	InfoOutlined
-} from '@ant-design/icons';
+import { PhoneFilled, InfoOutlined } from '@ant-design/icons';
 import { useEventContext } from "../../EventContext";
 
 export default function HeaderChat({ }) {
 	const imSender = "/images/default_user/default_user-02.svg";
-	const { getEventData, removeEvent } = useEventContext();
-	const [nickname, setNickname] = useState("");
+	const { getEventData } = useEventContext();
+	const [contactName, setContactName] = useState("");
 
 	useEffect(() => {
 		const show = getEventData("open_chat");
 		if (show) {
-			setNickname(show.contact_name);
-			removeEvent("open_chat");
+			setContactName(show.contact_name);
 		}
 	}, [getEventData]);
 
 	return (
 		<header className="flex h-[10vh] justify-between sm:items-center py-3 p-3">
 			<div className="flex items-center space-x-3">
-        <Avatar src={imSender} size={"large"} />
-        <span className="text-grey-darkest ml-3">
-					{nickname}
+				<Avatar src={imSender} size={"large"} />
+				<span className="text-grey-darkest ml-3">
+					{contactName}
 				</span>
 			</div>
 			<Flex gap={"small"} >

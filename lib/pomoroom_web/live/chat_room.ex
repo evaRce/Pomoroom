@@ -95,31 +95,32 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     |> assign(:user_info, Map.get(session, "user_info", %{}))
   end
 
-  # def handle_event("action.send_message", %{"message" => message}, socket) do
-  #   user = socket.assigns.user_info.nickname
-  #   chat_id = socket.assigns.chat_id
-  #   ChatServer.send_message(via_tuple(chat_id), user, message)
-  #   {:noreply, socket}
-  # end
+  def handle_event(
+        "action.send_message",
+        %{"message" => message, "contact_name" => contact_name},
+        socket
+      ) do
+    user = socket.assigns.user_info.nickname
 
-  # def handle_info({:new_message, message}, socket) do
-  #   payload = %{event_name: "new_message", event_data: message}
-  #   {:noreply, push_event(socket, "react", payload)}
-  # end
+    case ChatServer.send_message(contact_name, user, message) do
+      {:ok, msg} ->
+        payload = %{event_name: "show_message_to_send", event_data: msg}
+        {:noreply, push_event(socket, "react", payload)}
 
-  # Funciones para manejar Registry, ...
+      {:error, reason} ->
+        payload = %{event_name: "error_sending_message", event_data: reason}
+        {:noreply, push_event(socket, "react", payload)}
+    end
+  end
 
   def ensure_chat_server_exists(name) do
     case Registry.lookup(Registry.Chat, name) do
       [] ->
         DynamicSupervisor.start_child(Pomoroom.ChatRoom.ChatSupervisor, {ChatServer, name})
         :ok
+
       [_process] ->
         :ok
     end
-  end
-
-  def via_tuple(name) do
-    {:via, Registry, {Registry.Chat, name}}
   end
 end

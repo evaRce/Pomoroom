@@ -1,7 +1,7 @@
 defmodule Pomoroom.ChatRoom.Chat do
   use Ecto.Schema
   import Ecto.Changeset
-  @max_num 1000
+  # @max_num 1000
 
   schema "chats" do
     field :public_id_chat, :string
@@ -14,20 +14,20 @@ defmodule Pomoroom.ChatRoom.Chat do
     |> validate_required([:users])
   end
 
-  def set_public_id_chat(changeset) do
-    random_public_id =
-      :rand.uniform(@max_num)
-      |> Integer.to_string()
+  # def set_public_id_chat(changeset) do
+  #   random_public_id =
+  #     :rand.uniform(@max_num)
+  #     |> Integer.to_string()
 
-    changeset
-    |> change(%{public_id_chat: random_public_id})
-  end
+  #   changeset
+  #   |> change(%{public_id_chat: random_public_id})
+  # end
 
-  def create_chat(args) do
+  def create_chat(args, public_id_chat) do
     chat_changst =
       args
       |> chat_changeset()
-      |> set_public_id_chat()
+      |> change(%{public_id_chat: public_id_chat})
 
     case chat_changst.valid? do
       true ->
@@ -60,7 +60,7 @@ defmodule Pomoroom.ChatRoom.Chat do
 
     case Mongo.find_one(:mongo, "chats", query) do
       nil ->
-        create_chat(%{users: [contact_name, belongs_to_user]})
+        create_chat(%{users: [contact_name, belongs_to_user]}, contact_name)
 
       chat ->
         {:ok, Map.get(chat, "public_id_chat")}

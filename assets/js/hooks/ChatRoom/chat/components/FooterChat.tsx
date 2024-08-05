@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Button, Flex } from "antd";
+import React, { useState, useEffect } from "react";
+import { Button, Modal } from "antd";
 import EmojiPicker from 'emoji-picker-react';
 import {
   PictureOutlined, 
@@ -7,20 +7,36 @@ import {
   AudioMutedOutlined, 
   SendOutlined,
   SmileOutlined } from '@ant-design/icons';
+import { useEventContext } from "../../EventContext";
 
 export default function FooterChat({addMessage})  {
   const [addMode, setAddMode] = useState(true);
   const [inputStr, setInputStr] = useState("");
   const [showPicker, setShowPicker] = useState(false);
+  const { addEvent, getEventData, removeEvent } = useEventContext();
+  const [contactName, setContactName] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
 
   const onEmojiClick = (emojiObject, event) => {
     setInputStr(prevInput => prevInput + emojiObject.emoji);
     setShowPicker(false);
   };
 
+	useEffect(() => {
+    const contact = getEventData("open_chat");
+    if (contact) {
+      setContactName(contact.contact_name);
+			// removeEvent("open_chat");
+    }
+  }, [getEventData]);
+
   const handleSendMessage = (e) => {
     e.preventDefault();
+    if (inputStr.trim() === "") {
+      return;
+    }
     console.log(inputStr);
+    addEvent("send_message", { message: inputStr, contact_name: contactName })
     addMessage(inputStr);
     setInputStr("");
   };
@@ -41,8 +57,15 @@ export default function FooterChat({addMessage})  {
             className="input bg-gray-100 h-8 w-full focus:outline-none rounded-r-none"
             type="text"
             value={inputStr}
-            onChange={e => setInputStr(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value.length <= 5000) {
+                setInputStr(e.target.value);
+              } else {
+                setModalVisible(true);
+              }
+            }}
             placeholder="Type a message..."
+            maxLength={5001}
           />
           <div className="flex">
             <Button 
@@ -53,12 +76,18 @@ export default function FooterChat({addMessage})  {
               className="bg-blue-300 rounded-l-none rounded-r-lg" 
               icon={<SendOutlined />} 
               onClick={(e) => handleSendMessage(e)}/>
-            {showPicker && (
-                <EmojiPicker  onEmojiClick={onEmojiClick} />
-            )}
+            {showPicker && (<EmojiPicker  onEmojiClick={onEmojiClick} />)}
           </div>
         </div>
       </form>
+      <Modal
+        title="Límite de caracteres excedido"
+        open={modalVisible}
+        onOk={() => setModalVisible(false)}
+        onCancel={() => setModalVisible(false)}
+      >
+        <p>Se ha excedido el límite de 5000 caracteres.</p>
+      </Modal>
 		</footer>	
 	);
 }
