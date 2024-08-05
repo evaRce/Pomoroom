@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { Button } from "antd";
-import { SearchOutlined, DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
 import Contact from "./Contact";
 import { useEventContext } from "../../EventContext";
 

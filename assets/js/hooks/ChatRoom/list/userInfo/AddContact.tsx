@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Form, Input, Radio } from "antd";
+import { Modal, Button, Form, Input, Radio, message, Spin } from "antd";
 import { useEventContext } from "../../EventContext";
 
 export default function AddContact({ sendDataToParent, receiveDataFromParent }) {
@@ -7,11 +7,13 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
   const [inputStr, setInputStr] = useState("");
   const [entryType, setEntryType] = useState("contact");
   const { addEvent, getEventData, removeEvent } = useEventContext();
+  const [loading, setLoading] = useState(false);
 
   const sendNewEntry = () => {
     if (!inputStr) {
       return;
     }
+    setLoading(true);
     if (entryType === "contact") {
       addEvent("add_contact", { name: inputStr, is_group: false});
     } else if (entryType === "group") {
@@ -29,6 +31,7 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
     sendDataToParent(false);
     form.resetFields();
     setEntryType("contact");
+    setInputStr("");
   };
 
   const handleChangeEntryType = (e) => {
@@ -42,6 +45,15 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
         {name: 'newContactName', errors: [errorContact]}
       ]);
       removeEvent("error_adding_contact");
+      setLoading(false);
+    }
+
+    const successContact = getEventData("add_contact_to_list");
+    if (successContact) {
+      const successMessage = entryType === "contact" ? 'Contacto añadido exitosamente!' : 'Grupo creado exitosamente!';
+      message.success(successMessage, 2);;
+      removeEvent("add_contact_to_list");
+      setLoading(false);
     }
   }, [getEventData]);
 
@@ -54,9 +66,9 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
         <Button key="cancel" onClick={handleCancel}>
           Cancelar
         </Button>,
-        <Button key="add" onClick={handleAddEntry}>
-          {entryType === "contact" ? "Añadir" : "Crear"}
-        </Button>
+        <Button key="add" onClick={handleAddEntry} disabled={loading}>
+        {loading ? <Spin /> : (entryType === "contact" ? "Añadir" : "Crear")}
+      </Button>
       ]}
     >
       <Form form={form} onFinish={sendNewEntry}>

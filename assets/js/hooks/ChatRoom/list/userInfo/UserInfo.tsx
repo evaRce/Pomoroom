@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "antd";
-import { UserOutlined, MoreOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import { MoreOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import AddContact from "./AddContact";
 import { useEventContext } from "../../EventContext";
 
