@@ -13,16 +13,16 @@ export default function ContactList({ }) {
   const [selectedContact, setSelectedContact] = useState(null);
 
 	useEffect(() => {
-    const nameContact = getEventData("add_contact_to_list");
-		if (nameContact) {
-			addContact(nameContact);
-			removeEvent("add_contact_to_list");
+    const contact = getEventData("add_contact_to_list");
+		if (contact) {
+			addContact(contact.name, contact.status_request);
+			// removeEvent("add_contact_to_list");
 		}
 
 		const contactList = getEventData("show_list_contact");
     if (contactList) {
-      contactList.map(name => 
-        addContact(name)
+      contactList.map(contact => 
+        addContact(contact.name, contact.status_request)
       );
       removeEvent("show_list_contact");
     }
@@ -35,11 +35,12 @@ export default function ContactList({ }) {
 		setFilteredContacts(results);
 	}, [searchTerm, contacts]);
 
-	const addContact = (nameContact) => {
+	const addContact = (nameContact, status_request = "null") => {
     const newContact = {
       name: nameContact,
       text: "hola",
-      image: "/images/default_user/default_user-02.svg"
+      image: "/images/default_user/default_user-02.svg",
+      status_request: status_request
     };
     setContacts(prevContacts => [...prevContacts, newContact]);
   };

@@ -21,7 +21,6 @@ export default function Chat({}) {
       return; // No añadir mensajes vacíos
     }
     setMessages(prevMessages => [...prevMessages, message]);
-    console.log("mensajes: ", messages)
   };
 
   return(

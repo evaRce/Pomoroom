@@ -57,10 +57,13 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
 
     case Mongo.insert_one(:mongo, "friend_requests", friend_request_changst.changes) do
       {:ok, _result} ->
-        # Lo añado como mi amigo
+        contact_exists = Contact.contact_exists?(send_to_contact)
+        {:ok, contact} = if contact_exists do
+                          Contact.add_contact(belongs_to_user, send_to_contact)
+                        else
+                          {:ok, "No existe el contacto"}
+                        end
         {:ok, user} = Contact.add_contact(send_to_contact, belongs_to_user)
-        # Te añades como su amigo
-        {:ok, contact} = Contact.add_contact(belongs_to_user, send_to_contact)
         {:ok, %{user: user, contact: contact}}
 
       {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => errmsg}]}} ->
@@ -139,7 +142,7 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
         else
           false
         end
-        
+
       _ -> false
     end
   end

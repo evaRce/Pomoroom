@@ -23,10 +23,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const sendMessage = getEventData("send_message");
 		const sendFriendRequest = getEventData("send_friend_request");
 	
-		if (contactInfo) {
-			pushEventToLiveView("action.add_contact", contactInfo);
-			removeEvent("add_contact");
-		}
+		// if (contactInfo) {
+		// 	pushEventToLiveView("action.add_contact", contactInfo);
+		// 	removeEvent("add_contact");
+		// }
 		if (contactToDelete) {
 			pushEventToLiveView("action.delete_contact", contactToDelete);
 			removeEvent("delete_contact");
@@ -56,9 +56,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "add_contact_to_list" && eventData.name) {
-      addEvent(eventName, eventData.name);
+      addEvent(eventName, eventData);
     }
-	}, [eventData.name])
+	}, [eventData.name, eventData.status_request])
 
 	useEffect(() => {
 		if (eventName === "error_adding_contact" && eventData.error) {
@@ -67,10 +67,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
   }, [eventData.error]);
 
 	useEffect(() => {
-		if (eventName === "show_list_contact" && eventData.contacts) {
-      addEvent(eventName, eventData.contacts);
+		if (eventName === "show_list_contact" && eventData.contact_list) {
+      addEvent(eventName, eventData.contact_list);
     }
-  }, [eventData.contacts]);
+  }, [eventData.contact_list]);
 
 	useEffect(() => {
 		if (eventName === "open_chat" && eventData.chat_users) {

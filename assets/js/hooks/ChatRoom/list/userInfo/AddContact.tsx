@@ -31,6 +31,7 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
     sendDataToParent(false);
     form.resetFields();
     setEntryType("contact");
+    setLoading(false);
     setInputStr("");
   };
 
@@ -52,7 +53,7 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
     if (successContact) {
       const successMessage = entryType === "contact" ? 'Invitación enviada!' : 'Grupo creado exitosamente!';
       message.success(successMessage, 2);;
-      removeEvent("add_contact_to_list");
+      // removeEvent("add_contact_to_list");
       setLoading(false);
     }
   }, [getEventData]);

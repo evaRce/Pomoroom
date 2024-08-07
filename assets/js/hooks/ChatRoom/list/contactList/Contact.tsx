@@ -12,9 +12,23 @@ export default function Contact ({ contact, isSelected, onSelect }) {
     }
   };
 
+  const getBackgroundContact = () => {
+    if (!isSelected) {
+      if (contact.status_request === "pending") {
+        return 'bg-pink-100';
+      } else {
+        console.log("no pinta nada de fondo del contacto");
+        return '';
+      }
+    } else {
+      console.log("CONTACT_LIST: ", contact.status_request);
+      return 'bg-gray-300';
+    }
+  };
+
   return (
     <div 
-      className={`relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-200 ${isSelected ? 'bg-gray-300' : ''}`} 
+      className={`relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-200 ${getBackgroundContact()}`} 
       onClick={handleChat}
     >
       <div className="flex-shrink-0"> 

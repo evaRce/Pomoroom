@@ -47,7 +47,7 @@ defmodule Pomoroom.ChatRoom.Contact do
 
         case insert_contact do
           {:ok, _result} ->
-            {:ok, %{name: contact_name}}
+            {:ok, contact_changst.changes}
 
           {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => _errmsg}]}} ->
             {:error, %{error: "El contacto #{contact_name} ya está añadido"}}
@@ -77,10 +77,9 @@ defmodule Pomoroom.ChatRoom.Contact do
     Chat.delete_chat(contact_name, belongs_to_user)
   end
 
-  def contact_exists?(contact_name, belongs_to_user) do
+  def contact_exists?(contact_name) do
     contact_query = %{
-      "name" => contact_name,
-      "belongs_to_user" => belongs_to_user
+      "name" => contact_name
     }
 
     find_contact = Mongo.find_one(:mongo, "contacts", contact_query)
