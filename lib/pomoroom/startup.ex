@@ -19,9 +19,15 @@ defmodule Pomoroom.Startup do
       %{key: %{public_id_chat: 1}, name: "chat_index", unique: true}
     ]
 
+    friend_requests_indexes = [
+      %{key: %{from_user: 1}, name: "from_user_index", unique: true},
+      %{key: %{send_to_contact: 1}, name: "send_to_contact_index", unique: true}
+    ]
+
     Mongo.create_indexes(:mongo, "users", user_indexes)
     Mongo.create_indexes(:mongo, "messages", message_indexes)
     Mongo.create_indexes(:mongo, "contacts", contacts_indexes)
     Mongo.create_indexes(:mongo, "chats", chats_indexes)
+    Mongo.create_indexes(:mongo, "friend_requests", friend_requests_indexes)
   end
 end

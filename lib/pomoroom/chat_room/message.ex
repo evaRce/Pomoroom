@@ -12,7 +12,7 @@ defmodule Pomoroom.ChatRoom.Message do
     field :updated_at, :utc_datetime
   end
 
-  def message_changeset(args) do
+  def changeset(args) do
     %Pomoroom.ChatRoom.Message{}
     |> cast(args, [
       :public_id_msg,
@@ -22,17 +22,25 @@ defmodule Pomoroom.ChatRoom.Message do
       :inserted_at,
       :updated_at
     ])
-    |> validate_required([:text, :belongs_to_user, :belongs_to_chat])
-    |> validate_length(:text, min: 1)
   end
 
-  def message_changeset(message, belongs_to_user) do
-    message = %{text: message, belongs_to_user: belongs_to_user}
+  def message_changeset(args) do
+    changeset(args)
+    |> validate_required([
+      :public_id_msg,
+      :text,
+      :belongs_to_user,
+      :belongs_to_chat,
+      :inserted_at,
+      :updated_at
+    ])
+  end
 
-    %Pomoroom.ChatRoom.Message{}
-    |> cast(message, [:public_id_msg, :text, :belongs_to_user, :inserted_at, :updated_at])
+  def message_changeset(message, belongs_to_user, belongs_to_chat) do
+    message = %{text: message, belongs_to_user: belongs_to_user, belongs_to_chat: belongs_to_chat}
+
+    changeset(message)
     |> validate_required([:text, :belongs_to_user])
-    |> validate_length(:text, min: 1)
   end
 
   def set_public_id_msg(changeset) do
@@ -47,9 +55,8 @@ defmodule Pomoroom.ChatRoom.Message do
   def new_message(message, belongs_to_user, belongs_to_chat) do
     msg_changeset =
       message
-      |> message_changeset(belongs_to_user)
+      |> message_changeset(belongs_to_user, belongs_to_chat)
       |> set_public_id_msg()
-      |> change(%{belongs_to_chat: belongs_to_chat})
       |> timestamps()
 
     if msg_changeset.valid? do
@@ -62,7 +69,6 @@ defmodule Pomoroom.ChatRoom.Message do
         {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => errmsg}]}} ->
           {:error, parse_duplicate_key_error(errmsg)}
       end
-
     else
       {:error, msg_changeset.errors}
     end

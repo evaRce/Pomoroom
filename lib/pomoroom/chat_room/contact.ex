@@ -7,22 +7,39 @@ defmodule Pomoroom.ChatRoom.Contact do
     field :name, :string
     field :belongs_to_user, :string
     field :is_group, :boolean
-    timestamps(type: :utc_datetime)
+    field :status_request, :string, default: "por_defecto"
+    field :inserted_at, :utc_datetime
+    field :updated_at, :utc_datetime
+  end
+
+  def changeset(args) do
+    %Pomoroom.ChatRoom.Contact{}
+    |> cast(args, [
+      :name,
+      :belongs_to_user,
+      :is_group,
+      :status_request,
+      :inserted_at,
+      :updated_at
+    ])
   end
 
   def contact_changeset(contact_name, belongs_to_user, is_group) do
-    contact = %{name: contact_name, belongs_to_user: belongs_to_user, is_group: is_group}
+    contact = %{name: contact_name, belongs_to_user: belongs_to_user, is_group: is_group, status_request: "pending"}
 
-    %Pomoroom.ChatRoom.Contact{}
-    |> cast(contact, [:name, :belongs_to_user, :is_group])
+    changeset(contact)
     |> validate_required([:name, :belongs_to_user, :is_group])
   end
 
-  def add_contact(contact_name, belongs_to_user, _is_group) when contact_name == belongs_to_user,
-    do: {:error, %{error: "No puedes añadirte a ti mismo"}}
+  # Barajar la posibilidad de quitarlo
+  # def add_contact(contact_name, belongs_to_user) when contact_name == belongs_to_user,
+  #   do: {:error, %{error: "No puedes añadirte a ti mismo"}}
 
-  def add_contact(contact_name, belongs_to_user, is_group) do
-    contact_changst = contact_changeset(contact_name, belongs_to_user, is_group)
+  def add_contact(contact_name, belongs_to_user, is_group \\ false) do
+    contact_changst =
+      contact_name
+      |> contact_changeset(belongs_to_user, is_group)
+      |> timestamps()
 
     case contact_changst.valid? do
       true ->
@@ -39,6 +56,15 @@ defmodule Pomoroom.ChatRoom.Contact do
       false ->
         {:error, %{error: "Falta un campo"}}
     end
+  end
+
+  def update_status(contact_name, belongs_to_user, status) do
+    Mongo.update_one(
+      :mongo,
+      "contacts",
+      %{contact_name: contact_name, belongs_to_user: belongs_to_user, status: "pending"},
+      %{"$set": %{status: status, updated_at: NaiveDateTime.utc_now()}}
+    )
   end
 
   def delete_contact(contact_name, belongs_to_user) do
@@ -85,5 +111,9 @@ defmodule Pomoroom.ChatRoom.Contact do
           false
         end
     end
+  end
+
+  defp timestamps(changeset) do
+    change(changeset, %{inserted_at: NaiveDateTime.utc_now(), updated_at: NaiveDateTime.utc_now()})
   end
 end
