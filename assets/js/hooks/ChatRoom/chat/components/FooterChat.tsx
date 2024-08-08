@@ -23,9 +23,9 @@ export default function FooterChat({addMessage})  {
   };
 
 	useEffect(() => {
-    const contact = getEventData("open_chat");
-    if (contact) {
-      setContactName(contact.contact_name);
+    const contactData = getEventData("open_chat");
+    if (contactData) {
+      setContactName(contactData);
 			// removeEvent("open_chat");
     }
   }, [getEventData]);

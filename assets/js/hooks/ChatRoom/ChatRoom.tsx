@@ -4,6 +4,8 @@ import Chat from "./chat/Chat";
 import Detail from "./detail/Detail";
 import BackGround from "./chat/BackGround";
 import { useEventContext } from "./EventContext";
+import RequestReceived from "./friend_request/RequestReceived";
+import RequestSend from "./friend_request/RequestSend";
 
 export interface ChatRoomProps {
 	eventName: string;
@@ -15,6 +17,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	const { eventName, eventData, pushEventToLiveView } = props;
 	const { addEvent, getEventData, removeEvent } = useEventContext();
 	const [selectedContact, setSelectedContact] = useState(false);
+	const [selectedComponent, setSelectedComponent] = useState("");
 
   useEffect(() => {
 		const contactInfo = getEventData("add_contact");
@@ -68,15 +71,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "show_list_contact" && eventData.contact_list) {
-      addEvent(eventName, eventData.contact_list);
-    }
-  }, [eventData.contact_list]);
+			addEvent(eventName, eventData.contact_list);
+		}
+	}, [eventData.contact_list]);
 
 	useEffect(() => {
-		if (eventName === "open_chat" && eventData.chat_users) {
-      addEvent(eventName, eventData);
-    }
-  }, [eventData.chat_users]);
+		if (eventName === "open_chat" && eventData.contact_name) {
+			addEvent(eventName, eventData.contact_name);
+			addEvent("show_list_messages", eventData.messages);
+			setSelectedContact(true);
+			setSelectedComponent("Chat");
+		}
+	}, [eventData.contact_name]);
 
 	useEffect(() => {
 		if (eventName === "show_message_to_send" && eventData.public_id_msg) {
@@ -84,11 +90,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		}
 	}, [eventData.public_id_msg]);
 
+	useEffect(() => {
+		if (eventName === "open_chat_request_send" && eventData.contact_name) {
+			addEvent(eventName, eventData);
+			setSelectedContact(true);
+			setSelectedComponent("RequestSend");
+		}
+	}, [eventData.contact_name]);
+
+	useEffect(() => {
+		if (eventName === "open_chat_request_received" && eventData.user_name) {
+			addEvent(eventName, eventData);
+			setSelectedContact(true);
+			setSelectedComponent("RequestReceived");
+		}
+	}, [eventData.user_name]);
+
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">
-				<ChatList />
-				{selectedContact ? (<Chat />) : (<BackGround />)}
-				<Detail />
+			<ChatList />
+			{selectedComponent === "Chat" && <Chat />}
+			{selectedComponent === "RequestSend" && <RequestSend />}
+			{selectedComponent === "RequestReceived" && <RequestReceived />}
+			{!selectedContact && <BackGround />}
+			<Detail />
 		</div>
 	);
 }

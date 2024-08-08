@@ -16,7 +16,7 @@ export default function ContactList({ }) {
     const contact = getEventData("add_contact_to_list");
 		if (contact) {
 			addContact(contact.name, contact.status_request);
-			// removeEvent("add_contact_to_list");
+			removeEvent("add_contact_to_list");
 		}
 
 		const contactList = getEventData("show_list_contact");

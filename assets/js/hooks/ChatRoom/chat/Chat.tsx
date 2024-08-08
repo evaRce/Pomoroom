@@ -8,6 +8,11 @@ export default function Chat({}) {
   const [messages, setMessages] = useState([]);
   const { getEventData, removeEvent } = useEventContext();
 
+  useEffect(() => {
+    const msgs = getEventData("show_list_messages");
+    setMessages(msgs);
+  });
+
 	useEffect(() => {
 		const msg = getEventData("show_message_to_send");
 		if (msg) {

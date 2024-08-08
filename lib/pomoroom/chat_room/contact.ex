@@ -7,7 +7,7 @@ defmodule Pomoroom.ChatRoom.Contact do
     field :name, :string
     field :belongs_to_user, :string
     field :is_group, :boolean
-    field :status_request, :string, default: "por_defecto"
+    field :status_request, :string
     field :inserted_at, :utc_datetime
     field :updated_at, :utc_datetime
   end
@@ -75,22 +75,6 @@ defmodule Pomoroom.ChatRoom.Contact do
 
     Mongo.delete_one(:mongo, "contacts", delete_query)
     Chat.delete_chat(contact_name, belongs_to_user)
-  end
-
-  def contact_exists?(contact_name) do
-    contact_query = %{
-      "name" => contact_name
-    }
-
-    find_contact = Mongo.find_one(:mongo, "contacts", contact_query)
-
-    case find_contact do
-      nil ->
-        false
-
-      _ ->
-        true
-    end
   end
 
   def is_group?(contact_name, belongs_to_user) do

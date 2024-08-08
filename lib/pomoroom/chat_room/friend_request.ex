@@ -2,9 +2,10 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
   use Ecto.Schema
   import Ecto.Changeset
   alias Pomoroom.ChatRoom.Contact
+  alias Pomoroom.User
 
   schema "friend_requests" do
-    field :status, :string, default: "por_defecto"
+    field :status, :string
     field :chat_name, :string
     field :belongs_to_user, :string
     field :send_to_contact, :string
@@ -57,14 +58,12 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
 
     case Mongo.insert_one(:mongo, "friend_requests", friend_request_changst.changes) do
       {:ok, _result} ->
-        contact_exists = Contact.contact_exists?(send_to_contact)
-        {:ok, contact} = if contact_exists do
-                          Contact.add_contact(belongs_to_user, send_to_contact)
-                        else
-                          {:ok, "No existe el contacto"}
-                        end
-        {:ok, user} = Contact.add_contact(send_to_contact, belongs_to_user)
-        {:ok, %{user: user, contact: contact}}
+        if User.exists?(send_to_contact) do
+          Contact.add_contact(belongs_to_user, send_to_contact)    # me añado como su amigo
+          Contact.add_contact(send_to_contact, belongs_to_user)    # le añado como mi amigo -> return {:ok, contact}
+        else
+          Contact.add_contact(send_to_contact, belongs_to_user)    # le añado como mi amigo -> return {:ok, contact}
+        end
 
       {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => errmsg}]}} ->
         {:error, errmsg}
@@ -108,6 +107,20 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
     end
   end
 
+  def is_owner_request?(send_to_contact, belongs_to_user) do
+    case get_request(send_to_contact, belongs_to_user) do
+      {:ok, request} ->
+        if request.belongs_to_user == belongs_to_user do
+          true
+        else
+          false
+        end
+
+      {:error, _reason} ->
+        false
+    end
+  end
+
   def reject_friend_request(send_to_contact, belongs_to_user) do
     case get_request(send_to_contact, belongs_to_user) do
       {:ok, request} ->
@@ -143,7 +156,8 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
           false
         end
 
-      _ -> false
+      _ ->
+        false
     end
   end
 

@@ -9,9 +9,9 @@ export default function HeaderChat({ }) {
 	const [contactName, setContactName] = useState("");
 
 	useEffect(() => {
-		const show = getEventData("open_chat");
-		if (show) {
-			setContactName(show.contact_name);
+		const contactData = getEventData("open_chat");
+		if (contactData) {
+			setContactName(contactData);
 		}
 	}, [getEventData]);
 

@@ -85,10 +85,7 @@ defmodule Pomoroom.User do
 
   def get_contacts(belongs_to_user) do
     contacts_query = %{
-      "$or" => [
-        %{"belongs_to_user" => belongs_to_user},
-        %{"name" => belongs_to_user}
-      ]
+      belongs_to_user: belongs_to_user
     }
 
     search_contacts = Mongo.find(:mongo, "contacts", contacts_query)
@@ -96,16 +93,14 @@ defmodule Pomoroom.User do
     case search_contacts do
       cursor ->
         contacts = Enum.map(cursor, fn contact -> Map.delete(contact, "_id") end)
+        IO.inspect(contacts, label: "CONTACTOS DE......: ")
         {:ok, contacts}
     end
   end
 
   def get_contacts_names(belongs_to_user) do
     contacts_query = %{
-      "$or" => [
-        %{"belongs_to_user" => belongs_to_user},
-        %{"name" => belongs_to_user}
-      ]
+      belongs_to_user: belongs_to_user
     }
 
     search_contacts = Mongo.find(:mongo, "contacts", contacts_query)
@@ -123,6 +118,22 @@ defmodule Pomoroom.User do
 
             {:ok, %{contacts: names}}
         end
+    end
+  end
+
+  def exists?(user_name) do
+    contact_query = %{
+      nickname: user_name
+    }
+
+    find_contact = Mongo.find_one(:mongo, "users", contact_query)
+
+    case find_contact do
+      nil ->
+        false
+
+      _ ->
+        true
     end
   end
 end

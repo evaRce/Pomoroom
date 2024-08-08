@@ -7,7 +7,7 @@ export default function Contact ({ contact, isSelected, onSelect }) {
 
   const handleChat = () => {
     if (!isSelected) {
-      addEvent("selected_chat", { contact_name: contact.name });
+      addEvent("selected_chat", { contact_name: contact.name, contact_status: contact.status_request });
       onSelect();
     }
   };
@@ -17,11 +17,9 @@ export default function Contact ({ contact, isSelected, onSelect }) {
       if (contact.status_request === "pending") {
         return 'bg-pink-100';
       } else {
-        console.log("no pinta nada de fondo del contacto");
         return '';
       }
     } else {
-      console.log("CONTACT_LIST: ", contact.status_request);
       return 'bg-gray-300';
     }
   };

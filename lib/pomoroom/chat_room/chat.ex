@@ -52,7 +52,7 @@ defmodule Pomoroom.ChatRoom.Chat do
     end
   end
 
-  def find_or_create_chat(contact_name, belongs_to_user) do
+  def ensure_chat_exists(contact_name, belongs_to_user) do
     query = %{
       users: %{"$all" => [contact_name, belongs_to_user]},
       public_id_chat: %{"$exists" => true, "$ne" => nil}
