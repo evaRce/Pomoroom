@@ -16,16 +16,21 @@ export interface ChatRoomProps {
 export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	const { eventName, eventData, pushEventToLiveView } = props;
 	const { addEvent, getEventData, removeEvent } = useEventContext();
-	const [selectedContact, setSelectedContact] = useState(false);
+	const [isSelectedContact, setIsSelectedContact] = useState(false);
 	const [selectedComponent, setSelectedComponent] = useState("");
+	const [imageNumber, setImageNumber] = useState(1);
 
-  useEffect(() => {
+	useEffect(() => {
+		const randomImageNumber = Math.floor(Math.random() * 5) + 1;
+		setImageNumber(randomImageNumber);
+	}, []);
+
+	useEffect(() => {
 		const contactInfo = getEventData("add_contact");
 		const contactToDelete = getEventData("delete_contact");
 		const selectedChat = getEventData("selected_chat");
 		const sendMessage = getEventData("send_message");
 		const sendFriendRequest = getEventData("send_friend_request");
-	
 		// if (contactInfo) {
 		// 	pushEventToLiveView("action.add_contact", contactInfo);
 		// 	removeEvent("add_contact");
@@ -35,7 +40,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			removeEvent("delete_contact");
 		}
 		if (selectedChat) {
-			setSelectedContact(true);
+			setIsSelectedContact(true);
 			pushEventToLiveView("action.selected_chat", selectedChat);
 			removeEvent("selected_chat");
 		}
@@ -47,27 +52,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			pushEventToLiveView("action.send_friend_request", sendFriendRequest);
 			removeEvent("send_friend_request")
 		}
-  }, [addEvent]);
+	}, [addEvent]);
 
 
 	useEffect(() => {
-    if (eventName === "show_user_info" && eventData.nickname) {
-			setSelectedContact(false);
-      addEvent(eventName, eventData.nickname);
-    }
-  }, [eventData.nickname]);
+		if (eventName === "show_user_info" && eventData.nickname) {
+			setIsSelectedContact(false);
+			addEvent(eventName, eventData.nickname);
+		}
+	}, [eventData.nickname]);
 
 	useEffect(() => {
 		if (eventName === "add_contact_to_list" && eventData.name) {
-      addEvent(eventName, eventData);
-    }
+			addEvent(eventName, eventData);
+		}
 	}, [eventData.name, eventData.status_request])
 
 	useEffect(() => {
 		if (eventName === "error_adding_contact" && eventData.error) {
-      addEvent(eventName, eventData.error);
-    }
-  }, [eventData.error]);
+			addEvent(eventName, eventData.error);
+		}
+	}, [eventData.error]);
 
 	useEffect(() => {
 		if (eventName === "show_list_contact" && eventData.contact_list) {
@@ -79,7 +84,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		if (eventName === "open_chat" && eventData.contact_name) {
 			addEvent(eventName, eventData.contact_name);
 			addEvent("show_list_messages", eventData.messages);
-			setSelectedContact(true);
 			setSelectedComponent("Chat");
 		}
 	}, [eventData.contact_name]);
@@ -93,7 +97,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	useEffect(() => {
 		if (eventName === "open_chat_request_send" && eventData.contact_name) {
 			addEvent(eventName, eventData);
-			setSelectedContact(true);
 			setSelectedComponent("RequestSend");
 		}
 	}, [eventData.contact_name]);
@@ -101,18 +104,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	useEffect(() => {
 		if (eventName === "open_chat_request_received" && eventData.user_name) {
 			addEvent(eventName, eventData);
-			setSelectedContact(true);
 			setSelectedComponent("RequestReceived");
 		}
 	}, [eventData.user_name]);
+
+	const handleAccept = () => {
+		// pushEventToLiveView("action.status_request", {status: "accepted"});
+		console.log('Friend request accepted');
+	};
+
+	const handleReject = () => {
+		// pushEventToLiveView("action.status_request", {status: "rejected"})
+		console.log('Friend request rejected');
+	};
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">
 			<ChatList />
 			{selectedComponent === "Chat" && <Chat />}
-			{selectedComponent === "RequestSend" && <RequestSend />}
-			{selectedComponent === "RequestReceived" && <RequestReceived />}
-			{!selectedContact && <BackGround />}
+			{selectedComponent === "RequestSend" && <RequestSend imageNumber={imageNumber} userName="eva123" />}
+			{selectedComponent === "RequestReceived" && <RequestReceived imageNumber={imageNumber} onAccept={handleAccept} onReject={handleReject} userName="arce123" />}
+			{!isSelectedContact && <BackGround imageNumber={imageNumber} />}
 			<Detail />
 		</div>
 	);
