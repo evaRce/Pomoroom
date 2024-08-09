@@ -59,14 +59,18 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
     case Mongo.insert_one(:mongo, "friend_requests", friend_request_changst.changes) do
       {:ok, _result} ->
         if User.exists?(send_to_contact) do
-          Contact.add_contact(belongs_to_user, send_to_contact)    # me añado como su amigo
-          Contact.add_contact(send_to_contact, belongs_to_user)    # le añado como mi amigo -> return {:ok, contact}
+          # me añado como su amigo
+          Contact.add_contact(belongs_to_user, send_to_contact)
+          # le añado como mi amigo -> return {:ok, contact}
+          Contact.add_contact(send_to_contact, belongs_to_user)
         else
-          Contact.add_contact(send_to_contact, belongs_to_user)    # le añado como mi amigo -> return {:ok, contact}
+          # le añado como mi amigo -> return {:ok, contact}
+          Contact.add_contact(send_to_contact, belongs_to_user)
         end
 
-      {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => errmsg}]}} ->
-        {:error, errmsg}
+      {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => _errmsg}]}} ->
+        {:error,
+         %{error: "Ya hay una petición de amistad entre #{send_to_contact} y #{belongs_to_user}"}}
     end
   end
 
@@ -155,6 +159,16 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
         else
           false
         end
+
+      _ ->
+        false
+    end
+  end
+
+  def exists?(send_to_contact, belongs_to_user) do
+    case get_request(send_to_contact, belongs_to_user) do
+      {:ok, request} ->
+        true
 
       _ ->
         false

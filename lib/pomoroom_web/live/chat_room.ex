@@ -92,7 +92,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               event_name: "open_chat_request_received",
               event_data: %{user_name: user.nickname}
             }
-            
+
             {:noreply, push_event(socket, "react", payload)}
           end
         end
@@ -136,12 +136,22 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       ) do
     case Chat.ensure_chat_exists(send_to_contact, user.nickname) do
       {:ok, public_id_chat} ->
-        case FriendRequest.send_friend_request(public_id_chat, send_to_contact, user.nickname) do
-          {:ok, contact} ->
-            payload = %{event_name: "add_contact_to_list", event_data: contact}
-            {:noreply, push_event(socket, "react", payload)}
-          {:error, _reason} ->
-            {:noreply, socket}
+        if FriendRequest.exists?(user.nickname, send_to_contact) do
+          {:error, reason} =
+            FriendRequest.send_friend_request(public_id_chat, user.nickname, send_to_contact)
+
+          payload = %{event_name: "error_adding_contact", event_data: reason}
+          {:noreply, push_event(socket, "react", payload)}
+        else
+          case FriendRequest.send_friend_request(public_id_chat, send_to_contact, user.nickname) do
+            {:ok, contact} ->
+              payload = %{event_name: "add_contact_to_list", event_data: contact}
+              {:noreply, push_event(socket, "react", payload)}
+
+            {:error, reason} ->
+              payload = %{event_name: "error_adding_contact", event_data: reason}
+              {:noreply, push_event(socket, "react", payload)}
+          end
         end
 
       {:error, _reason} ->
