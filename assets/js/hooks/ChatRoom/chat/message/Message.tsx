@@ -1,18 +1,32 @@
 import { Avatar } from "antd";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useEventContext } from "../../EventContext";
 
 export default function Message({ message }) {
+	const [userName, setUserName] = useState("");
 	const image = "/images/default_user/default_user-05.svg";
+	const { getEventData, removeEvent } = useEventContext();
+
+	useEffect(() => {
+		const userNickname = getEventData("show_user_info");
+		if (userNickname) {
+			setUserName(userNickname);
+			// removeEvent("show_user_info");
+		}
+	}, [getEventData]);
+
 
 	const setTime = (dateTime) => {
-    const date = new Date(dateTime);
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
+		const date = new Date(dateTime);
+		const hours = date.getHours().toString().padStart(2, '0');
+		const minutes = date.getMinutes().toString().padStart(2, '0');
+		return `${hours}:${minutes}`;
+	};
+
+	const messagePosition = message.belongs_to_user === userName ? "chat-end" : "chat-start";
 
 	return (
-		<div className="chat chat-end">
+		<div className={`chat ${messagePosition}`}>
 			<div className="chat-image avatar">
 				<Avatar className="bg-red-100" src={image} size={45} />
 			</div>

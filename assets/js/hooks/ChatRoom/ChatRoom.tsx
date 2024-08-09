@@ -31,6 +31,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const selectedChat = getEventData("selected_chat");
 		const sendMessage = getEventData("send_message");
 		const sendFriendRequest = getEventData("send_friend_request");
+		const statusFriendRequest = getEventData("send_status_request");
 		// if (contactInfo) {
 		// 	pushEventToLiveView("action.add_contact", contactInfo);
 		// 	removeEvent("add_contact");
@@ -50,7 +51,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		}
 		if (sendFriendRequest) {
 			pushEventToLiveView("action.send_friend_request", sendFriendRequest);
-			removeEvent("send_friend_request")
+			removeEvent("send_friend_request");
+		}
+		if (statusFriendRequest) {
+			pushEventToLiveView("action.send_status_request", statusFriendRequest);
+			removeEvent("send_status_request");
 		}
 	}, [addEvent]);
 
@@ -102,28 +107,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, [eventData.contact_name]);
 
 	useEffect(() => {
-		if (eventName === "open_chat_request_received" && eventData.user_name) {
+		if (eventName === "open_chat_request_received" && eventData.contact_name) {
 			addEvent(eventName, eventData);
 			setSelectedComponent("RequestReceived");
 		}
-	}, [eventData.user_name]);
-
-	const handleAccept = () => {
-		// pushEventToLiveView("action.status_request", {status: "accepted"});
-		console.log('Friend request accepted');
-	};
-
-	const handleReject = () => {
-		// pushEventToLiveView("action.status_request", {status: "rejected"})
-		console.log('Friend request rejected');
-	};
+	}, [eventData.contact_name]);
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">
 			<ChatList />
 			{selectedComponent === "Chat" && <Chat />}
-			{selectedComponent === "RequestSend" && <RequestSend imageNumber={imageNumber} userName="eva123" />}
-			{selectedComponent === "RequestReceived" && <RequestReceived imageNumber={imageNumber} onAccept={handleAccept} onReject={handleReject} userName="arce123" />}
+			{selectedComponent === "RequestSend" && <RequestSend imageNumber={imageNumber} />}
+			{selectedComponent === "RequestReceived" && <RequestReceived imageNumber={imageNumber} />}
 			{!isSelectedContact && <BackGround imageNumber={imageNumber} />}
 			<Detail />
 		</div>

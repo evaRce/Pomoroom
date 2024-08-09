@@ -24,8 +24,25 @@ defmodule Pomoroom.ChatRoom.Contact do
     ])
   end
 
+  def contact_changeset(args) do
+    changeset(args)
+    |> validate_required([
+      :name,
+      :belongs_to_user,
+      :is_group,
+      :status_request,
+      :inserted_at,
+      :updated_at
+    ])
+  end
+
   def contact_changeset(contact_name, belongs_to_user, is_group) do
-    contact = %{name: contact_name, belongs_to_user: belongs_to_user, is_group: is_group, status_request: "pending"}
+    contact = %{
+      name: contact_name,
+      belongs_to_user: belongs_to_user,
+      is_group: is_group,
+      status_request: "pending"
+    }
 
     changeset(contact)
     |> validate_required([:name, :belongs_to_user, :is_group])
@@ -62,8 +79,8 @@ defmodule Pomoroom.ChatRoom.Contact do
     Mongo.update_one(
       :mongo,
       "contacts",
-      %{contact_name: contact_name, belongs_to_user: belongs_to_user, status: "pending"},
-      %{"$set": %{status: status, updated_at: NaiveDateTime.utc_now()}}
+      %{name: contact_name, belongs_to_user: belongs_to_user, status_request: "pending"},
+      %{"$set": %{status_request: status, updated_at: NaiveDateTime.utc_now()}}
     )
   end
 
@@ -94,6 +111,25 @@ defmodule Pomoroom.ChatRoom.Contact do
           false
         end
     end
+  end
+
+  def get(contact_name, belongs_to_user) do
+    query = %{
+      name: contact_name,
+      belongs_to_user: belongs_to_user
+    }
+
+    case Mongo.find_one(:mongo, "contacts", query) do
+      nil ->
+        {:error, "Contacto no encontrado"}
+
+      contact ->
+        {:ok, get_changes_from_changeset(contact)}
+    end
+  end
+
+  defp get_changes_from_changeset(args) do
+    contact_changeset(args).changes
   end
 
   defp timestamps(changeset) do

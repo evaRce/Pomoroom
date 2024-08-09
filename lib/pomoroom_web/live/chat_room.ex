@@ -69,35 +69,86 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     case Chat.ensure_chat_exists(contact_name, user.nickname) do
       {:ok, public_id_chat} ->
         ensure_chat_server_exists(public_id_chat)
+        {:ok, contact} = Contact.get(contact_name, user.nickname)
 
-        if status_request == "accepted" do
-          messages = ChatServer.get_messages(public_id_chat, 10)
+        case contact.status_request do
+          "accepted" ->
+            if FriendRequest.is_owner_request?(contact_name, user.nickname) do
+              messages = ChatServer.get_messages(public_id_chat, 10)
 
-          payload = %{
-            event_name: "open_chat",
-            event_data: %{contact_name: contact_name, messages: messages}
-          }
+              payload = %{
+                event_name: "open_chat",
+                event_data: %{contact_name: contact_name, messages: messages}
+              }
 
-          {:noreply, push_event(socket, "react", payload)}
-        else
-          if FriendRequest.is_owner_request?(contact_name, user.nickname) do
-            payload = %{
-              event_name: "open_chat_request_send",
-              event_data: %{contact_name: contact_name}
-            }
+              {:noreply, push_event(socket, "react", payload)}
+            else
+              messages = ChatServer.get_messages(public_id_chat, 10)
 
-            {:noreply, push_event(socket, "react", payload)}
-          else
-            payload = %{
-              event_name: "open_chat_request_received",
-              event_data: %{user_name: user.nickname}
-            }
+              payload = %{
+                event_name: "open_chat",
+                event_data: %{contact_name: contact_name, messages: messages}
+              }
 
-            {:noreply, push_event(socket, "react", payload)}
-          end
+              {:noreply, push_event(socket, "react", payload)}
+            end
+
+          "pending" ->
+            if FriendRequest.is_owner_request?(contact_name, user.nickname) do
+              payload = %{
+                event_name: "open_chat_request_send",
+                event_data: %{contact_name: contact_name, owner_name: user.nickname}
+              }
+
+              {:noreply, push_event(socket, "react", payload)}
+            else
+              payload = %{
+                event_name: "open_chat_request_received",
+                event_data: %{contact_name: user.nickname, owner_name: contact_name}
+              }
+
+              {:noreply, push_event(socket, "react", payload)}
+            end
         end
 
       {:error, _reason} ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event(
+        "action.send_status_request",
+        %{"status" => status, "contact_name" => contact_name, "owner_name" => owner_name},
+        socket
+      ) do
+    case status do
+      "accepted" ->
+        case FriendRequest.get_request(contact_name, owner_name) do
+          {:ok, request} ->
+            ChatServer.join_chat(request.chat_name)
+            FriendRequest.accept_friend_request(contact_name, owner_name)
+
+            case Chat.ensure_chat_exists(contact_name, owner_name) do
+              {:ok, public_id_chat} ->
+                messages = ChatServer.get_messages(public_id_chat, 10)
+
+                payload = %{
+                  event_name: "open_chat",
+                  event_data: %{contact_name: contact_name, messages: messages}
+                }
+
+                {:noreply, push_event(socket, "react", payload)}
+
+              {:error, reason} ->
+                {:noreply, socket}
+            end
+
+          {:error, reason} ->
+            {:noreply, socket}
+        end
+
+      "pending" ->
+        FriendRequest.reject_friend_request(contact_name, owner_name)
         {:noreply, socket}
     end
   end

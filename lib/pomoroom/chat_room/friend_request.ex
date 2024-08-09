@@ -91,7 +91,7 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
     end
   end
 
-  defp get_request(send_to_contact, belongs_to_user) do
+  def get_request(send_to_contact, belongs_to_user) do
     friend_request_query = %{
       "belongs_to_user" => belongs_to_user,
       "send_to_contact" => send_to_contact
@@ -167,7 +167,7 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
 
   def exists?(send_to_contact, belongs_to_user) do
     case get_request(send_to_contact, belongs_to_user) do
-      {:ok, request} ->
+      {:ok, _request} ->
         true
 
       _ ->

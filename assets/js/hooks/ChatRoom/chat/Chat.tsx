@@ -4,39 +4,42 @@ import Message from "./message/Message";
 import FooterChat from "./components/FooterChat";
 import { useEventContext } from "../EventContext";
 
-export default function Chat({}) {
+export default function Chat() {
   const [messages, setMessages] = useState([]);
   const { getEventData, removeEvent } = useEventContext();
 
   useEffect(() => {
     const msgs = getEventData("show_list_messages");
     setMessages(msgs);
-  });
+  }, []);
 
-	useEffect(() => {
-		const msg = getEventData("show_message_to_send");
-		if (msg) {
+  useEffect(() => {
+    const msg = getEventData("show_message_to_send");
+    if (msg) {
       addMessage(msg);
-			removeEvent("show_message_to_send");
-		}
-	}, [getEventData]);
+      removeEvent("show_message_to_send");
+    }
+  }, [getEventData, removeEvent]);
 
   const addMessage = (message) => {
     if (!message || !message.text || message.text.trim() === "") {
       return; // No añadir mensajes vacíos
     }
-    setMessages(prevMessages => [...prevMessages, message]);
+    setMessages((prevMessages) => [...prevMessages, message]);
   };
 
-  return(
+  return (
     <div className="flex flex-col flex-grow w-full border-l border-r">
-      <HeaderChat/>
-      <main className="flex flex-col h-[83vh] overflow-y-auto overflow-x-hidden p-5 border-t border-b" style={{ scrollbarWidth: 'thin'}}>
-        {messages.map(message => (
+      <HeaderChat />
+      <main
+        className="flex flex-col h-[83vh] overflow-y-auto overflow-x-hidden p-5 border-t border-b"
+        style={{ scrollbarWidth: "thin" }}
+      >
+        {messages.length > 0 && messages.map((message) => (
           <Message key={message.public_id_msg} message={message} />
         ))}
-		  </main>
+      </main>
       <FooterChat addMessage={addMessage} />
-    </div> 
+    </div>
   );
 }

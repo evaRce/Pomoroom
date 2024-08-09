@@ -40,12 +40,15 @@ defmodule Pomoroom.ChatRoom.ChatServer do
   end
 
   def handle_call({:get_messages, :all}, _from, state) do
-    {:reply, state.messages, state.messages}
+    # Invertir la lista de mensajes para que los más recientes estén al final
+    reversed_messages = Enum.reverse(state.messages)
+    {:reply, reversed_messages, state}
   end
 
   def handle_call({:get_messages, limit}, _from, state) when is_integer(limit) do
-    msg = Enum.take(state.messages, limit)
-    {:reply, msg, state}
+    # Obtener los primeros 'limit' mensajes y luego invertir la lista
+    reversed_messages = state.messages |> Enum.take(limit) |> Enum.reverse()
+    {:reply, reversed_messages, state}
   end
 
   def handle_call(:join_chat, _from, state) do

@@ -10,10 +10,10 @@ export default function UserInfo({ }) {
   const { getEventData, removeEvent } = useEventContext();
 
 	useEffect(() => {
-    const user_nickname = getEventData("show_user_info");
-    if (user_nickname) {
-      setNickname(user_nickname);
-			removeEvent("show_user_info");
+    const userNickname = getEventData("show_user_info");
+    if (userNickname) {
+      setNickname(userNickname);
+			// removeEvent("show_user_info");
     }
   }, [getEventData]);
 
