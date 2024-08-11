@@ -93,7 +93,6 @@ defmodule Pomoroom.User do
     case search_contacts do
       cursor ->
         contacts = Enum.map(cursor, fn contact -> Map.delete(contact, "_id") end)
-        IO.inspect(contacts, label: "CONTACTOS DE......: ")
         {:ok, contacts}
     end
   end

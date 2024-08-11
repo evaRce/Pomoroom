@@ -110,6 +110,21 @@ defmodule Pomoroom.ChatRoom.Message do
     end
   end
 
+  def get_chat_messages(belongs_to_chat) do
+    msg_query = %{
+      "belongs_to_chat" => belongs_to_chat
+    }
+
+    find_messages = Mongo.find(:mongo, "messages", msg_query)
+
+    case find_messages do
+      cursor ->
+        messages = Enum.map(cursor, fn message -> Map.delete(message, "_id") end)
+        {:ok, messages}
+    end
+
+  end
+
   defp get_changes_from_changeset(args) do
     message_changeset(args).changes
   end

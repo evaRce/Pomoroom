@@ -91,27 +91,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			addEvent("show_list_messages", eventData.messages);
 			setSelectedComponent("Chat");
 		}
-	}, [eventData.contact_name]);
+	}, [eventData.contact_name, eventData.messages]);
 
 	useEffect(() => {
 		if (eventName === "show_message_to_send" && eventData.public_id_msg) {
 			addEvent(eventName, eventData);
 		}
-	}, [eventData.public_id_msg]);
+	}, [eventData.public_id_msg, eventData.contact_name]);
 
 	useEffect(() => {
 		if (eventName === "open_chat_request_send" && eventData.contact_name) {
 			addEvent(eventName, eventData);
 			setSelectedComponent("RequestSend");
 		}
-	}, [eventData.contact_name]);
+	}, [eventData.contact_name, eventData.owner_name]);
 
 	useEffect(() => {
 		if (eventName === "open_chat_request_received" && eventData.contact_name) {
 			addEvent(eventName, eventData);
 			setSelectedComponent("RequestReceived");
 		}
-	}, [eventData.contact_name]);
+	}, [eventData.contact_name, eventData.owner_name]);
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">
