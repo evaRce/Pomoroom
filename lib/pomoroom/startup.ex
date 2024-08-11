@@ -20,7 +20,7 @@ defmodule Pomoroom.Startup do
     ]
 
     friend_requests_indexes = [
-      %{key: %{belongs_to_user: 1, send_to_contact: 1}, name: "request_indexes", unique: true},
+      %{key: %{belongs_to_user: 1, send_to_contact: 1}, name: "request_indexes", unique: true}
     ]
 
     Mongo.create_indexes(:mongo, "users", user_indexes)

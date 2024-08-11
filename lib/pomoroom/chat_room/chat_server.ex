@@ -31,7 +31,7 @@ defmodule Pomoroom.ChatRoom.ChatServer do
     case Message.new_message(message, user, state.chat_name) do
       {:ok, msg} ->
         PubSub.broadcast(Pomoroom.PubSub, chat_topic(state.chat_name), {:new_message, msg})
-        new_messages =  state.messages ++ [msg]
+        new_messages = state.messages ++ [msg]
         {:reply, {:ok, msg}, %{state | messages: new_messages}}
 
       {:error, reason} ->
@@ -45,20 +45,18 @@ defmodule Pomoroom.ChatRoom.ChatServer do
       new_state = %{state | messages: messages_from_db, first_load: false}
       {:reply, messages_from_db, new_state}
     else
-      reversed_messages = Enum.reverse(state.messages)
-      {:reply, reversed_messages, state}
+      {:reply, state.messages, state}
     end
   end
 
   def handle_call({:get_messages, limit}, _from, state) when is_integer(limit) do
     if state.first_load do
-      {:ok, messages_from_db} = Message.get_chat_messages(state.chat_name)
-      limited_messages = messages_from_db |> Enum.reverse() |> Enum.take(limit) |> Enum.reverse()
-      new_state = %{state | messages: limited_messages, first_load: false}
-      {:reply, limited_messages, new_state}
+      {:ok, limited_messages_from_db} = Message.get_chat_messages(state.chat_name, limit)
+      new_state = %{state | messages: limited_messages_from_db, first_load: false}
+      {:reply, limited_messages_from_db, new_state}
     else
-      reversed_messages = state.messages
-      {:reply, reversed_messages, state}
+      limited_messages = state.messages |> Enum.reverse() |> Enum.take(limit) |> Enum.reverse()
+      {:reply, limited_messages, state}
     end
   end
 

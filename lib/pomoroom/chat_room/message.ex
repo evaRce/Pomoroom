@@ -110,19 +110,27 @@ defmodule Pomoroom.ChatRoom.Message do
     end
   end
 
-  def get_chat_messages(belongs_to_chat) do
+  def get_chat_messages(belongs_to_chat, limit \\ :all) do
     msg_query = %{
       "belongs_to_chat" => belongs_to_chat
     }
 
-    find_messages = Mongo.find(:mongo, "messages", msg_query)
+    sort_order = %{"inserted_at" => -1}
+
+    find_messages =
+      case limit do
+        :all ->
+          Mongo.find(:mongo, "messages", msg_query, sort: sort_order)
+
+        limit when is_integer(limit) ->
+          Mongo.find(:mongo, "messages", msg_query, sort: sort_order, limit: limit)
+      end
 
     case find_messages do
       cursor ->
         messages = Enum.map(cursor, fn message -> Map.delete(message, "_id") end)
-        {:ok, messages}
+        {:ok, Enum.reverse(messages)}
     end
-
   end
 
   defp get_changes_from_changeset(args) do

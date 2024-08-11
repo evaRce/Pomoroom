@@ -12,7 +12,7 @@ export default function Chat() {
   useEffect(() => {
     const msgs = getEventData("show_list_messages");
     setMessages(msgs);
-  }, []);
+  }, [getEventData]);
 
   useEffect(() => {
     const msg = getEventData("show_message_to_send");

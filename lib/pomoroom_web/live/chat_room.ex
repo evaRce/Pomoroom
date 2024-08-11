@@ -72,7 +72,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     case Chat.ensure_chat_exists(contact_name, user.nickname) do
       {:ok, public_id_chat} ->
         ensure_chat_server_exists(public_id_chat)
-        messages = ChatServer.get_messages(public_id_chat, 10)
+        messages = ChatServer.get_messages(public_id_chat, 3)
 
         payload =
           case status_request do
