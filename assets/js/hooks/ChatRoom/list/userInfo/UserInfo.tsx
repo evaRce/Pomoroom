@@ -5,16 +5,16 @@ import AddContact from "./AddContact";
 import { useEventContext } from "../../EventContext";
 
 export default function UserInfo({ }) {
-	const [nickname, setNickname] = useState("");
+	const [userName, setUserName] = useState("");
   const [showModal, setShowModal] = useState(false);
   const { getEventData, removeEvent } = useEventContext();
 
 	useEffect(() => {
-    const userNickname = getEventData("show_user_info");
-    if (userNickname) {
-      setNickname(userNickname);
+    const user = getEventData("show_user_info");
+		if (user) {
+			setUserName(user.nickname);
 			// removeEvent("show_user_info");
-    }
+		}
   }, [getEventData]);
 
   const showAddEntryModal = () => {
@@ -35,7 +35,7 @@ export default function UserInfo({ }) {
 				</div>
 				<div className="flex w-[18vw] items-center justify-between">
 					<span className="text-sm max-h-[8vh] max-w-[7vw]">
-					{nickname}
+					{userName}
 					</span>
 					<div className="flex gap-1">
 						<Button className="rounded-md" icon={<UsergroupAddOutlined/>} onClick={showAddEntryModal}/>

@@ -8,9 +8,9 @@ export default function Message({ message }) {
 	const { getEventData, removeEvent } = useEventContext();
 
 	useEffect(() => {
-		const userNickname = getEventData("show_user_info");
-		if (userNickname) {
-			setUserName(userNickname);
+		const user = getEventData("show_user_info");
+		if (user) {
+			setUserName(user.nickname);
 			// removeEvent("show_user_info");
 		}
 	}, [getEventData]);

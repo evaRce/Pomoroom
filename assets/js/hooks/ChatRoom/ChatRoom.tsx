@@ -62,8 +62,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "show_user_info" && eventData.nickname) {
+			pushEventToLiveView("action.init_list_contact", {})
 			setIsSelectedContact(false);
-			addEvent(eventName, eventData.nickname);
+			addEvent(eventName, eventData);
 		}
 	}, [eventData.nickname]);
 
