@@ -13,16 +13,16 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     # IO.inspect(socket, structs: false, limit: :infinity)
 
     send(self(), :init_info_user)
-    # send(self(), :receive_friend_requests)
     {:ok, socket, layout: false}
   end
 
   def handle_info(:init_info_user, %{assigns: %{user_info: user}} = socket) do
     payload = %{event_name: "show_user_info", event_data: user}
+    send(self(), :init_list_contact)
     {:noreply, push_event(socket, "react", payload)}
   end
 
-  def handle_event("action.init_list_contact", _params, %{assigns: %{user_info: user}} = socket) do
+  def handle_info(:init_list_contact, %{assigns: %{user_info: user}} = socket) do
     {:ok, contact_list} = User.get_contacts(user.nickname)
     if Enum.empty?(contact_list) do
       {:noreply, socket}
