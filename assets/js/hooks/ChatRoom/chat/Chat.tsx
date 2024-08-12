@@ -11,16 +11,17 @@ export default function Chat() {
 
   useEffect(() => {
     const msgs = getEventData("show_list_messages");
-    setMessages(msgs);
-  }, [getEventData]);
+    if (msgs) {
+      setMessages(msgs);
+      removeEvent("show_list_messages");
+    }
 
-  useEffect(() => {
     const msg = getEventData("show_message_to_send");
     if (msg) {
       addMessage(msg);
       removeEvent("show_message_to_send");
     }
-  }, [getEventData, removeEvent]);
+  }, [getEventData]);
 
   const addMessage = (message) => {
     if (!message || !message.text || message.text.trim() === "") {
