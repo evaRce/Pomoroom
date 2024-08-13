@@ -6,6 +6,8 @@ import BackGround from "./chat/BackGround";
 import { useEventContext } from "./EventContext";
 import RequestReceived from "./friend_request/RequestReceived";
 import RequestSend from "./friend_request/RequestSend";
+import RejectedRequestSend from "./friend_request/RejectedRequestSend";
+import RejectedRequestReceived from "./friend_request/RejectedRequestReceived";
 export interface ChatRoomProps {
 	eventName: string;
 	eventData: any;
@@ -16,12 +18,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	const { eventName, eventData, pushEventToLiveView } = props;
 	const { addEvent, getEventData, removeEvent } = useEventContext();
 	const [isSelectedContact, setIsSelectedContact] = useState(false);
-	const [selectedComponent, setSelectedComponent] = useState("");
+	const [component, setComponent] = useState("");
 	const [imageNumber, setImageNumber] = useState(1);
+	const [userName, setUserName] = useState("");
 
 	useEffect(() => {
 		const randomImageNumber = Math.floor(Math.random() * 5) + 1;
 		setImageNumber(randomImageNumber);
+	}, []);
+
+	useEffect(() => {
+		pushEventToLiveView("action.get_user_info", {});
+	}, []);
+
+	useEffect(() => {
+		pushEventToLiveView("action.get_list_contact", {});
 	}, []);
 
 	useEffect(() => {
@@ -38,6 +49,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		// }
 		if (contactToDelete) {
 			pushEventToLiveView("action.delete_contact", contactToDelete);
+			setComponent("");
+			setIsSelectedContact(false);
 			removeEvent("delete_contact");
 		}
 		if (selectedChat) {
@@ -62,10 +75,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "show_user_info" && eventData.nickname) {
-			setIsSelectedContact(false);
+			console.log("Se carga el user_info");
+			setUserName(eventData.nickname)
+			// setIsSelectedContact(false);
 			addEvent(eventName, eventData);
 		}
-	}, [eventData.nickname]);
+	}, [eventData]);
 
 	useEffect(() => {
 		if (eventName === "add_contact_to_list" && eventData.name) {
@@ -89,7 +104,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		if (eventName === "open_chat" && eventData.contact_name) {
 			addEvent(eventName, eventData.contact_name);
 			addEvent("show_list_messages", eventData.messages);
-			setSelectedComponent("Chat");
+			setComponent("Chat");
 		}
 	}, [eventData.contact_name, eventData.messages]);
 
@@ -100,30 +115,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, [eventData.public_id_msg, eventData.contact_name]);
 
 	useEffect(() => {
-		if (eventName === "open_chat_request_send" && eventData.contact_name) {
+		if (eventName === "open_rejected_request_send" && userName == eventData.contact_name) {
+			console.log("recibo el evento 'send' del backend", eventData.contact_name);
 			addEvent(eventName, eventData);
-			setSelectedComponent("RequestSend");
+			setComponent("RejectedRequestSend");
 		}
-		if (eventName === "open_chat_request_received" && eventData.contact_name) {
+		if (eventName === "open_rejected_request_received" && userName == eventData.owner_name) {
+			console.log("recibo el evento 'received' del backend", eventData.owner_name);
 			addEvent(eventName, eventData);
-			setSelectedComponent("RequestReceived");
+			setComponent("RejectedRequestReceived");
 		}
-		if (eventName === "open_rejected_request_received" && eventData.contact_name) {
+		if (eventName === "open_chat_request_send") {
 			addEvent(eventName, eventData);
-			setSelectedComponent("RequestSend");
+			setComponent("RequestSend");
 		}
-		if (eventName === "open_rejected_request_send" && eventData.contact_name) {
+		if (eventName === "open_chat_request_received") {
 			addEvent(eventName, eventData);
-			setSelectedComponent("RequestReceived");
+			setComponent("RequestReceived");
 		}
-	}, [eventData.contact_name, eventData.owner_name]);
+	}, [eventName]);
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">
 			<ChatList />
-			{selectedComponent === "Chat" && <Chat />}
-			{selectedComponent === "RequestSend" && <RequestSend imageNumber={imageNumber} />}
-			{selectedComponent === "RequestReceived" && <RequestReceived imageNumber={imageNumber} />}
+			{component === "Chat" && <Chat />}
+			{component === "RequestSend" && <RequestSend imageNumber={imageNumber} />}
+			{component === "RequestReceived" && <RequestReceived imageNumber={imageNumber} />}
+			{component === "RejectedRequestSend" && <RejectedRequestSend imageNumber={imageNumber} />}
+			{component === "RejectedRequestReceived" && <RejectedRequestReceived imageNumber={imageNumber} />}
 			{!isSelectedContact && <BackGround imageNumber={imageNumber} />}
 			<Detail />
 		</div>

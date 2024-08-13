@@ -26,6 +26,12 @@ export default function ContactList({ }) {
       );
       removeEvent("show_list_contact");
     }
+
+    const contactToDelete = getEventData("delete_contact_from_list");
+    if (contactToDelete) {
+      deleteContact(contactToDelete);
+      removeEvent("delete_contact_from_list");
+    }
   }, [getEventData]);
 
 	useEffect(() => {

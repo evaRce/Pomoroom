@@ -11,18 +11,16 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       |> put_session_assigns(session)
 
     # IO.inspect(socket, structs: false, limit: :infinity)
-
-    send(self(), :init_info_user)
     {:ok, socket, layout: false}
   end
 
-  def handle_info(:init_info_user, %{assigns: %{user_info: user}} = socket) do
+  def handle_event("action.get_user_info", _args, %{assigns: %{user_info: user}} = socket) do
     payload = %{event_name: "show_user_info", event_data: user}
-    send(self(), :init_list_contact)
+
     {:noreply, push_event(socket, "react", payload)}
   end
 
-  def handle_info(:init_list_contact, %{assigns: %{user_info: user}} = socket) do
+  def handle_event("action.get_list_contact", _args, %{assigns: %{user_info: user}} = socket) do
     {:ok, contact_list} = User.get_contacts(user.nickname)
 
     if Enum.empty?(contact_list) do
@@ -57,6 +55,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
     if FriendRequest.request_is_pending?(contact_name, user.nickname) do
       FriendRequest.reject_friend_request(contact_name, user.nickname)
+      FriendRequest.delete_request(contact_name, user.nickname)
     else
       FriendRequest.delete_request(contact_name, user.nickname)
     end
@@ -124,7 +123,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   def handle_event(
         "action.send_status_request",
         %{"status" => status, "contact_name" => contact_name, "owner_name" => owner_name},
-        socket
+        %{assigns: %{user_info: user}} = socket
       ) do
     case status do
       "accepted" ->
@@ -133,20 +132,12 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
             ChatServer.join_chat(request.chat_name)
             FriendRequest.accept_friend_request(contact_name, owner_name)
 
-            case Chat.ensure_chat_exists(contact_name, owner_name) do
-              {:ok, public_id_chat} ->
-                messages = ChatServer.get_messages(public_id_chat, 10)
+            payload = %{
+              event_name: "open_chat",
+              event_data: %{contact_name: contact_name, messages: [messages]}
+            }
 
-                payload = %{
-                  event_name: "open_chat",
-                  event_data: %{contact_name: contact_name, messages: messages}
-                }
-
-                {:noreply, push_event(socket, "react", payload)}
-
-              {:error, _reason} ->
-                {:noreply, socket}
-            end
+            {:noreply, push_event(socket, "react", payload)}
 
           {:error, _reason} ->
             {:noreply, socket}
@@ -157,7 +148,21 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
       "rejected" ->
         FriendRequest.reject_friend_request(contact_name, owner_name)
-        {:noreply, socket}
+
+        payload =
+          if FriendRequest.is_owner_request?(contact_name, user.nickname) do
+            %{
+              event_name: "open_rejected_request_received",
+              event_data: %{contact_name: contact_name, owner_name: user.nickname}
+            }
+          else
+            %{
+              event_name: "open_rejected_request_send",
+              event_data: %{contact_name: user.nickname, owner_name: contact_name}
+            }
+          end
+
+        {:noreply, push_event(socket, "react", payload)}
     end
   end
 
