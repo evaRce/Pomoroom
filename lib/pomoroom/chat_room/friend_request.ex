@@ -130,8 +130,8 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
       {:ok, request} ->
         if request.status == "pending" do
           update_request(send_to_contact, belongs_to_user, "rejected")
-          Contact.delete_contact(send_to_contact, belongs_to_user)
-          Contact.delete_contact(belongs_to_user, send_to_contact)
+          Contact.update_status(send_to_contact, belongs_to_user, "rejected")
+          Contact.update_status(belongs_to_user, send_to_contact, "rejected")
           {:ok, "Rejected request "}
         else
           {:error, "Friend request already processed"}

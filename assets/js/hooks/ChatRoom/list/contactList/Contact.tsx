@@ -1,8 +1,7 @@
-import React, {useState, useEffect} from "react";
-import { Avatar } from "antd";
+import React from "react";
 import { useEventContext } from "../../EventContext";
 
-export default function Contact ({ contact, isSelected, onSelect }) {
+export default function Contact({ contact, isSelected, onSelect }) {
   const { addEvent } = useEventContext();
 
   const handleChat = () => {
@@ -16,6 +15,8 @@ export default function Contact ({ contact, isSelected, onSelect }) {
     if (!isSelected) {
       if (contact.status_request === "pending") {
         return 'bg-pink-100';
+      } else if (contact.status_request === "rejected") {
+        return 'bg-red-300';
       } else {
         return '';
       }
@@ -25,14 +26,14 @@ export default function Contact ({ contact, isSelected, onSelect }) {
   };
 
   return (
-    <div 
-      className={`relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-200 ${getBackgroundContact()}`} 
+    <div
+      className={`relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-200 ${getBackgroundContact()}`}
       onClick={handleChat}
     >
-      <div className="flex-shrink-0"> 
-        <img 
+      <div className="flex-shrink-0">
+        <img
           className="h-10 w-10 rounded-full"
-          src={contact.image}/> 
+          src={contact.image} />
       </div>
       <div className="flex-1 min-w-20">
         <a className="focus:outline-none" onClick={handleChat}>

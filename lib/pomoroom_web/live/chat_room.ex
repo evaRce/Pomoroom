@@ -24,6 +24,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
   def handle_info(:init_list_contact, %{assigns: %{user_info: user}} = socket) do
     {:ok, contact_list} = User.get_contacts(user.nickname)
+
     if Enum.empty?(contact_list) do
       {:noreply, socket}
     else
@@ -96,6 +97,21 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                   event_data: %{contact_name: user.nickname, owner_name: contact_name}
                 }
               end
+
+            "rejected" ->
+              if FriendRequest.is_owner_request?(contact_name, user.nickname) do
+                # clico sobre el chat -> abro rejected que recibi
+                %{
+                  event_name: "open_rejected_request_received",
+                  event_data: %{contact_name: contact_name, owner_name: user.nickname}
+                }
+              else
+                # clico sobre el chat -> abro rejected que envie
+                %{
+                  event_name: "open_rejected_request_send",
+                  event_data: %{contact_name: user.nickname, owner_name: contact_name}
+                }
+              end
           end
 
         {:noreply, push_event(socket, "react", payload)}
@@ -137,6 +153,9 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         end
 
       "pending" ->
+        {:noreply, socket}
+
+      "rejected" ->
         FriendRequest.reject_friend_request(contact_name, owner_name)
         {:noreply, socket}
     end

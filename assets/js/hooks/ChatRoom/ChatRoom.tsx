@@ -6,7 +6,6 @@ import BackGround from "./chat/BackGround";
 import { useEventContext } from "./EventContext";
 import RequestReceived from "./friend_request/RequestReceived";
 import RequestSend from "./friend_request/RequestSend";
-
 export interface ChatRoomProps {
 	eventName: string;
 	eventData: any;
@@ -32,6 +31,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const sendMessage = getEventData("send_message");
 		const sendFriendRequest = getEventData("send_friend_request");
 		const statusFriendRequest = getEventData("send_status_request");
+
 		// if (contactInfo) {
 		// 	pushEventToLiveView("action.add_contact", contactInfo);
 		// 	removeEvent("add_contact");
@@ -104,10 +104,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			addEvent(eventName, eventData);
 			setSelectedComponent("RequestSend");
 		}
-	}, [eventData.contact_name, eventData.owner_name]);
-
-	useEffect(() => {
 		if (eventName === "open_chat_request_received" && eventData.contact_name) {
+			addEvent(eventName, eventData);
+			setSelectedComponent("RequestReceived");
+		}
+		if (eventName === "open_rejected_request_received" && eventData.contact_name) {
+			addEvent(eventName, eventData);
+			setSelectedComponent("RequestSend");
+		}
+		if (eventName === "open_rejected_request_send" && eventData.contact_name) {
 			addEvent(eventName, eventData);
 			setSelectedComponent("RequestReceived");
 		}
