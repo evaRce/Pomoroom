@@ -25,13 +25,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	useEffect(() => {
 		const randomImageNumber = Math.floor(Math.random() * 5) + 1;
 		setImageNumber(randomImageNumber);
-	}, []);
-
-	useEffect(() => {
 		pushEventToLiveView("action.get_user_info", {});
-	}, []);
-
-	useEffect(() => {
 		pushEventToLiveView("action.get_list_contact", {});
 	}, []);
 
@@ -75,7 +69,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "show_user_info" && eventData.nickname) {
-			console.log("Se carga el user_info");
 			setUserName(eventData.nickname)
 			// setIsSelectedContact(false);
 			addEvent(eventName, eventData);
@@ -83,10 +76,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, [eventData]);
 
 	useEffect(() => {
-		if (eventName === "add_contact_to_list" && eventData.name) {
+		if (eventName === "add_contact_to_list" && eventData.contact) {
 			addEvent(eventName, eventData);
 		}
-	}, [eventData.name, eventData.status_request])
+	}, [eventData.contact])
 
 	useEffect(() => {
 		if (eventName === "error_adding_contact" && eventData.error) {
@@ -102,7 +95,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "open_chat" && eventData.contact_name) {
-			addEvent(eventName, eventData.contact_name);
+			addEvent(eventName, eventData);
 			addEvent("show_list_messages", eventData.messages);
 			setComponent("Chat");
 		}
@@ -116,12 +109,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "open_rejected_request_send" && userName == eventData.contact_name) {
-			console.log("recibo el evento 'send' del backend", eventData.contact_name);
 			addEvent(eventName, eventData);
 			setComponent("RejectedRequestSend");
 		}
 		if (eventName === "open_rejected_request_received" && userName == eventData.owner_name) {
-			console.log("recibo el evento 'received' del backend", eventData.owner_name);
 			addEvent(eventName, eventData);
 			setComponent("RejectedRequestReceived");
 		}

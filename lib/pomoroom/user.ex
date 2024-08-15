@@ -1,22 +1,26 @@
 defmodule Pomoroom.User do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Pomoroom.ChatRoom.Contact
 
   schema "users" do
     field :email, :string
     field :password, :string
     field :nickname, :string
-    timestamps(type: :utc_datetime)
+    field :image_profile, :string
+    field :inserted_at, :utc_datetime
+    field :updated_at, :utc_datetime
+  end
+
+  def changeset_without_passw(args) do
+    %Pomoroom.User{}
+    |> cast(args, [:email, :nickname, :image_profile, :inserted_at, :updated_at])
+    |> validate_required([:email, :nickname, :image_profile, :inserted_at, :updated_at])
   end
 
   def changeset(args) do
     %Pomoroom.User{}
     |> cast(args, [:email, :password, :nickname])
-  end
-
-  def validation(args) do
-    args
-    |> changeset()
     |> validate_required([:email, :password, :nickname])
   end
 
@@ -31,19 +35,28 @@ defmodule Pomoroom.User do
     |> change(%{password: hashed_password})
   end
 
-  def register_user(changeset) do
+  def register_user(args) do
     user_changeset =
-      changeset
+      args
+      |> changeset()
       |> set_hash_password()
+      |> timestamps()
+      |> set_default_image()
 
-    insert_user = Mongo.insert_one(:mongo, "users", user_changeset.changes)
+    case user_changeset.valid? do
+      true ->
+        insert_user = Mongo.insert_one(:mongo, "users", user_changeset.changes)
 
-    case insert_user do
-      {:ok, result} ->
-        {:ok, result}
+        case insert_user do
+          {:ok, result} ->
+            {:ok, result}
 
-      {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => errmsg}]}} ->
-        {:error, parse_duplicate_key_error(errmsg)}
+          {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => errmsg}]}} ->
+            {:error, parse_duplicate_key_error(errmsg)}
+        end
+
+      false ->
+        {:error, %{error: "Falta un campo"}}
     end
   end
 
@@ -60,7 +73,11 @@ defmodule Pomoroom.User do
   def get_by_email(""), do: {:error, :not_found}
 
   def get_by_email(email) do
-    find_user = Mongo.find_one(:mongo, "users", get_changes_from_changeset(email: email))
+    query = %{
+      email: email
+    }
+
+    find_user = Mongo.find_one(:mongo, "users", query)
 
     case find_user do
       nil ->
@@ -74,13 +91,32 @@ defmodule Pomoroom.User do
     end
   end
 
-  def get_changes_from_changeset(args) do
-    args =
-      args
-      |> Map.new()
-      |> changeset()
+  def get_by_nickname(nickname) do
+    query = %{
+      nickname: nickname
+    }
 
-    args.changes
+    find_user = Mongo.find_one(:mongo, "users", query)
+
+    case find_user do
+      nil ->
+        {:error, :not_found}
+
+      user_data when is_map(user_data) ->
+        user =
+          user_data
+          |> Map.drop(["_id", "password"])
+          |> changeset_without_passw()
+
+        {:ok, user.changes}
+
+      error ->
+        {:error, error}
+    end
+  end
+
+  def get_changes_from_changeset(args) do
+    changeset(args).changes
   end
 
   def get_contacts(belongs_to_user) do
@@ -92,7 +128,13 @@ defmodule Pomoroom.User do
 
     case search_contacts do
       cursor ->
-        contacts = Enum.map(cursor, fn contact -> Map.delete(contact, "_id") end)
+        contacts =
+          Enum.map(cursor, fn contact ->
+            contact
+            |> Map.delete("_id")
+            |> Contact.get_changes_from_changeset()
+          end)
+
         {:ok, contacts}
     end
   end
@@ -134,5 +176,15 @@ defmodule Pomoroom.User do
       _ ->
         true
     end
+  end
+
+  defp timestamps(changeset) do
+    change(changeset, %{inserted_at: NaiveDateTime.utc_now(), updated_at: NaiveDateTime.utc_now()})
+  end
+
+  defp set_default_image(changeset) do
+    random_number = :rand.uniform(10)
+    image = "/images/default_user/default_user-#{random_number}.svg"
+    change(changeset, %{image_profile: image})
   end
 end

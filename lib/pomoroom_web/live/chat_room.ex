@@ -26,7 +26,18 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     if Enum.empty?(contact_list) do
       {:noreply, socket}
     else
-      payload = %{event_name: "show_list_contact", event_data: %{contact_list: contact_list}}
+      # Para cada contacto en la lista, obtenemos la imagen de perfil.
+      contact_list_with_images =
+        Enum.map(contact_list, fn contact ->
+          {:ok, contact_data} = User.get_by_nickname(contact.name)
+          %{contact: contact, image_profile: contact_data.image_profile}
+        end)
+
+      payload = %{
+        event_name: "show_list_contact",
+        event_data: %{contact_list: contact_list_with_images}
+      }
+
       {:noreply, push_event(socket, "react", payload)}
     end
   end
@@ -79,9 +90,16 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         payload =
           case status_request do
             "accepted" ->
+              {:ok, contact_data} = User.get_by_nickname(contact_name)
+              image_profile = contact_data.image_profile
+
               %{
                 event_name: "open_chat",
-                event_data: %{contact_name: contact_name, messages: messages}
+                event_data: %{
+                  contact_name: contact_name,
+                  messages: messages,
+                  image_profile: image_profile
+                }
               }
 
             "pending" ->
@@ -131,10 +149,16 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
           {:ok, request} ->
             ChatServer.join_chat(request.chat_name)
             FriendRequest.accept_friend_request(contact_name, owner_name)
+            {:ok, contact_data} = User.get_by_nickname(contact_name)
+            image_profile = contact_data.image_profile
 
             payload = %{
               event_name: "open_chat",
-              event_data: %{contact_name: contact_name, messages: [messages]}
+              event_data: %{
+                contact_name: contact_name,
+                messages: [],
+                image_profile: image_profile
+              }
             }
 
             {:noreply, push_event(socket, "react", payload)}
@@ -204,7 +228,14 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         else
           case FriendRequest.send_friend_request(public_id_chat, send_to_contact, user.nickname) do
             {:ok, contact} ->
-              payload = %{event_name: "add_contact_to_list", event_data: contact}
+              {:ok, contact_data} = User.get_by_nickname(send_to_contact)
+              image_profile = contact_data.image_profile
+
+              payload = %{
+                event_name: "add_contact_to_list",
+                event_data: %{contact: contact, image_profile: image_profile}
+              }
+
               {:noreply, push_event(socket, "react", payload)}
 
             {:error, reason} ->

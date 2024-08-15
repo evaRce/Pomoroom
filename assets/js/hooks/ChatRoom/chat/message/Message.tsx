@@ -3,14 +3,13 @@ import React, { useState, useEffect } from "react";
 import { useEventContext } from "../../EventContext";
 
 export default function Message({ message }) {
-	const [userName, setUserName] = useState("");
-	const image = "/images/default_user/default_user-05.svg";
+	const [userData, setUserData] = useState(null);
 	const { getEventData, removeEvent } = useEventContext();
 
 	useEffect(() => {
 		const user = getEventData("show_user_info");
 		if (user) {
-			setUserName(user.nickname);
+			setUserData(user);
 			// removeEvent("show_user_info");
 		}
 	}, [getEventData]);
@@ -23,12 +22,13 @@ export default function Message({ message }) {
 		return `${hours}:${minutes}`;
 	};
 
-	const messagePosition = message.belongs_to_user === userName ? "chat-end" : "chat-start";
+	const messagePosition = message.belongs_to_user === userData.nickname ? "chat-end" : "chat-start";
 
 	return (
 		<div className={`chat ${messagePosition}`}>
 			<div className="chat-image avatar">
-				<Avatar className="bg-red-100" src={image} size={45} />
+				field :image_profile, :string
+				<Avatar className="bg-red-100" src={userData.image_profile} size={45} />
 			</div>
 			<div className="chat-header">
 				{message.belongs_to_user}

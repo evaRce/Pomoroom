@@ -5,24 +5,24 @@ import Contact from "./Contact";
 import { useEventContext } from "../../EventContext";
 
 export default function ContactList({ }) {
-	const { addEvent, getEventData, removeEvent } = useEventContext();
-	const [contacts, setContacts] = useState([]);
-	const [filteredContacts, setFilteredContacts] = useState([]);
-	const [searchTerm, setSearchTerm] = useState("");
+  const { addEvent, getEventData, removeEvent } = useEventContext();
+  const [contacts, setContacts] = useState([]);
+  const [filteredContacts, setFilteredContacts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, contact: null });
   const [selectedContact, setSelectedContact] = useState(null);
 
-	useEffect(() => {
+  useEffect(() => {
     const contact = getEventData("add_contact_to_list");
-		if (contact) {
-			addContact(contact.name, contact.status_request);
-			removeEvent("add_contact_to_list");
-		}
+    if (contact) {
+      addContact(contact);
+      removeEvent("add_contact_to_list");
+    }
 
-		const contactList = getEventData("show_list_contact");
+    const contactList = getEventData("show_list_contact");
     if (contactList) {
-      contactList.map(contact => 
-        addContact(contact.name, contact.status_request)
+      contactList.map(contact =>
+        addContact(contact)
       );
       removeEvent("show_list_contact");
     }
@@ -34,26 +34,25 @@ export default function ContactList({ }) {
     }
   }, [getEventData]);
 
-	useEffect(() => {
-		const results = contacts.filter(contact =>
-			contact.name.toLowerCase().includes(searchTerm.toLowerCase())
-		);
-		setFilteredContacts(results);
-	}, [searchTerm, contacts]);
+  useEffect(() => {
+    const results = contacts.filter(contact =>
+      contact.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredContacts(results);
+  }, [searchTerm, contacts]);
 
-	const addContact = (nameContact, status_request = "null") => {
+  const addContact = (contact) => {
     const newContact = {
-      name: nameContact,
-      text: "hola",
-      image: "/images/default_user/default_user-02.svg",
-      status_request: status_request
+      name: contact.contact.name,
+      image: contact.image_profile,
+      status_request: contact.contact.status_request
     };
     setContacts(prevContacts => [...prevContacts, newContact]);
   };
 
-	const handleSearch = (event) => {
-		setSearchTerm(event.target.value);
-	};
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
 
   const handleContextMenu = (event, contact) => {
     event.preventDefault();
@@ -99,10 +98,10 @@ export default function ContactList({ }) {
         {filteredContacts.map(contact => (
           <Fragment key={contact.name}>
             <div onContextMenu={(event) => handleContextMenu(event, contact)}>
-              <Contact 
-                contact={contact} 
-                isSelected={selectedContact === contact.name} 
-                onSelect={() => setSelectedContact(contact.name)} 
+              <Contact
+                contact={contact}
+                isSelected={selectedContact === contact.name}
+                onSelect={() => setSelectedContact(contact.name)}
               />
             </div>
             <div className='border-t-2 mb-1'></div>
@@ -110,18 +109,18 @@ export default function ContactList({ }) {
         ))}
       </div>
       {contextMenu.visible && (
-        <div 
-          style={{ 
-            position: 'absolute', 
-            top: contextMenu.y, 
-            left: contextMenu.x, 
-            background: 'white', 
+        <div
+          style={{
+            position: 'absolute',
+            top: contextMenu.y,
+            left: contextMenu.x,
+            background: 'white',
             // boxShadow: '0px 0px 5px rgba(0,0,0,0.3)',
-            zIndex: 1000 
+            zIndex: 1000
           }}
         >
-          <Button 
-            icon={<DeleteOutlined />} 
+          <Button
+            icon={<DeleteOutlined />}
             onClick={() => handleMenuClick("delete")}
             style={{ width: '100%' }}
           >

@@ -7,28 +7,14 @@ defmodule PomoroomWeb.HomeLive.SignUp do
   end
 
   def handle_event("action.save_user", params, socket) do
-    changeset = User.validation(params)
+    register_user = User.register_user(params)
 
-    case changeset.valid? do
-      true ->
-        register_user = User.register_user(changeset)
+    case register_user do
+      {:ok, _result} ->
+        {:noreply, redirect(socket, to: "/pomoroom/home")}
 
-        case register_user do
-          {:ok, _result} ->
-            {:noreply, redirect(socket, to: "/pomoroom/home")}
-
-          {:error, reason} ->
-            {:noreply, push_event(socket, "react.error_save_user", %{errors: reason})}
-        end
-
-      false ->
-        # errors_as_map =
-        # 	changeset
-        # 	|> User.get_errors_from_changeset()
-        # IO.inspect("NO ES VALIDO")
-        # IO.inspect(errors_as_map)
-        # {:noreply, push_event(socket, "react.error_save_user", %{errors: errors_as_map})}
-        {:noreply, socket}
+      {:error, reason} ->
+        {:noreply, push_event(socket, "react.error_save_user", %{errors: reason})}
     end
   end
 end

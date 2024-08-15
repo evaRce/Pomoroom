@@ -128,7 +128,7 @@ defmodule Pomoroom.ChatRoom.Contact do
     end
   end
 
-  defp get_changes_from_changeset(args) do
+  def get_changes_from_changeset(args) do
     contact_changeset(args).changes
   end
 
