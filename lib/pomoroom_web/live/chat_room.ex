@@ -10,17 +10,17 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       |> PhoenixLiveSession.maybe_subscribe(session)
       |> put_session_assigns(session)
 
+    send(self(), :get_list_contact)
     # IO.inspect(socket, structs: false, limit: :infinity)
     {:ok, socket, layout: false}
   end
 
   def handle_event("action.get_user_info", _args, %{assigns: %{user_info: user}} = socket) do
     payload = %{event_name: "show_user_info", event_data: user}
-
     {:noreply, push_event(socket, "react", payload)}
   end
 
-  def handle_event("action.get_list_contact", _args, %{assigns: %{user_info: user}} = socket) do
+  def handle_info(:get_list_contact, %{assigns: %{user_info: user}} = socket) do
     {:ok, contact_list} = User.get_contacts(user.nickname)
 
     if Enum.empty?(contact_list) do
@@ -30,7 +30,13 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       contact_list_with_images =
         Enum.map(contact_list, fn contact ->
           {:ok, contact_data} = User.get_by_nickname(contact.name)
-          %{contact: contact, image_profile: contact_data.image_profile}
+          status_request = FriendRequest.get_status(contact.name, user.nickname)
+
+          %{
+            contact: contact,
+            image_profile: contact_data.image_profile,
+            status_request: status_request
+          }
         end)
 
       payload = %{
@@ -76,12 +82,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
   def handle_event(
         "action.selected_chat",
-        %{
-          "contact_name" => contact_name,
-          "contact_status" => status_request
-        },
+        args,
         %{assigns: %{user_info: user}} = socket
       ) do
+    %{"contact_name" => contact_name, "contact_status" => status_request} = args
+
     case Chat.ensure_chat_exists(contact_name, user.nickname) do
       {:ok, public_id_chat} ->
         ensure_chat_server_exists(public_id_chat)
@@ -167,9 +172,6 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
             {:noreply, socket}
         end
 
-      "pending" ->
-        {:noreply, socket}
-
       "rejected" ->
         FriendRequest.reject_friend_request(contact_name, owner_name)
 
@@ -187,6 +189,9 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
           end
 
         {:noreply, push_event(socket, "react", payload)}
+
+      _ ->
+        {:noreply, socket}
     end
   end
 
@@ -217,35 +222,48 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         %{"send_to_contact" => send_to_contact},
         %{assigns: %{user_info: user}} = socket
       ) do
-    case Chat.ensure_chat_exists(send_to_contact, user.nickname) do
-      {:ok, public_id_chat} ->
-        if FriendRequest.exists?(user.nickname, send_to_contact) do
-          {:error, reason} =
-            FriendRequest.send_friend_request(public_id_chat, user.nickname, send_to_contact)
+    if User.exists?(send_to_contact) do
+      case Chat.ensure_chat_exists(send_to_contact, user.nickname) do
+        {:ok, public_id_chat} ->
+          if FriendRequest.exists?(user.nickname, send_to_contact) do
+            {:error, reason} =
+              FriendRequest.send_friend_request(public_id_chat, user.nickname, send_to_contact)
 
-          payload = %{event_name: "error_adding_contact", event_data: reason}
-          {:noreply, push_event(socket, "react", payload)}
-        else
-          case FriendRequest.send_friend_request(public_id_chat, send_to_contact, user.nickname) do
-            {:ok, contact} ->
-              {:ok, contact_data} = User.get_by_nickname(send_to_contact)
-              image_profile = contact_data.image_profile
+            payload = %{event_name: "error_adding_contact", event_data: reason}
+            {:noreply, push_event(socket, "react", payload)}
+          else
+            case FriendRequest.send_friend_request(public_id_chat, send_to_contact, user.nickname) do
+              {:ok, contact} ->
+                {:ok, contact_data} = User.get_by_nickname(send_to_contact)
+                status_request = FriendRequest.get_status(send_to_contact, user.nickname)
 
-              payload = %{
-                event_name: "add_contact_to_list",
-                event_data: %{contact: contact, image_profile: image_profile}
-              }
+                payload = %{
+                  event_name: "add_contact_to_list",
+                  event_data: %{
+                    contact: contact,
+                    image_profile: contact_data.image_profile,
+                    status_request: status_request
+                  }
+                }
 
-              {:noreply, push_event(socket, "react", payload)}
+                {:noreply, push_event(socket, "react", payload)}
 
-            {:error, reason} ->
-              payload = %{event_name: "error_adding_contact", event_data: reason}
-              {:noreply, push_event(socket, "react", payload)}
+              {:error, reason} ->
+                payload = %{event_name: "error_adding_contact", event_data: reason}
+                {:noreply, push_event(socket, "react", payload)}
+            end
           end
-        end
 
-      {:error, _reason} ->
-        {:noreply, socket}
+        {:error, _reason} ->
+          {:noreply, socket}
+      end
+    else
+      payload = %{
+        event_name: "error_adding_contact",
+        event_data: %{error: "El contacto #{send_to_contact} no existe"}
+      }
+
+      {:noreply, push_event(socket, "react", payload)}
     end
   end
 

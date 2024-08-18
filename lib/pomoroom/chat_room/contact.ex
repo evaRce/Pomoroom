@@ -7,7 +7,6 @@ defmodule Pomoroom.ChatRoom.Contact do
     field :name, :string
     field :belongs_to_user, :string
     field :is_group, :boolean
-    field :status_request, :string
     field :inserted_at, :utc_datetime
     field :updated_at, :utc_datetime
   end
@@ -18,7 +17,6 @@ defmodule Pomoroom.ChatRoom.Contact do
       :name,
       :belongs_to_user,
       :is_group,
-      :status_request,
       :inserted_at,
       :updated_at
     ])
@@ -30,7 +28,6 @@ defmodule Pomoroom.ChatRoom.Contact do
       :name,
       :belongs_to_user,
       :is_group,
-      :status_request,
       :inserted_at,
       :updated_at
     ])
@@ -40,8 +37,7 @@ defmodule Pomoroom.ChatRoom.Contact do
     contact = %{
       name: contact_name,
       belongs_to_user: belongs_to_user,
-      is_group: is_group,
-      status_request: "pending"
+      is_group: is_group
     }
 
     changeset(contact)
@@ -73,15 +69,6 @@ defmodule Pomoroom.ChatRoom.Contact do
       false ->
         {:error, %{error: "Falta un campo"}}
     end
-  end
-
-  def update_status(contact_name, belongs_to_user, status) do
-    Mongo.update_one(
-      :mongo,
-      "contacts",
-      %{name: contact_name, belongs_to_user: belongs_to_user, status_request: "pending"},
-      %{"$set": %{status_request: status, updated_at: NaiveDateTime.utc_now()}}
-    )
   end
 
   def delete_contact(contact_name, belongs_to_user) do

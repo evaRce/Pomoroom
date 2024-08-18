@@ -79,8 +79,6 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
       {:ok, request} ->
         if request.status == "pending" do
           update_request(send_to_contact, belongs_to_user, "accepted")
-          Contact.update_status(send_to_contact, belongs_to_user, "accepted")
-          Contact.update_status(belongs_to_user, send_to_contact, "accepted")
           {:ok, "Accepted request"}
         else
           {:error, "Friend request already processed"}
@@ -130,8 +128,6 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
       {:ok, request} ->
         if request.status == "pending" do
           update_request(send_to_contact, belongs_to_user, "rejected")
-          Contact.update_status(send_to_contact, belongs_to_user, "rejected")
-          Contact.update_status(belongs_to_user, send_to_contact, "rejected")
           {:ok, "Rejected request "}
         else
           {:error, "Friend request already processed"}
@@ -162,6 +158,22 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
 
       _ ->
         false
+    end
+  end
+
+  def get_status(send_to_contact, belongs_to_user) do
+    case get_request(send_to_contact, belongs_to_user) do
+      {:ok, request} ->
+        request.status
+
+      {:error, _reason} ->
+        case get_request(belongs_to_user, send_to_contact) do
+          {:ok, request} ->
+            request.status
+
+          {:error, reason} ->
+            reason
+        end
     end
   end
 

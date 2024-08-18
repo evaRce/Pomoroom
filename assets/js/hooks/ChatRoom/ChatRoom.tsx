@@ -26,7 +26,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const randomImageNumber = Math.floor(Math.random() * 5) + 1;
 		setImageNumber(randomImageNumber);
 		pushEventToLiveView("action.get_user_info", {});
-		pushEventToLiveView("action.get_list_contact", {});
 	}, []);
 
 	useEffect(() => {
@@ -69,11 +68,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "show_user_info" && eventData.nickname) {
-			setUserName(eventData.nickname)
-			// setIsSelectedContact(false);
+			setUserName(eventData.nickname);
 			addEvent(eventName, eventData);
 		}
-	}, [eventData]);
+	}, [eventData.nickname]);
 
 	useEffect(() => {
 		if (eventName === "add_contact_to_list" && eventData.contact) {
@@ -109,10 +107,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "open_rejected_request_send" && userName == eventData.contact_name) {
+			addEvent("rejected_request", { status: "rejected", contact_name: eventData.contact_name, owner_name: eventData.owner_name });
 			addEvent(eventName, eventData);
 			setComponent("RejectedRequestSend");
 		}
 		if (eventName === "open_rejected_request_received" && userName == eventData.owner_name) {
+			addEvent("rejected_request", { status: "rejected", contact_name: eventData.contact_name, owner_name: eventData.owner_name });
 			addEvent(eventName, eventData);
 			setComponent("RejectedRequestReceived");
 		}

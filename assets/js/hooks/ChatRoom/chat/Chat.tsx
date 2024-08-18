@@ -8,6 +8,7 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const { getEventData, removeEvent } = useEventContext();
   const messagesEndRef = useRef(null);
+  const [userData, setUserData] = useState({});
 
   useEffect(() => {
     const msgs = getEventData("show_list_messages");
@@ -20,6 +21,12 @@ export default function Chat() {
     if (msg) {
       addMessage(msg);
       removeEvent("show_message_to_send");
+    }
+
+    const user = getEventData("show_user_info");
+    if (user) {
+      setUserData(user);
+      // removeEvent("show_user_info");
     }
   }, [getEventData]);
 
@@ -45,7 +52,7 @@ export default function Chat() {
         ref={messagesEndRef}
       >
         {messages.length > 0 && messages.map((message) => (
-          <Message key={message.public_id_msg} message={message} />
+          <Message key={message.public_id_msg} message={message} userData={userData} />
         ))}
         <div ref={messagesEndRef}></div>
       </main>

@@ -45,7 +45,7 @@ export default function ContactList({ }) {
     const newContact = {
       name: contact.contact.name,
       image: contact.image_profile,
-      status_request: contact.contact.status_request
+      status_request: contact.status_request
     };
     setContacts(prevContacts => [...prevContacts, newContact]);
   };

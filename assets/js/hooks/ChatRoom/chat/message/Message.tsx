@@ -1,20 +1,7 @@
 import { Avatar } from "antd";
-import React, { useState, useEffect } from "react";
-import { useEventContext } from "../../EventContext";
+import React from "react";
 
-export default function Message({ message }) {
-	const [userData, setUserData] = useState(null);
-	const { getEventData, removeEvent } = useEventContext();
-
-	useEffect(() => {
-		const user = getEventData("show_user_info");
-		if (user) {
-			setUserData(user);
-			// removeEvent("show_user_info");
-		}
-	}, [getEventData]);
-
-
+export default function Message({ message, userData }) {
 	const setTime = (dateTime) => {
 		const date = new Date(dateTime);
 		const hours = date.getHours().toString().padStart(2, '0');
@@ -27,7 +14,6 @@ export default function Message({ message }) {
 	return (
 		<div className={`chat ${messagePosition}`}>
 			<div className="chat-image avatar">
-				field :image_profile, :string
 				<Avatar className="bg-red-100" src={userData.image_profile} size={45} />
 			</div>
 			<div className="chat-header">
