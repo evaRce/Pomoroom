@@ -7,26 +7,26 @@ import { useEventContext } from "../EventContext";
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const { getEventData, removeEvent } = useEventContext();
+  const [fromUser, setFromUser] = useState({});
+  const [toUser, setToUser] = useState({});
   const messagesEndRef = useRef(null);
-  const [userData, setUserData] = useState({});
 
   useEffect(() => {
     const msgs = getEventData("show_list_messages");
     if (msgs) {
-      setMessages(msgs);
+      setFromUser(msgs.from_user_data);
+      setToUser(msgs.to_user_data);
+      setMessages(msgs.messages);
       removeEvent("show_list_messages");
     }
 
     const msg = getEventData("show_message_to_send");
     if (msg) {
-      addMessage(msg);
+      console.log("mensaje a mostrar, ", msg);
+      setFromUser(msg.from_user_data);
+      setToUser(msg.to_user_data);
+      addMessage(msg.message_data);
       removeEvent("show_message_to_send");
-    }
-
-    const user = getEventData("show_user_info");
-    if (user) {
-      setUserData(user);
-      // removeEvent("show_user_info");
     }
   }, [getEventData]);
 
@@ -52,7 +52,7 @@ export default function Chat() {
         ref={messagesEndRef}
       >
         {messages.length > 0 && messages.map((message) => (
-          <Message key={message.public_id_msg} message={message} userData={userData} />
+          <Message key={message.msg_id} message={message} fromUser={fromUser} toUser={toUser} />
         ))}
         <div ref={messagesEndRef}></div>
       </main>

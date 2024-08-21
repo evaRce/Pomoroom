@@ -42,9 +42,11 @@ export default function ContactList({ }) {
   }, [searchTerm, contacts]);
 
   const addContact = (contact) => {
+
+    console.log("AÑADE CONTACTO:" , contact)
     const newContact = {
-      name: contact.contact.name,
-      image: contact.image_profile,
+      name: contact.contact_data.nickname,
+      image: contact.contact_data.image_profile,
       status_request: contact.status_request
     };
     setContacts(prevContacts => [...prevContacts, newContact]);

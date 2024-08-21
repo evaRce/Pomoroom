@@ -3,95 +3,56 @@ defmodule Pomoroom.ChatRoom.Chat do
   import Ecto.Changeset
   @max_num 1000
 
-  schema "chats" do
-    field :public_id_chat, :string
-    field :users, {:array, :string}
+  def get_public_id_chat() do
+    :rand.uniform(@max_num)
+    |> Integer.to_string()
   end
 
-  def chat_changeset(args) do
-    %Pomoroom.ChatRoom.Chat{}
-    |> cast(args, [:public_id_chat, :users])
-    |> validate_required([:users])
+  def get_members(collection, chat_id) do
+    query = %{"chat_id" => chat_id}
+
+    case Mongo.find_one(:mongo, collection, query) do
+      nil ->
+        {:error, "Chat no encontrado"}
+
+      %{"members" => members} ->
+        {:ok, members}
+    end
   end
 
-  def set_public_id_chat(changeset) do
-    random_public_id =
-      :rand.uniform(@max_num)
-      |> Integer.to_string()
-
-    changeset
-    |> change(%{public_id_chat: random_public_id})
+  def delete_chat(collection, chat_id) do
+    Mongo.delete_one(:mongo, collection, %{chat_id: chat_id})
   end
 
-  def create_chat(args) do
-    chat_changst =
-      args
-      |> chat_changeset()
-      |> set_public_id_chat()
+  def is_group?(chat_id) do
+    query = %{"chat_id" => chat_id}
 
-    case chat_changst.valid? do
-      true ->
-        new_chat = Mongo.insert_one(:mongo, "chats", chat_changst.changes)
+    case Mongo.find_one(:mongo, "group_chats", query) do
+      nil ->
+        false
+      _chat ->
+        true
+    end
+  end
 
-        case new_chat do
-          {:ok, %{inserted_id: inserted_id}} ->
-            case Mongo.find_one(:mongo, "chats", %{_id: inserted_id}) do
-              nil ->
-                {:error, %{error: "Chat no encontrado después de la inserción"}}
+  def exists?(chat_id) do
+    query = %{"chat_id" => chat_id}
 
-              chat ->
-                {:ok, Map.get(chat, "public_id_chat")}
-            end
-
-          {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => _errmsg}]}} ->
-            {:error, %{error: "El chat ya está añadido"}}
+    case Mongo.find_one(:mongo, "private_chats", query) do
+      nil ->
+        case Mongo.find_one(:mongo, "group_chats", query) do
+          nil ->
+            false
+          _chat ->
+            true
         end
 
-      false ->
-        {:error, %{error: "No es válido"}}
+      _chat ->
+        true
     end
   end
 
-  def ensure_chat_exists(contact_name, belongs_to_user) do
-    query = %{
-      users: %{"$all" => [contact_name, belongs_to_user]},
-      public_id_chat: %{"$exists" => true, "$ne" => nil}
-    }
-
-    case Mongo.find_one(:mongo, "chats", query) do
-      nil ->
-        create_chat(%{users: [contact_name, belongs_to_user]})
-
-      chat ->
-        {:ok, Map.get(chat, "public_id_chat")}
-    end
-  end
-
-  def delete_chat(contact_name, belongs_to_user) do
-    query = %{
-      users: [contact_name, belongs_to_user]
-    }
-
-    case Mongo.find_one(:mongo, "chats", query) do
-      nil ->
-        {:error, "Chat no encontrado"}
-
-      chat ->
-        Mongo.delete_one(:mongo, "chats", %{"_id" => chat["_id"]})
-    end
-  end
-
-  def get_list_user(public_id_chat) do
-    query = %{
-      public_id_chat: public_id_chat
-    }
-
-    case Mongo.find_one(:mongo, "chats", query) do
-      nil ->
-        {:error, "Chat no encontrado"}
-
-      %{"users" => users} ->
-        {:ok, users}
-    end
+  def timestamps(changeset) do
+    change(changeset, %{inserted_at: NaiveDateTime.utc_now(), updated_at: NaiveDateTime.utc_now()})
   end
 end

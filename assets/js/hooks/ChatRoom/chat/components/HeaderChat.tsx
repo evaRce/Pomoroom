@@ -5,26 +5,26 @@ import { useEventContext } from "../../EventContext";
 
 export default function HeaderChat() {
 	const { getEventData } = useEventContext();
-	const [contactData, setContactData] = useState(null);
+  const [chatData, setChatData] = useState(null);
 
 	useEffect(() => {
-		const contact = getEventData("open_chat");
-		if (contact) {
-			setContactData(contact);
+		const chat = getEventData("open_chat");
+		if (chat) {
+			setChatData(chat);
 		}
 	}, [getEventData]);
 
 	return (
 		<header className="flex h-[10vh] justify-between sm:items-center py-3 p-3">
-			{contactData && (
+			{chatData && (
 				<div className="flex items-center space-x-3">
 					<img
 						className="h-10 w-10 rounded-full bg-pink-50"
-						src={contactData.image_profile}
+						src={chatData.to_user_data.image_profile}
 						alt="default"
 					/>
 					<span className="text-grey-darkest ml-3">
-						{contactData.contact_name}
+						{chatData.to_user_data.nickname}
 					</span>
 				</div>
 			)}

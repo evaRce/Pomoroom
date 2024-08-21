@@ -15,7 +15,7 @@ export default function FooterChat({ addMessage }) {
   const [inputStr, setInputStr] = useState("");
   const [showPicker, setShowPicker] = useState(false);
   const { addEvent, getEventData, removeEvent } = useEventContext();
-  const [contactData, setContactData] = useState(null);
+  const [chatData, setChatData] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   const onEmojiClick = (emojiObject, event) => {
@@ -24,10 +24,10 @@ export default function FooterChat({ addMessage }) {
   };
 
   useEffect(() => {
-    const contact = getEventData("open_chat");
-    if (contact) {
-      setContactData(contact);
-      // removeEvent("open_chat");
+    const chat = getEventData("open_chat");
+    if (chat) {
+      setChatData(chat);
+      removeEvent("open_chat");
     }
   }, [getEventData]);
 
@@ -37,7 +37,7 @@ export default function FooterChat({ addMessage }) {
       return;
     }
     console.log(inputStr);
-    addEvent("send_message", { message: inputStr, contact_name: contactData.contact_name })
+    addEvent("send_message", { message: inputStr, to_user: chatData.to_user_data.nickname })
     addMessage(inputStr);
     setInputStr("");
   };

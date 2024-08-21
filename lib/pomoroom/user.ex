@@ -1,7 +1,6 @@
 defmodule Pomoroom.User do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Pomoroom.ChatRoom.Contact
 
   schema "users" do
     field :email, :string
@@ -70,35 +69,22 @@ defmodule Pomoroom.User do
     end
   end
 
-  def get_by_email(""), do: {:error, :not_found}
+  def get_with_passw(field, value) do
+    query = %{field => value}
 
-  def get_by_email(email) do
-    query = %{
-      email: email
-    }
-
-    find_user = Mongo.find_one(:mongo, "users", query)
-
-    case find_user do
+    case Mongo.find_one(:mongo, "users", query) do
       nil ->
         {:error, :not_found}
 
       user_data when is_map(user_data) ->
         {:ok, get_changes_from_changeset(user_data)}
-
-      error ->
-        {:error, error}
     end
   end
 
-  def get_by_nickname(nickname) do
-    query = %{
-      nickname: nickname
-    }
+  def get_by(field, value) do
+    query = %{field => value}
 
-    find_user = Mongo.find_one(:mongo, "users", query)
-
-    case find_user do
+    case Mongo.find_one(:mongo, "users", query) do
       nil ->
         {:error, :not_found}
 
@@ -107,75 +93,92 @@ defmodule Pomoroom.User do
           user_data
           |> Map.drop(["_id", "password"])
           |> changeset_without_passw()
-
         {:ok, user.changes}
-
-      error ->
-        {:error, error}
     end
   end
 
-  def get_changes_from_changeset(args) do
-    changeset(args).changes
-  end
+  def get_contacts(user) do
+    query = %{"members" => user}
 
-  def get_contacts(belongs_to_user) do
-    contacts_query = %{
-      belongs_to_user: belongs_to_user
-    }
+    case Mongo.find(:mongo, "private_chats", query) |> Enum.to_list do
+      [] ->
+        {:error, "El usuario #{user} no tiene conocidos"}
 
-    search_contacts = Mongo.find(:mongo, "contacts", contacts_query)
-
-    case search_contacts do
-      cursor ->
+      chat_list ->
         contacts =
-          Enum.map(cursor, fn contact ->
-            contact
-            |> Map.delete("_id")
-            |> Contact.get_changes_from_changeset()
+          Enum.flat_map(chat_list, fn chat ->
+            chat["members"]
+            |> Enum.filter(fn contact ->
+              contact != user and not Enum.member?(chat["deleted_by"], user)
+            end)
+            |> Enum.map(fn contact ->
+              case get_by("nickname", contact) do
+                {:ok, user_info} -> user_info
+                {:error, _} -> nil
+              end
+            end)
           end)
+          |> Enum.reject(&is_nil/1)
 
         {:ok, contacts}
     end
   end
 
-  def get_contacts_names(belongs_to_user) do
-    contacts_query = %{
-      belongs_to_user: belongs_to_user
-    }
+  def get_contacts_name(user) do
+    query = %{"members" => user}
 
-    search_contacts = Mongo.find(:mongo, "contacts", contacts_query)
+    case Mongo.find(:mongo, "private_chats", query) |> Enum.to_list() do
+      [] ->
+        {:error, "El usuario #{user} no tiene conocidos"}
 
-    case search_contacts do
-      cursor ->
-        contacts = Enum.to_list(cursor)
+      chat_list ->
+        contacts_name =
+          chat_list
+          |> Enum.flat_map(fn chat ->
+            chat["members"]
+            |> Enum.filter(fn contact ->
+              contact != user and not Enum.member?(chat["deleted_by"], user)
+            end)
+          end)
 
-        case contacts do
-          [] ->
-            {:not_found, []}
-
-          contact_list ->
-            names = Enum.map(contact_list, fn contact -> contact["name"] end)
-
-            {:ok, %{contacts: names}}
-        end
+        {:ok, contacts_name}
     end
   end
 
-  def exists?(user_name) do
-    contact_query = %{
-      nickname: user_name
-    }
 
-    find_contact = Mongo.find_one(:mongo, "users", contact_query)
+  def get_chats(collection, user) do
+    query = %{"members" => user}
 
-    case find_contact do
+    case Mongo.find(:mongo, collection, query) |> Enum.to_list() do
+      [] ->
+        {:error, "No se encontro chats para el usuario #{user}"}
+
+        chat_list ->
+          chat_ids = Enum.map(chat_list, fn chat -> Map.get(chat, "chat_id") end)
+          {:ok, chat_ids}
+    end
+  end
+
+  def get_all_chats(user) do
+    {:ok, private_chats} = get_chats("private_chats", user)
+    {:ok, group_chats} = get_chats("group_chats", user)
+    group_chats ++ private_chats
+  end
+
+  def exists?(nickname) do
+    contact_query = %{"nickname" => nickname}
+
+    case Mongo.find_one(:mongo, "users", contact_query) do
       nil ->
         false
 
       _ ->
         true
     end
+  end
+
+  defp get_changes_from_changeset(args) do
+    changeset(args).changes
   end
 
   defp timestamps(changeset) do

@@ -24,7 +24,7 @@ export default function RequestSend({ imageNumber }) {
         className="object-cover w-full h-full opacity-45"
       />
       <Text className="flex absolute justify-center items-center">
-        Has enviado una solicitud de amistad a {requestData ? requestData.contact_name : '...'}.
+        Has enviado una solicitud de amistad a {requestData ? requestData.to_user_data.nickname : '...'}.
         <br></br>
         Esperando respuesta.
       </Text>

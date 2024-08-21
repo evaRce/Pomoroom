@@ -7,7 +7,7 @@ export default function Contact({ contact, isSelected, onSelect }) {
 
   const handleChat = () => {
     if (!isSelected) {
-      addEvent("selected_chat", { contact_name: contact.name, contact_status: contact.status_request });
+      addEvent("selected_chat", { contact_name: contact.name });
       onSelect();
     }
   };
@@ -39,8 +39,8 @@ export default function Contact({ contact, isSelected, onSelect }) {
   useEffect(() => {
     const rejectedRequest = getEventData("rejected_request");
     if (rejectedRequest) {
-      const isInvolved = (rejectedRequest.contact_name === contact.name && rejectedRequest.owner_name === contact.belongs_to_user) ||
-        (rejectedRequest.contact_name === contact.belongs_to_user && rejectedRequest.owner_name === contact.name);
+      const isInvolved = (rejectedRequest.contact_name === contact.name && rejectedRequest.from_user_name === contact.from_user) ||
+        (rejectedRequest.contact_name === contact.from_user && rejectedRequest.from_user_name === contact.name);
 
       if (isInvolved) {
         setStatus(rejectedRequest.status);

@@ -8,25 +8,27 @@ defmodule Pomoroom.Startup do
     ]
 
     message_indexes = [
-      %{key: %{public_id_msg: 1}, name: "public_id_msg_index", unique: true}
+      %{key: %{msg_id: 1}, name: "msg_id_index", unique: true}
     ]
 
-    contacts_indexes = [
-      %{key: %{name: 1, belongs_to_user: 1}, name: "contact_index", unique: true}
+    private_chats_indexes = [
+      %{key: %{chat_id: 1}, name: "private_chat_id_index", unique: true},
+      %{key: %{"sorted_members.0" => 1, "sorted_members.1" => 1}, name: "private_chat_members_index", unique: true}
     ]
 
-    chats_indexes = [
-      %{key: %{public_id_chat: 1}, name: "chat_index", unique: true}
+    group_chats_indexes = [
+      %{key: %{chat_id: 1}, name: "group_chat_id_index", unique: true},
+      %{key: %{name: 1}, name: "group_chat_name_index", unique: true}
     ]
 
     friend_requests_indexes = [
-      %{key: %{belongs_to_user: 1, send_to_contact: 1}, name: "request_indexes", unique: true}
+      %{key: %{from_user: 1, to_user: 1}, name: "request_index", unique: true}
     ]
 
     Mongo.create_indexes(:mongo, "users", user_indexes)
     Mongo.create_indexes(:mongo, "messages", message_indexes)
-    Mongo.create_indexes(:mongo, "contacts", contacts_indexes)
-    Mongo.create_indexes(:mongo, "chats", chats_indexes)
+    Mongo.create_indexes(:mongo, "private_chats", private_chats_indexes)
+    Mongo.create_indexes(:mongo, "group_chats", group_chats_indexes)
     Mongo.create_indexes(:mongo, "friend_requests", friend_requests_indexes)
   end
 end

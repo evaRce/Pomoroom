@@ -15,7 +15,7 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
     }
     setLoading(true);
     if (entryType === "contact") {
-      addEvent("send_friend_request", {send_to_contact: inputStr})
+      addEvent("send_friend_request", {to_user: inputStr})
     } else if (entryType === "group") {
       addEvent("add_contact", { name: inputStr, is_group: true});
     }
@@ -53,7 +53,7 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
     if (successContact) {
       const successMessage = entryType === "contact" ? 'Invitación enviada!' : 'Grupo creado exitosamente!';
       message.success(successMessage, 2);;
-      // removeEvent("add_contact_to_list");
+      removeEvent("add_contact_to_list");
       setLoading(false);
     }
   }, [getEventData]);

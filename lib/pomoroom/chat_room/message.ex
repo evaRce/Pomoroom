@@ -4,10 +4,10 @@ defmodule Pomoroom.ChatRoom.Message do
   @max_num 1000
 
   schema "messages" do
-    field :public_id_msg, :string
+    field :msg_id, :string
     field :text, :string
-    field :belongs_to_user, :string
-    field :belongs_to_chat, :string
+    field :from_user, :string
+    field :chat_id, :string
     field :inserted_at, :utc_datetime
     field :updated_at, :utc_datetime
   end
@@ -15,10 +15,10 @@ defmodule Pomoroom.ChatRoom.Message do
   def changeset(args) do
     %Pomoroom.ChatRoom.Message{}
     |> cast(args, [
-      :public_id_msg,
+      :msg_id,
       :text,
-      :belongs_to_user,
-      :belongs_to_chat,
+      :from_user,
+      :chat_id,
       :inserted_at,
       :updated_at
     ])
@@ -27,42 +27,35 @@ defmodule Pomoroom.ChatRoom.Message do
   def message_changeset(args) do
     changeset(args)
     |> validate_required([
-      :public_id_msg,
+      :msg_id,
       :text,
-      :belongs_to_user,
-      :belongs_to_chat,
+      :from_user,
+      :chat_id,
       :inserted_at,
       :updated_at
     ])
   end
 
-  def message_changeset(message, belongs_to_user, belongs_to_chat) do
-    message = %{text: message, belongs_to_user: belongs_to_user, belongs_to_chat: belongs_to_chat}
+  def message_changeset(msg_id, message, from_user, chat_id) do
+    msg = %{msg_id: msg_id, text: message, from_user: from_user, chat_id: chat_id}
 
-    changeset(message)
-    |> validate_required([:text, :belongs_to_user])
+    changeset(msg)
+    |> validate_required([:msg_id, :text, :from_user, :chat_id])
   end
 
-  def set_public_id_msg(changeset) do
-    random_public_id =
-      :rand.uniform(@max_num)
-      |> Integer.to_string()
-
-    changeset
-    |> change(%{public_id_msg: random_public_id})
+  def get_msg_id() do
+    :rand.uniform(@max_num)
+    |> Integer.to_string()
   end
 
-  def new_message(message, belongs_to_user, belongs_to_chat) do
+  def new_message(message, from_user, chat_id) do
     msg_changeset =
-      message
-      |> message_changeset(belongs_to_user, belongs_to_chat)
-      |> set_public_id_msg()
+      get_msg_id()
+      |> message_changeset(message, from_user, chat_id)
       |> timestamps()
 
     if msg_changeset.valid? do
-      insert_message = Mongo.insert_one(:mongo, "messages", msg_changeset.changes)
-
-      case insert_message do
+      case Mongo.insert_one(:mongo, "messages", msg_changeset.changes) do
         {:ok, _result} ->
           {:ok, msg_changeset.changes}
 
@@ -74,27 +67,23 @@ defmodule Pomoroom.ChatRoom.Message do
     end
   end
 
-  def delete_message(public_id) do
-    msg_query = %{
-      "public_id_msg" => public_id
-    }
+  def delete_message(msg_id) do
+    msg_query = %{"msg_id" => msg_id}
 
     Mongo.delete_one(:mongo, "messages", msg_query)
   end
 
   defp parse_duplicate_key_error(errmsg) do
     cond do
-      String.contains?(errmsg, "public_id_msg") ->
-        %{public_id_msg: "Este public id ya está siendo usado"}
+      String.contains?(errmsg, "msg_id") ->
+        %{msg_id: "Este public id ya está siendo usado"}
     end
   end
 
-  def get_by_public_id(""), do: {:error, :not_found}
+  def get_by_id(""), do: {:error, :not_found}
 
-  def get_by_public_id(public_id) do
-    msg_query = %{
-      "public_id_msg" => public_id
-    }
+  def get_by_id(msg_id) do
+    msg_query = %{"msg_id" => msg_id}
 
     find_user = Mongo.find_one(:mongo, "messages", msg_query)
 
@@ -104,16 +93,11 @@ defmodule Pomoroom.ChatRoom.Message do
 
       user_data when is_map(user_data) ->
         {:ok, get_changes_from_changeset(user_data)}
-
-      error ->
-        {:error, error}
     end
   end
 
-  def get_chat_messages(belongs_to_chat, limit \\ :all) do
-    msg_query = %{
-      "belongs_to_chat" => belongs_to_chat
-    }
+  def get_chat_messages(chat_id, limit \\ :all) do
+    msg_query = %{"chat_id" => chat_id}
 
     sort_order = %{"inserted_at" => -1}
 

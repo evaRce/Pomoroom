@@ -34,7 +34,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const selectedChat = getEventData("selected_chat");
 		const sendMessage = getEventData("send_message");
 		const sendFriendRequest = getEventData("send_friend_request");
-		const statusFriendRequest = getEventData("send_status_request");
+		const statusFriendRequest = getEventData("update_status_request");
 
 		// if (contactInfo) {
 		// 	pushEventToLiveView("action.add_contact", contactInfo);
@@ -60,24 +60,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			removeEvent("send_friend_request");
 		}
 		if (statusFriendRequest) {
-			pushEventToLiveView("action.send_status_request", statusFriendRequest);
-			removeEvent("send_status_request");
+			pushEventToLiveView("action.update_status_request", statusFriendRequest);
+			removeEvent("update_status_request");
 		}
 	}, [addEvent]);
 
 
 	useEffect(() => {
-		if (eventName === "show_user_info" && eventData.nickname) {
+		if (eventName === "show_user_info" && eventData.email) {
 			setUserName(eventData.nickname);
 			addEvent(eventName, eventData);
 		}
-	}, [eventData.nickname]);
+	}, [eventData.email]);
 
 	useEffect(() => {
-		if (eventName === "add_contact_to_list" && eventData.contact) {
+		if (eventName === "add_contact_to_list" && eventData.contact_data) {
 			addEvent(eventName, eventData);
 		}
-	}, [eventData.contact])
+	}, [eventData.contact_data, eventData.status_request])
 
 	useEffect(() => {
 		if (eventName === "error_adding_contact" && eventData.error) {
@@ -92,27 +92,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, [eventData.contact_list]);
 
 	useEffect(() => {
-		if (eventName === "open_chat" && eventData.contact_name) {
+		if (eventName === "open_chat" && eventData.to_user_data) {
 			addEvent(eventName, eventData);
-			addEvent("show_list_messages", eventData.messages);
+			addEvent("show_list_messages", eventData);
 			setComponent("Chat");
 		}
-	}, [eventData.contact_name, eventData.messages]);
+	}, [eventData.from_user_data, eventData.messages]);
 
 	useEffect(() => {
-		if (eventName === "show_message_to_send" && eventData.public_id_msg) {
+		if (eventName === "show_message_to_send" && eventData.from_user_data) {
 			addEvent(eventName, eventData);
 		}
-	}, [eventData.public_id_msg, eventData.contact_name]);
+	}, [eventData.from_user_data, eventData.message_data]);
 
 	useEffect(() => {
-		if (eventName === "open_rejected_request_send" && userName == eventData.contact_name) {
-			addEvent("rejected_request", { status: "rejected", contact_name: eventData.contact_name, owner_name: eventData.owner_name });
+		if (eventName === "open_rejected_request_send" && userName == eventData.to_user_data.nickname) {
+			addEvent("rejected_request", { status: "rejected", to_user_data: eventData.to_user_data, from_user_data: eventData.from_user_data });
 			addEvent(eventName, eventData);
 			setComponent("RejectedRequestSend");
 		}
-		if (eventName === "open_rejected_request_received" && userName == eventData.owner_name) {
-			addEvent("rejected_request", { status: "rejected", contact_name: eventData.contact_name, owner_name: eventData.owner_name });
+		if (eventName === "open_rejected_request_received" && userName == eventData.from_user_data.nickname) {
+			addEvent("rejected_request", { status: "rejected", to_user_data: eventData.to_user_data, from_user_data: eventData.from_user_data });
 			addEvent(eventName, eventData);
 			setComponent("RejectedRequestReceived");
 		}
@@ -124,7 +124,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			addEvent(eventName, eventData);
 			setComponent("RequestReceived");
 		}
-	}, [eventName]);
+	}, [eventData.to_user_data, eventData.from_user_data]);  //esto lo cambie
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">

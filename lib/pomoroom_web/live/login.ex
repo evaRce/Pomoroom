@@ -11,7 +11,7 @@ defmodule PomoroomWeb.HomeLive.Login do
   end
 
   def handle_event("action.log_user", %{"email" => email, "password" => password}, socket) do
-    user = User.get_by_email(email)
+    user = User.get_with_passw("email", email)
 
     case user do
       {:error, :not_found} ->
@@ -22,7 +22,7 @@ defmodule PomoroomWeb.HomeLive.Login do
 
       {:ok, user_changes} ->
         if Bcrypt.verify_pass(password, user_changes.password) do
-          {:ok, user_info} = User.get_by_nickname(user_changes.nickname)
+          {:ok, user_info} = User.get_by("nickname", user_changes.nickname)
 
           socket = PhoenixLiveSession.put_session(socket, "user_info", user_info)
           {:noreply, redirect(socket, to: "/pomoroom/chat")}

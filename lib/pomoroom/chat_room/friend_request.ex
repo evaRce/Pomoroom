@@ -1,14 +1,13 @@
 defmodule Pomoroom.ChatRoom.FriendRequest do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Pomoroom.ChatRoom.Contact
+  alias Pomoroom.ChatRoom.PrivateChat
   alias Pomoroom.User
 
   schema "friend_requests" do
     field :status, :string
-    field :chat_name, :string
-    field :belongs_to_user, :string
-    field :send_to_contact, :string
+    field :from_user, :string
+    field :to_user, :string
     field :inserted_at, :utc_datetime
     field :updated_at, :utc_datetime
   end
@@ -17,9 +16,8 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
     %Pomoroom.ChatRoom.FriendRequest{}
     |> cast(args, [
       :status,
-      :chat_name,
-      :belongs_to_user,
-      :send_to_contact,
+      :from_user,
+      :to_user,
       :inserted_at,
       :updated_at
     ])
@@ -29,59 +27,81 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
     changeset(args)
     |> validate_required([
       :status,
-      :chat_name,
-      :belongs_to_user,
-      :send_to_contact,
+      :from_user,
+      :to_user,
       :inserted_at,
       :updated_at
     ])
   end
 
-  def request_changeset(public_id_chat, send_to_contact, belongs_to_user) do
+  def request_changeset(to_user, from_user) do
     request = %{
       status: "pending",
-      chat_name: public_id_chat,
-      belongs_to_user: belongs_to_user,
-      send_to_contact: send_to_contact
+      from_user: from_user,
+      to_user: to_user
     }
 
     request
     |> changeset()
-    |> validate_required([:status, :chat_name, :belongs_to_user, :send_to_contact])
+    |> validate_required([:status, :from_user, :to_user])
   end
 
-  def send_friend_request(public_id_chat, send_to_contact, belongs_to_user) do
-    friend_request_changst =
-      public_id_chat
-      |> request_changeset(send_to_contact, belongs_to_user)
-      |> timestamps()
+  def send_friend_request(to_user, from_user) when to_user==from_user do
+    {:error, %{error: "No puedes añadirte a ti mismo como un contacto"}}
+  end
 
-    case Mongo.insert_one(:mongo, "friend_requests", friend_request_changst.changes) do
-      {:ok, _result} ->
-        if User.exists?(send_to_contact) do
-          # me añado como su amigo
-          Contact.add_contact(belongs_to_user, send_to_contact)
-          # le añado como mi amigo -> return {:ok, contact}
-          Contact.add_contact(send_to_contact, belongs_to_user)
-        else
-          # le añado como mi amigo -> return {:ok, contact}
-          Contact.add_contact(send_to_contact, belongs_to_user)
-        end
+  def send_friend_request(to_user, from_user) do
+    if User.exists?(to_user) do
+      friend_request_changst =
+        request_changeset(to_user, from_user)
+        |> timestamps()
 
-      {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => _errmsg}]}} ->
-        {:error,
-         %{error: "Ya hay una petición de amistad entre #{send_to_contact} y #{belongs_to_user}"}}
+      case Mongo.insert_one(:mongo, "friend_requests", friend_request_changst.changes) do
+        {:ok, _result} ->
+          PrivateChat.ensure_exists(to_user, from_user)
+          {:ok, friend_request_changst.changes}
+
+        {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => _errmsg}]}} ->
+          {:error, %{error: "Ya hay una petición de amistad entre #{to_user} y #{from_user}"}}
+      end
+    else
+      {:error, %{error: "El usuario #{to_user} no existe"}}
     end
   end
 
-  def accept_friend_request(send_to_contact, belongs_to_user) do
-    case get_request(send_to_contact, belongs_to_user) do
+  def restore_contact_if_request_exists(to_user, from_user, who_restore) do
+    deleted_by =
+      if who_restore == from_user, do: from_user, else: to_user
+
+    query = %{"members" => [to_user, from_user], "deleted_by" => %{"$in" => [deleted_by]}}
+
+    case Mongo.find_one(:mongo, "private_chats", query) do
+      nil ->
+        {:error, %{error: "El chat no existe o no fue eliminado por este usuario"}}
+
+      chat ->
+        request_query = %{"to_user" => to_user, "from_user" => from_user}
+
+        case Mongo.find_one(:mongo, "friend_requests", request_query) do
+          nil ->
+            {:error, "No hay una solicitud de amistad pendiente"}
+
+          _request ->
+            PrivateChat.update_restore_deleted_contact(chat, who_restore)
+            {:ok, "Contacto restaurado"}
+        end
+    end
+  end
+
+
+  def accept_friend_request(to_user, from_user) do
+    case get(to_user, from_user) do
       {:ok, request} ->
         if request.status == "pending" do
-          update_request(send_to_contact, belongs_to_user, "accepted")
-          {:ok, "Accepted request"}
+          update_request(to_user, from_user, "accepted")
+          {:ok, "Petición de amistad aceptada"}
         else
-          {:error, "Friend request already processed"}
+          {:error, %{error: "Petición de amistad ya aceptada"}}
         end
 
       {:error, reason} ->
@@ -89,48 +109,36 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
     end
   end
 
-  def get_request(send_to_contact, belongs_to_user) do
-    friend_request_query = %{
-      "belongs_to_user" => belongs_to_user,
-      "send_to_contact" => send_to_contact
-    }
+  def get(to_user, from_user) do
+    request_query = %{"to_user" => to_user, "from_user" => from_user}
 
-    find_request = Mongo.find_one(:mongo, "friend_requests", friend_request_query)
-
-    case find_request do
+    case Mongo.find_one(:mongo, "friend_requests", request_query) do
       nil ->
         {:error, :not_found}
 
       request_data when is_map(request_data) ->
         {:ok, get_changes_from_changeset(request_data)}
-
-      error ->
-        {:error, error}
     end
   end
 
-  def is_owner_request?(send_to_contact, belongs_to_user) do
-    case get_request(send_to_contact, belongs_to_user) do
+  def is_owner_request?(to_user, from_user) do
+    case get(to_user, from_user) do
       {:ok, request} ->
-        if request.belongs_to_user == belongs_to_user do
-          true
-        else
-          false
-        end
+        if request.from_user == from_user, do: true, else: false
 
       {:error, _reason} ->
         false
     end
   end
 
-  def reject_friend_request(send_to_contact, belongs_to_user) do
-    case get_request(send_to_contact, belongs_to_user) do
+  def reject_friend_request(to_user, from_user) do
+    case get(to_user, from_user) do
       {:ok, request} ->
         if request.status == "pending" do
-          update_request(send_to_contact, belongs_to_user, "rejected")
-          {:ok, "Rejected request "}
+          update_request(to_user, from_user, "rejected")
+          {:ok, "Petición de amistad rechazada"}
         else
-          {:error, "Friend request already processed"}
+          {:error, %{error: "Petición de amistad ya rechazada"}}
         end
 
       {:error, reason} ->
@@ -138,47 +146,40 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
     end
   end
 
-  def delete_request(send_to_contact, belongs_to_user) do
-    request_query = %{
-      "belongs_to_user" => belongs_to_user,
-      "send_to_contact" => send_to_contact
-    }
+  def delete_request(to_user, from_user) do
+    request_query = %{"to_user" => to_user, "from_user" => from_user}
 
     Mongo.delete_one(:mongo, "friend_requests", request_query)
   end
 
-  def request_is_pending?(send_to_contact, belongs_to_user) do
-    case get_request(send_to_contact, belongs_to_user) do
+  def request_is_pending?(to_user, from_user) do
+    case get(to_user, from_user) do
       {:ok, request} ->
-        if request.status == "pending" do
-          true
-        else
-          false
-        end
+        if request.status == "pending", do: true, else: false
 
       _ ->
         false
     end
   end
 
-  def get_status(send_to_contact, belongs_to_user) do
-    case get_request(send_to_contact, belongs_to_user) do
+  def get_status(to_user, from_user) do
+    case get(to_user, from_user) do
       {:ok, request} ->
         request.status
 
       {:error, _reason} ->
-        case get_request(belongs_to_user, send_to_contact) do
+        case get(from_user, to_user) do
           {:ok, request} ->
             request.status
 
-          {:error, reason} ->
-            reason
+          {:error, :not_found} ->
+            :not_found
         end
     end
   end
 
-  def exists?(send_to_contact, belongs_to_user) do
-    case get_request(send_to_contact, belongs_to_user) do
+  def exists?(to_user, from_user) do
+    case get(to_user, from_user) do
       {:ok, _request} ->
         true
 
@@ -195,11 +196,11 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
     request_changeset(args).changes
   end
 
-  defp update_request(send_to_contact, belongs_to_user, status) do
+  defp update_request(to_user, from_user, status) do
     Mongo.update_one(
       :mongo,
       "friend_requests",
-      %{belongs_to_user: belongs_to_user, send_to_contact: send_to_contact, status: "pending"},
+      %{from_user: from_user, to_user: to_user, status: "pending"},
       %{"$set": %{status: status, updated_at: NaiveDateTime.utc_now()}}
     )
   end

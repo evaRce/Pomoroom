@@ -3,34 +3,34 @@ defmodule Pomoroom.ChatRoom.ChatServer do
   alias Phoenix.PubSub
   alias Pomoroom.ChatRoom.Message
 
-  def start_link(chat_name) do
-    GenServer.start_link(__MODULE__, %{chat_name: chat_name, messages: [], first_load: true},
-      name: via_tuple(chat_name)
+  def start_link(chat_id) do
+    GenServer.start_link(__MODULE__, %{chat_id: chat_id, messages: [], first_load: true},
+      name: via_tuple(chat_id)
     )
   end
 
-  def send_message(chat_name, user, message) do
-    GenServer.call(via_tuple(chat_name), {:send_message, user, message})
+  def send_message(chat_id, user, message) do
+    GenServer.call(via_tuple(chat_id), {:send_message, user, message})
   end
 
-  def get_messages(chat_name, limit \\ :all) do
-    GenServer.call(via_tuple(chat_name), {:get_messages, limit})
+  def get_messages(chat_id, limit \\ :all) do
+    GenServer.call(via_tuple(chat_id), {:get_messages, limit})
   end
 
-  def join_chat(chat_name) do
-    GenServer.call(via_tuple(chat_name), :join_chat)
+  def join_chat(chat_id) do
+    GenServer.call(via_tuple(chat_id), :join_chat)
   end
 
   # Server Callbacks
   def init(state) do
-    PubSub.subscribe(Pomoroom.PubSub, chat_topic(state.chat_name))
+    PubSub.subscribe(Pomoroom.PubSub, chat_topic(state.chat_id))
     {:ok, state}
   end
 
   def handle_call({:send_message, user, message}, _from, state) do
-    case Message.new_message(message, user, state.chat_name) do
+    case Message.new_message(message, user, state.chat_id) do
       {:ok, msg} ->
-        PubSub.broadcast(Pomoroom.PubSub, chat_topic(state.chat_name), {:new_message, msg})
+        PubSub.broadcast(Pomoroom.PubSub, chat_topic(state.chat_id), {:new_message, msg})
         new_messages = state.messages ++ [msg]
         {:reply, {:ok, msg}, %{state | messages: new_messages}}
 
@@ -41,7 +41,7 @@ defmodule Pomoroom.ChatRoom.ChatServer do
 
   def handle_call({:get_messages, :all}, _from, state) do
     if state.first_load do
-      {:ok, messages_from_db} = Message.get_chat_messages(state.chat_name)
+      {:ok, messages_from_db} = Message.get_chat_messages(state.chat_id)
       new_state = %{state | messages: messages_from_db, first_load: false}
       {:reply, messages_from_db, new_state}
     else
@@ -51,7 +51,7 @@ defmodule Pomoroom.ChatRoom.ChatServer do
 
   def handle_call({:get_messages, limit}, _from, state) when is_integer(limit) do
     if state.first_load do
-      {:ok, limited_messages_from_db} = Message.get_chat_messages(state.chat_name, limit)
+      {:ok, limited_messages_from_db} = Message.get_chat_messages(state.chat_id, limit)
       new_state = %{state | messages: limited_messages_from_db, first_load: false}
       {:reply, limited_messages_from_db, new_state}
     else
@@ -61,7 +61,7 @@ defmodule Pomoroom.ChatRoom.ChatServer do
   end
 
   def handle_call(:join_chat, _from, state) do
-    PubSub.subscribe(Pomoroom.PubSub, chat_topic(state.chat_name))
+    PubSub.subscribe(Pomoroom.PubSub, chat_topic(state.chat_id))
     {:reply, :ok, state}
   end
 
@@ -69,9 +69,9 @@ defmodule Pomoroom.ChatRoom.ChatServer do
     {:noreply, state}
   end
 
-  def via_tuple(chat_name) do
-    {:via, Registry, {Registry.Chat, chat_name}}
+  def via_tuple(chat_id) do
+    {:via, Registry, {Registry.Chat, chat_id}}
   end
 
-  defp chat_topic(chat_name), do: "chat:#{chat_name}"
+  defp chat_topic(chat_id), do: "chat:#{chat_id}"
 end
