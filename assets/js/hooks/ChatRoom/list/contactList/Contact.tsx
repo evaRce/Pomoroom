@@ -43,7 +43,7 @@ export default function Contact({ contact, isSelected, onSelect }) {
         (rejectedRequest.contact_name === contact.from_user && rejectedRequest.from_user_name === contact.name);
 
       if (isInvolved) {
-        setStatus(rejectedRequest.status);
+        setStatus(rejectedstatus_request);
       }
       removeEvent("status_request");
     }

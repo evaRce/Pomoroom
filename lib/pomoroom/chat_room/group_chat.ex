@@ -56,9 +56,15 @@ defmodule Pomoroom.ChatRoom.GroupChat do
 
   def create_group_chat(from_user, name) do
     chat_id = Chat.get_public_id_chat()
+
     group_changst =
       chat_id
-      |> group_chat_changeset(name, get_default_group_image(), from_user, generate_invite_link(chat_id))
+      |> group_chat_changeset(
+        name,
+        get_default_group_image(),
+        from_user,
+        generate_invite_link(chat_id)
+      )
       |> Chat.timestamps()
 
     case group_changst.valid? do
@@ -88,7 +94,8 @@ defmodule Pomoroom.ChatRoom.GroupChat do
           {:error, "El usuario ya es miembro del grupo"}
         else
           if user in chat.admin do
-            update(query, user, "$addToSet") # añade un user sin duplicados
+            # añade un user sin duplicados
+            update(query, user, "$addToSet")
             {:ok, "Usuario añadido al grupo"}
           else
             {:error, "El usuario no tiene permiso para unirse al grupo"}
@@ -115,7 +122,8 @@ defmodule Pomoroom.ChatRoom.GroupChat do
         {:error, "Chat no encontrado"}
 
       _ ->
-        update(query, user, "$pull") # eliminar el user de members
+        # eliminar el user de members
+        update(query, user, "$pull")
         {:ok, updated_chat} = get(chat_id)
 
         if length(updated_chat.members) == 1 do

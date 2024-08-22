@@ -13,6 +13,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     if connected?(socket) do
       send(self(), :get_list_contact)
     end
+
     # IO.inspect(socket, structs: false, limit: :infinity)
     {:ok, socket, layout: false}
   end
@@ -24,7 +25,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
       {:ok, contact_list} ->
         # Para cada contacto en la lista, obtenemos la imagen de perfil.
-        contact_list_with_status=
+        contact_list_with_status =
           Enum.map(contact_list, fn contact ->
             status_request = FriendRequest.get_status(contact.nickname, user.nickname)
 
@@ -67,7 +68,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     {:noreply, socket}
   end
 
-  def handle_event("action.selected_chat", %{"contact_name" => contact_name}, %{assigns: %{user_info: user}} = socket) do
+  def handle_event(
+        "action.selected_chat",
+        %{"contact_name" => contact_name},
+        %{assigns: %{user_info: user}} = socket
+      ) do
     {to_user, from_user} =
       if FriendRequest.is_owner_request?(contact_name, user.nickname) do
         {contact_name, user.nickname}
@@ -91,7 +96,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                 event_data: %{
                   from_user_data: from_user_data,
                   to_user_data: to_user_data,
-                  messages: messages,
+                  messages: messages
                 }
               }
 
@@ -126,7 +131,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
         {:noreply, push_event(socket, "react", payload)}
 
-      {:error, reason} ->
+      {:error, _reason} ->
         {:noreply, socket}
     end
   end
@@ -138,6 +143,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       ) do
     {:ok, to_user_data} = User.get_by("nickname", contact_name)
     {:ok, from_user_data} = User.get_by("nickname", user.nickname)
+
     case status do
       "accepted" ->
         case PrivateChat.get(contact_name, from_user_name) do
@@ -194,13 +200,23 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       else
         {user.nickname, to_user_arg}
       end
+
     case PrivateChat.get(to_user, from_user) do
       {:ok, private_chat} ->
         case ChatServer.send_message(private_chat.chat_id, user.nickname, message) do
           {:ok, msg} ->
             {:ok, to_user_data} = User.get_by("nickname", to_user_arg)
             {:ok, from_user_data} = User.get_by("nickname", user.nickname)
-            payload = %{event_name: "show_message_to_send", event_data: %{from_user_data: from_user_data, to_user_data: to_user_data, message_data: msg}}
+
+            payload = %{
+              event_name: "show_message_to_send",
+              event_data: %{
+                from_user_data: from_user_data,
+                to_user_data: to_user_data,
+                message_data: msg
+              }
+            }
+
             {:noreply, push_event(socket, "react", payload)}
 
           {:error, reason} ->
@@ -219,11 +235,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         %{assigns: %{user_info: user}} = socket
       ) do
     user_nickname = user.nickname
+
     if to_user_arg == user_nickname do
       {:error, reason} = FriendRequest.send_friend_request(to_user_arg, user_nickname)
       payload = %{event_name: "error_adding_contact", event_data: reason}
       {:noreply, push_event(socket, "react", payload)}
-
     else
       if User.exists?(to_user_arg) do
         {:ok, contact_data} = User.get_by("nickname", to_user_arg)
@@ -239,6 +255,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                     status_request: request.status
                   }
                 }
+
                 {:noreply, push_event(socket, "react", payload)}
 
               _ ->
@@ -252,45 +269,39 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               else
                 {user_nickname, to_user_arg}
               end
+
             {:ok, private_chat} = PrivateChat.get(to_user, from_user)
-            case status do
-              status when status in ["accepted", "pending"] ->
-                payload =
-                  case private_chat.deleted_by do
-                    [] ->
-                      {:error, reason} = FriendRequest.send_friend_request(to_user, from_user)
-                      %{event_name: "error_adding_contact", event_data: reason}
 
-                    [user_nickname] ->
-                      FriendRequest.restore_contact_if_request_exists(to_user, from_user, user_nickname)
-                      %{
-                        event_name: "add_contact_to_list",
-                        event_data: %{
-                          contact_data: contact_data,
-                          status_request: status
-                        }
-                      }
-                  end
+            payload =
+              case private_chat.deleted_by do
+                [] ->
+                  {:error, reason} = FriendRequest.send_friend_request(to_user, from_user)
+                  %{event_name: "error_adding_contact", event_data: reason}
 
-                  {:noreply, push_event(socket, "react", payload)}
+                [user_nickname] ->
+                  FriendRequest.restore_contact_if_request_exists(
+                    to_user,
+                    from_user,
+                    user_nickname
+                  )
 
-              "rejected" ->
-                case FriendRequest.reject_friend_request(to_user, from_user) do
-                  {:ok, _} ->
-                    {:noreply, socket}
-                  {:error, :not_found} ->
-                    {:noreply, socket}
-                  {:error, reason} ->
-                    payload = %{event_name: "error_adding_contact", event_data: reason}
-                    {:noreply, push_event(socket, "react", payload)}
-                end
-            end
+                  %{
+                    event_name: "add_contact_to_list",
+                    event_data: %{
+                      contact_data: contact_data,
+                      status_request: status
+                    }
+                  }
+              end
+
+            {:noreply, push_event(socket, "react", payload)}
         end
       else
         payload = %{
           event_name: "error_adding_contact",
           event_data: %{error: "El usuario `#{to_user_arg}` no existe"}
         }
+
         {:noreply, push_event(socket, "react", payload)}
       end
     end

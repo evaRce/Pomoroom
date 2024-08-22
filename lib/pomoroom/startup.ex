@@ -13,7 +13,11 @@ defmodule Pomoroom.Startup do
 
     private_chats_indexes = [
       %{key: %{chat_id: 1}, name: "private_chat_id_index", unique: true},
-      %{key: %{"sorted_members.0" => 1, "sorted_members.1" => 1}, name: "private_chat_members_index", unique: true}
+      %{
+        key: %{"sorted_members.0" => 1, "sorted_members.1" => 1},
+        name: "private_chat_members_index",
+        unique: true
+      }
     ]
 
     group_chats_indexes = [

@@ -93,6 +93,7 @@ defmodule Pomoroom.User do
           user_data
           |> Map.drop(["_id", "password"])
           |> changeset_without_passw()
+
         {:ok, user.changes}
     end
   end
@@ -100,7 +101,7 @@ defmodule Pomoroom.User do
   def get_contacts(user) do
     query = %{"members" => user}
 
-    case Mongo.find(:mongo, "private_chats", query) |> Enum.to_list do
+    case Mongo.find(:mongo, "private_chats", query) |> Enum.to_list() do
       [] ->
         {:error, "El usuario #{user} no tiene conocidos"}
 
@@ -145,7 +146,6 @@ defmodule Pomoroom.User do
     end
   end
 
-
   def get_chats(collection, user) do
     query = %{"members" => user}
 
@@ -153,9 +153,9 @@ defmodule Pomoroom.User do
       [] ->
         {:error, "No se encontro chats para el usuario #{user}"}
 
-        chat_list ->
-          chat_ids = Enum.map(chat_list, fn chat -> Map.get(chat, "chat_id") end)
-          {:ok, chat_ids}
+      chat_list ->
+        chat_ids = Enum.map(chat_list, fn chat -> Map.get(chat, "chat_id") end)
+        {:ok, chat_ids}
     end
   end
 

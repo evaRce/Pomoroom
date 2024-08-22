@@ -60,7 +60,7 @@ defmodule Pomoroom.ChatRoom.PrivateChat do
           {:ok, _result} ->
             {:ok, private_chat_changst.changes}
 
-          {:error, reason} ->
+          {:error, _reason} ->
             {:error, %{error: "El contacto ya está añadido"}}
         end
 
@@ -79,7 +79,8 @@ defmodule Pomoroom.ChatRoom.PrivateChat do
       chat ->
         update_delete(chat_id, from_user)
         {:ok, updated_chat} = get(chat_id)
-        [member1, member2] =  Map.get(chat, "members")
+        [member1, member2] = Map.get(chat, "members")
+
         if both_users_deleted?(updated_chat.deleted_by, [member1, member2]) do
           Chat.delete_chat("private_chats", chat_id)
           FriendRequest.delete_request(member1, member2)
@@ -96,7 +97,7 @@ defmodule Pomoroom.ChatRoom.PrivateChat do
       nil ->
         {:error, "Chat no encontrado"}
 
-      chat when is_map(chat)->
+      chat when is_map(chat) ->
         {:ok, get_changes_from_changeset(chat)}
     end
   end
@@ -108,7 +109,7 @@ defmodule Pomoroom.ChatRoom.PrivateChat do
       nil ->
         {:error, "Chat no encontrado"}
 
-      chat when is_map(chat)->
+      chat when is_map(chat) ->
         {:ok, get_changes_from_changeset(chat)}
     end
   end
@@ -123,7 +124,7 @@ defmodule Pomoroom.ChatRoom.PrivateChat do
       nil ->
         create_private_chat(to_user, from_user)
 
-      chat when is_map(chat)->
+      chat when is_map(chat) ->
         {:ok, get_changes_from_changeset(chat)}
     end
   end
@@ -132,7 +133,7 @@ defmodule Pomoroom.ChatRoom.PrivateChat do
     Mongo.update_one(
       :mongo,
       "private_chats",
-      %{chat_id:  Map.get(chat, "chat_id")},
+      %{chat_id: Map.get(chat, "chat_id")},
       %{"$pull" => %{deleted_by: from_user}, "$set" => %{updated_at: NaiveDateTime.utc_now()}}
     )
   end

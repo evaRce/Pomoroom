@@ -46,7 +46,7 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
     |> validate_required([:status, :from_user, :to_user])
   end
 
-  def send_friend_request(to_user, from_user) when to_user==from_user do
+  def send_friend_request(to_user, from_user) when to_user == from_user do
     {:error, %{error: "No puedes añadirte a ti mismo como un contacto"}}
   end
 
@@ -92,7 +92,6 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
         end
     end
   end
-
 
   def accept_friend_request(to_user, from_user) do
     case get(to_user, from_user) do

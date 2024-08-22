@@ -30,6 +30,7 @@ defmodule Pomoroom.ChatRoom.Chat do
     case Mongo.find_one(:mongo, "group_chats", query) do
       nil ->
         false
+
       _chat ->
         true
     end
@@ -43,6 +44,7 @@ defmodule Pomoroom.ChatRoom.Chat do
         case Mongo.find_one(:mongo, "group_chats", query) do
           nil ->
             false
+
           _chat ->
             true
         end

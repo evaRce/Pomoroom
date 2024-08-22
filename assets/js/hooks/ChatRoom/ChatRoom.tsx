@@ -107,6 +107,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "open_rejected_request_send" && userName == eventData.to_user_data.nickname) {
+			// updateContact
 			addEvent("rejected_request", { status: "rejected", to_user_data: eventData.to_user_data, from_user_data: eventData.from_user_data });
 			addEvent(eventName, eventData);
 			setComponent("RejectedRequestSend");
