@@ -28,9 +28,11 @@ export default function HeaderChat() {
 			{chatData && (
 				<div className="flex items-center space-x-3">
 					<img
-						className="h-10 w-10 rounded-full bg-pink-50"
+						className="h-10 w-10 rounded-full bg-pink-50 cursor-pointer"
 						src={chatData.to_user_data.image_profile}
 						alt="default"
+						onClick={toggleUserDetails}
+						style={{ cursor: 'pointer' }}
 					/>
 					<span className="text-grey-darkest ml-3">
 						{chatData.to_user_data.nickname}
