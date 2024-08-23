@@ -21,6 +21,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	const [component, setComponent] = useState("");
 	const [imageNumber, setImageNumber] = useState(1);
 	const [userName, setUserName] = useState("");
+	const [isVisibleDetail, setIsVisibleDetail] = useState(false);
 
 	useEffect(() => {
 		const randomImageNumber = Math.floor(Math.random() * 5) + 1;
@@ -35,6 +36,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const sendMessage = getEventData("send_message");
 		const sendFriendRequest = getEventData("send_friend_request");
 		const statusFriendRequest = getEventData("update_status_request");
+		const visibility = getEventData("toggle_detail_visibility");
 
 		// if (contactInfo) {
 		// 	pushEventToLiveView("action.add_contact", contactInfo);
@@ -63,8 +65,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			pushEventToLiveView("action.update_status_request", statusFriendRequest);
 			removeEvent("update_status_request");
 		}
+		if (visibility) {
+			setIsVisibleDetail(visibility.isVisible);
+			removeEvent("toggle_detail_visibility");
+		}
 	}, [addEvent]);
-
 
 	useEffect(() => {
 		if (eventName === "show_user_info" && eventData.email) {
@@ -95,6 +100,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		if (eventName === "open_chat" && eventData.to_user_data) {
 			addEvent(eventName, eventData);
 			addEvent("show_list_messages", eventData);
+			addEvent("show_detail", eventData);
 			setComponent("Chat");
 		}
 	}, [eventData.from_user_data, eventData.messages]);
@@ -136,7 +142,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			{component === "RejectedRequestSend" && <RejectedRequestSend imageNumber={imageNumber} />}
 			{component === "RejectedRequestReceived" && <RejectedRequestReceived imageNumber={imageNumber} />}
 			{!isSelectedContact && <BackGround imageNumber={imageNumber} />}
-			<Detail />
+			{isVisibleDetail === true && <Detail />}
 		</div>
 	);
 }

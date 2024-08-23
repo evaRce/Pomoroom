@@ -14,7 +14,7 @@ export default function Contact({ contact, isSelected, onSelect }) {
   const getBackgroundContact = () => {
     if (!isSelected) {
       if (contact.status_request === "pending") {
-        return 'bg-pink-100';
+        return 'bg-yellow-100';
       } else if (contact.status_request === "rejected") {
         return 'bg-red-300';
       } else {
@@ -53,7 +53,7 @@ export default function Contact({ contact, isSelected, onSelect }) {
               {contact.name}
             </span>
             {(contact.status_request === "pending" || contact.status_request === "rejected") && (
-              <span className={`text-white font-bold text-xs rounded-full px-1 py-0 ${getStatusBadgeClass()}`}>
+              <span className={`text-white font-bold text-xs rounded-full px-2 py-1 ${getStatusBadgeClass()}`}>
                 {contact.status_request}
               </span>
             )}

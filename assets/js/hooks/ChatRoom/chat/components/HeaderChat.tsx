@@ -4,8 +4,9 @@ import { PhoneFilled, InfoOutlined } from '@ant-design/icons';
 import { useEventContext } from "../../EventContext";
 
 export default function HeaderChat() {
-	const { getEventData } = useEventContext();
-  const [chatData, setChatData] = useState(null);
+	const { addEvent, getEventData } = useEventContext();
+	const [chatData, setChatData] = useState(null);
+	const [isVisible, setIsVisible] = useState(false);
 
 	useEffect(() => {
 		const chat = getEventData("open_chat");
@@ -13,6 +14,14 @@ export default function HeaderChat() {
 			setChatData(chat);
 		}
 	}, [getEventData]);
+
+	const toggleUserDetails = () => {
+		setIsVisible(prevIsVisible => {
+			const newIsVisible = !prevIsVisible;
+			addEvent("toggle_detail_visibility", { isVisible: newIsVisible });
+			return newIsVisible;
+		});
+	};
 
 	return (
 		<header className="flex h-[10vh] justify-between sm:items-center py-3 p-3">
@@ -30,7 +39,7 @@ export default function HeaderChat() {
 			)}
 			<Flex gap={"small"} >
 				<Button icon={<PhoneFilled />} />
-				<Button className="rounded px-3 text-sm" icon={<InfoOutlined />} />
+				<Button className="rounded px-3 text-sm" icon={<InfoOutlined />} onClick={toggleUserDetails} />
 			</Flex>
 		</header>
 	);

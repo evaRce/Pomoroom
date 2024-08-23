@@ -69,7 +69,7 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
         return 'Añade petición de amistad que ya rechazo';
       }
     } else {
-      if (data.contact_data.nickname === data.request.to_user) {
+      if (data.contact_data.nickname === data.request.from_user) {
         return 'Petición de amistad recibida!';
       } else {
         return 'Petición de amistad enviada!';
