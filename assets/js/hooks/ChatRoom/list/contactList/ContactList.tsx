@@ -44,6 +44,12 @@ export default function ContactList({ }) {
       updateContactStatusOnRejection(requestRejected.request);
       removeEvent("rejected_request");
     }
+
+    const group = getEventData("add_group_to_list");
+    if (group) {
+      addContact(group);
+      removeEvent("add_group_to_list");
+    }
   }, [getEventData]);
 
   useEffect(() => {
@@ -55,9 +61,9 @@ export default function ContactList({ }) {
 
   const addContact = (contact) => {
     const newContact = {
-      name: contact.contact_data.nickname,
-      image: contact.contact_data.image_profile,
-      status_request: contact.request.status
+      name: contact.contact_data?.nickname || contact.group_data?.name,
+      image: contact.contact_data?.image_profile || contact.group_data?.image,
+      status_request: contact.request?.status || contact.status
     };
     setContacts(prevContacts => [...prevContacts, newContact]);
   };

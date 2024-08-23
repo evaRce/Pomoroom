@@ -17,7 +17,7 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
     if (entryType === "contact") {
       addEvent("send_friend_request", { to_user: inputStr })
     } else if (entryType === "group") {
-      addEvent("add_contact", { name: inputStr, is_group: true });
+      addEvent("add_group", { name: inputStr });
     }
     setInputStr("");
     form.resetFields();
@@ -51,9 +51,16 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
 
     const successContact = getEventData("add_contact_to_list");
     if (successContact) {
-      const messageText = entryType === "contact" ? handleContactMessage(successContact) : 'Grupo creado exitosamente!';
-      handleTypeMessage(messageText, successContact.request.status);
+      const messageText = handleContactMessage(successContact);
+      handleTypeContactMessage(messageText, successContact.request.status);
       removeEvent("add_contact_to_list");
+      setLoading(false);
+    }
+    const successGroup = getEventData("add_group_to_list");
+    if (successGroup) {
+      console.log("se creo el grupo....");
+      message.success('Grupo creado exitosamente!', 2);
+      removeEvent("group_created");
       setLoading(false);
     }
   }, [getEventData]);
@@ -77,7 +84,7 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
     }
   };
 
-  const handleTypeMessage = (messageText, status) => {
+  const handleTypeContactMessage = (messageText, status) => {
     if (status === "pending") {
       return message.success(messageText, 2);
     } else {
@@ -108,7 +115,7 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
         </Form.Item>
         <Form.Item
           name="newContactName"
-          rules={[{ required: true, message: '¡Añade un nombre!' }]}
+          rules={[{ required: true, message: 'Introduce un nombre!' }]}
         >
           <Input
             type="text"

@@ -2,7 +2,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   alias Pomoroom.ChatRoom.ChatServer
   use PomoroomWeb, :live_view
   alias Pomoroom.User
-  alias Pomoroom.ChatRoom.{PrivateChat, ChatServer, FriendRequest}
+  alias Pomoroom.ChatRoom.{PrivateChat, ChatServer, FriendRequest, GroupChat}
 
   def mount(_params, session, socket) do
     socket =
@@ -304,6 +304,29 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
         {:noreply, push_event(socket, "react", payload)}
       end
+    end
+  end
+
+  def handle_event(
+        "action.add_group",
+        %{"name" => name_group},
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    case GroupChat.create_group_chat(user.nickname, name_group) do
+      {:ok, group_chat} ->
+        payload = %{
+          event_name: "add_group_to_list",
+          event_data: %{
+            group_data: group_chat,
+            status: "accepted"
+          }
+        }
+
+        {:noreply, push_event(socket, "react", payload)}
+
+      {:error, reason} ->
+        payload = %{event_name: "error_adding_contact", event_data: reason}
+        {:noreply, push_event(socket, "react", payload)}
     end
   end
 

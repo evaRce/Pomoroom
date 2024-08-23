@@ -30,18 +30,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, []);
 
 	useEffect(() => {
-		const contactInfo = getEventData("add_contact");
 		const contactToDelete = getEventData("delete_contact");
 		const selectedChat = getEventData("selected_chat");
 		const sendMessage = getEventData("send_message");
 		const sendFriendRequest = getEventData("send_friend_request");
 		const statusFriendRequest = getEventData("update_status_request");
 		const visibility = getEventData("toggle_detail_visibility");
+		const addGroup = getEventData("add_group");
 
-		// if (contactInfo) {
-		// 	pushEventToLiveView("action.add_contact", contactInfo);
-		// 	removeEvent("add_contact");
-		// }
+		if (addGroup) {
+			pushEventToLiveView("action.add_group", addGroup);
+			removeEvent("add_group");
+		}
 		if (contactToDelete) {
 			pushEventToLiveView("action.delete_contact", contactToDelete);
 			setComponent("");
@@ -83,6 +83,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			addEvent(eventName, eventData);
 		}
 	}, [eventData.contact_data, eventData.request])
+
+	useEffect(() => {
+		if (eventName === "add_group_to_list" && eventData.group_data) {
+			addEvent(eventName, eventData);
+		}
+	}, [eventData.group_data, eventData.status])
 
 	useEffect(() => {
 		if (eventName === "error_adding_contact" && eventData.error) {

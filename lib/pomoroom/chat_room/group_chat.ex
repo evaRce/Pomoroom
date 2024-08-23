@@ -22,6 +22,7 @@ defmodule Pomoroom.ChatRoom.GroupChat do
       :image,
       :admin,
       :members,
+      :invite_link,
       :inserted_at,
       :updated_at
     ])
@@ -35,6 +36,7 @@ defmodule Pomoroom.ChatRoom.GroupChat do
       :image,
       :admin,
       :members,
+      :invite_link,
       :inserted_at,
       :updated_at
     ])
@@ -45,13 +47,13 @@ defmodule Pomoroom.ChatRoom.GroupChat do
       chat_id: chat_id,
       name: name,
       image: image,
-      admin: from_user,
+      admin: [from_user],
       members: [from_user],
       invite_link: invite_link
     }
 
     changeset(group_chat)
-    |> validate_required([:chat_id, :name, :image, :admin, :members])
+    |> validate_required([:chat_id, :name, :image, :admin, :members, :invite_link])
   end
 
   def create_group_chat(from_user, name) do
@@ -67,14 +69,16 @@ defmodule Pomoroom.ChatRoom.GroupChat do
       )
       |> Chat.timestamps()
 
+    IO.inspect(group_changst, label: "CHANGESET: ")
+
     case group_changst.valid? do
       true ->
-        case Mongo.insert_one(:mongo, "group_chats", group_changst) do
+        case Mongo.insert_one(:mongo, "group_chats", group_changst.changes) do
           {:ok, _result} ->
             {:ok, group_changst.changes}
 
           {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => _errmsg}]}} ->
-            {:error, %{error: "El grupo #{name} ya está creado"}}
+            {:error, %{error: "El grupo `#{name}` ya está creado"}}
         end
 
       false ->
