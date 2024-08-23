@@ -77,7 +77,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		if (eventName === "add_contact_to_list" && eventData.contact_data) {
 			addEvent(eventName, eventData);
 		}
-	}, [eventData.contact_data, eventData.status_request])
+	}, [eventData.contact_data, eventData.request])
 
 	useEffect(() => {
 		if (eventName === "error_adding_contact" && eventData.error) {
@@ -106,26 +106,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, [eventData.from_user_data, eventData.message_data]);
 
 	useEffect(() => {
-		if (eventName === "open_rejected_request_send" && userName == eventData.to_user_data.nickname) {
-			// updateContact
-			addEvent("rejected_request", { status: "rejected", to_user_data: eventData.to_user_data, from_user_data: eventData.from_user_data });
+		if (eventName === "open_chat_request_send" && userName == eventData.request.from_user) {
+			addEvent(eventName, eventData.request);
+			setComponent("RequestSend");
+		}
+		if (eventName === "open_chat_request_received" && userName == eventData.request.to_user) {
+			addEvent(eventName, eventData.request);
+			setComponent("RequestReceived");
+		}
+	}, [eventData.request]);
+
+	useEffect(() => {
+		if (eventName === "open_rejected_request_send" && userName == eventData.request.to_user) {
 			addEvent(eventName, eventData);
 			setComponent("RejectedRequestSend");
 		}
-		if (eventName === "open_rejected_request_received" && userName == eventData.from_user_data.nickname) {
-			addEvent("rejected_request", { status: "rejected", to_user_data: eventData.to_user_data, from_user_data: eventData.from_user_data });
+		if (eventName === "open_rejected_request_received" && userName == eventData.request.from_user) {
 			addEvent(eventName, eventData);
 			setComponent("RejectedRequestReceived");
 		}
-		if (eventName === "open_chat_request_send") {
-			addEvent(eventName, eventData);
-			setComponent("RequestSend");
-		}
-		if (eventName === "open_chat_request_received") {
-			addEvent(eventName, eventData);
-			setComponent("RequestReceived");
-		}
-	}, [eventData.to_user_data, eventData.from_user_data]);  //esto lo cambie
+	}, [eventData.to_user_data, eventData.from_user_data, eventData.request]);
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">

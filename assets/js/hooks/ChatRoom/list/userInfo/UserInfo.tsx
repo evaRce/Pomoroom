@@ -5,14 +5,14 @@ import AddContact from "./AddContact";
 import { useEventContext } from "../../EventContext";
 
 export default function UserInfo() {
-	const [userData, setUserData] = useState(null);
+	const [userLogin, setUserLogin] = useState(null);
 	const [showModal, setShowModal] = useState(false);
 	const { getEventData, removeEvent } = useEventContext();
 
 	useEffect(() => {
 		const user = getEventData("show_user_info");
 		if (user) {
-			setUserData(user);
+			setUserLogin(user);
 			// removeEvent("show_user_info");
 		}
 	}, [getEventData]);
@@ -27,17 +27,17 @@ export default function UserInfo() {
 
 	return (
 		<div className="flex h-[10vh] w-[20vw] gap-2 justify-between items-center">
-			{userData && (
+			{userLogin && (
 				<div className="flex relative p-1 rounded-lg items-center space-x-2 mb-1">
 					<div className="flex-shrink-0">
 						<img
 							className="h-10 w-10 rounded-full bg-pink-50"
-							src={userData.image_profile}
+							src={userLogin.image_profile}
 							alt="default" />
 					</div>
 					<div className="flex w-[18vw] items-center justify-between">
-						<span className="text-sm max-h-[8vh] max-w-[7vw] overflow-ellipsis overflow-hidden whitespace-nowrap truncate" title={userData.nickname}>
-							{userData.nickname}
+						<span className="text-sm max-h-[8vh] max-w-[7vw] overflow-ellipsis overflow-hidden whitespace-nowrap truncate" title={userLogin.nickname}>
+							{userLogin.nickname}
 						</span>
 						<div className="flex gap-1">
 							<Button className="rounded-md" icon={<UsergroupAddOutlined />} onClick={showAddEntryModal} />

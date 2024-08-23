@@ -17,11 +17,12 @@ export default function RequestReceived({ imageNumber }) {
   }, [getEventData]);
 
   const handleAccept = () => {
-    addEvent("update_status_request", { status: "accepted", contact_name: requestData.to_user_data.nickname, from_user_name: requestData.from_user_data.nickname });
+    addEvent("update_status_request", { status: "accepted", contact_name: requestData.to_user, from_user_name: requestData.from_user });
   };
 
   const handleReject = () => {
-    addEvent("update_status_request", { status: "rejected", contact_name: requestData.to_user_data.nickname, from_user_name: requestData.from_user_data.nickname });
+    addEvent("update_status_request", { status: "rejected", contact_name: requestData.to_user, from_user_name: requestData.from_user });
+    addEvent("rejected_request", { request: requestData });
   };
 
   return (
@@ -32,7 +33,7 @@ export default function RequestReceived({ imageNumber }) {
         className="object-cover w-full h-full opacity-45"
       />
       <div className="flex flex-col absolute justify-center items-center">
-        <Text>{requestData ? `${requestData.from_user_data.nickname} te ha enviado una solicitud de amistad.` : 'Cargando...'}</Text>
+        <Text>{requestData ? `${requestData.from_user} te ha enviado una solicitud de amistad.` : 'Cargando...'}</Text>
         <Space style={{ marginTop: 16 }}>
           <Button onClick={handleAccept}>
             Aceptar

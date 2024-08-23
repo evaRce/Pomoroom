@@ -24,20 +24,22 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         {:noreply, socket}
 
       {:ok, contact_list} ->
-        # Para cada contacto en la lista, obtenemos la imagen de perfil.
-        contact_list_with_status =
+        contact_list =
           Enum.map(contact_list, fn contact ->
-            status_request = FriendRequest.get_status(contact.nickname, user.nickname)
+            {to_user, from_user} =
+              FriendRequest.determine_friend_request_users(contact.nickname, user.nickname)
+
+            {:ok, request} = FriendRequest.get(to_user, from_user)
 
             %{
               contact_data: contact,
-              status_request: status_request
+              request: request
             }
           end)
 
         payload = %{
           event_name: "show_list_contact",
-          event_data: %{contact_list: contact_list_with_status}
+          event_data: %{contact_list: contact_list}
         }
 
         {:noreply, push_event(socket, "react", payload)}
@@ -54,17 +56,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
   def handle_event("action.delete_contact", contact_name, %{assigns: %{user_info: user}} = socket) do
     {to_user, from_user} =
-      if FriendRequest.is_owner_request?(contact_name, user.nickname) do
-        {contact_name, user.nickname}
-      else
-        {user.nickname, contact_name}
-      end
+      FriendRequest.determine_friend_request_users(contact_name, user.nickname)
 
     {:ok, private_chat} = PrivateChat.get(to_user, from_user)
+
     PrivateChat.delete_contact(private_chat.chat_id, user.nickname)
-    # if FriendRequest.request_is_pending?(to_user, from_user) do
-    #   FriendRequest.reject_friend_request(to_user, from_user)
-    # end
     {:noreply, socket}
   end
 
@@ -74,22 +70,18 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         %{assigns: %{user_info: user}} = socket
       ) do
     {to_user, from_user} =
-      if FriendRequest.is_owner_request?(contact_name, user.nickname) do
-        {contact_name, user.nickname}
-      else
-        {user.nickname, contact_name}
-      end
+      FriendRequest.determine_friend_request_users(contact_name, user.nickname)
 
     case PrivateChat.ensure_exists(to_user, from_user) do
       {:ok, private_chat} ->
         ensure_chat_server_exists(private_chat.chat_id)
         messages = ChatServer.get_messages(private_chat.chat_id, 3)
-        status_request = FriendRequest.get_status(contact_name, user.nickname)
         {:ok, to_user_data} = User.get_by("nickname", contact_name)
         {:ok, from_user_data} = User.get_by("nickname", user.nickname)
+        {:ok, request} = FriendRequest.get(to_user, from_user)
 
         payload =
-          case status_request do
+          case FriendRequest.get_status(contact_name, user.nickname) do
             "accepted" ->
               %{
                 event_name: "open_chat",
@@ -104,27 +96,33 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               if FriendRequest.is_owner_request?(contact_name, user.nickname) do
                 %{
                   event_name: "open_chat_request_send",
-                  event_data: %{to_user_data: to_user_data, from_user_data: from_user_data}
+                  event_data: %{request: request}
                 }
               else
                 %{
                   event_name: "open_chat_request_received",
-                  event_data: %{to_user_data: from_user_data, from_user_data: to_user_data}
+                  event_data: %{request: request}
                 }
               end
 
             "rejected" ->
               if FriendRequest.is_owner_request?(contact_name, user.nickname) do
-                # clico sobre el chat -> abro rejected que recibi
                 %{
                   event_name: "open_rejected_request_received",
-                  event_data: %{to_user_data: to_user_data, from_user_data: from_user_data}
+                  event_data: %{
+                    to_user_data: to_user_data,
+                    from_user_data: from_user_data,
+                    request: request
+                  }
                 }
               else
-                # clico sobre el chat -> abro rejected que envie
                 %{
                   event_name: "open_rejected_request_send",
-                  event_data: %{to_user_data: from_user_data, from_user_data: to_user_data}
+                  event_data: %{
+                    to_user_data: to_user_data,
+                    from_user_data: from_user_data,
+                    request: request
+                  }
                 }
               end
           end
@@ -143,6 +141,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       ) do
     {:ok, to_user_data} = User.get_by("nickname", contact_name)
     {:ok, from_user_data} = User.get_by("nickname", user.nickname)
+    {:ok, request} = FriendRequest.get(contact_name, from_user_name)
 
     case status do
       "accepted" ->
@@ -173,12 +172,20 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
           if FriendRequest.is_owner_request?(contact_name, user.nickname) do
             %{
               event_name: "open_rejected_request_received",
-              event_data: %{to_user_data: to_user_data, from_user_data: from_user_data}
+              event_data: %{
+                to_user_data: to_user_data,
+                from_user_data: from_user_data,
+                request: request
+              }
             }
           else
             %{
               event_name: "open_rejected_request_send",
-              event_data: %{to_user_data: from_user_data, from_user_data: to_user_data}
+              event_data: %{
+                to_user_data: to_user_data,
+                from_user_data: from_user_data,
+                request: request
+              }
             }
           end
 
@@ -195,11 +202,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         %{assigns: %{user_info: user}} = socket
       ) do
     {to_user, from_user} =
-      if FriendRequest.is_owner_request?(to_user_arg, user.nickname) do
-        {to_user_arg, user.nickname}
-      else
-        {user.nickname, to_user_arg}
-      end
+      FriendRequest.determine_friend_request_users(to_user_arg, user.nickname)
 
     case PrivateChat.get(to_user, from_user) do
       {:ok, private_chat} ->
@@ -252,7 +255,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                   event_name: "add_contact_to_list",
                   event_data: %{
                     contact_data: contact_data,
-                    status_request: request.status
+                    request: request
                   }
                 }
 
@@ -262,13 +265,9 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                 {:noreply, socket}
             end
 
-          status ->
+          _status ->
             {to_user, from_user} =
-              if FriendRequest.is_owner_request?(to_user_arg, user_nickname) do
-                {to_user_arg, user_nickname}
-              else
-                {user_nickname, to_user_arg}
-              end
+              FriendRequest.determine_friend_request_users(to_user_arg, user_nickname)
 
             {:ok, private_chat} = PrivateChat.get(to_user, from_user)
 
@@ -279,17 +278,18 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                   %{event_name: "error_adding_contact", event_data: reason}
 
                 [user_nickname] ->
-                  FriendRequest.restore_contact_if_request_exists(
-                    to_user,
-                    from_user,
-                    user_nickname
-                  )
+                  {:ok, request} =
+                    FriendRequest.restore_contact_if_request_exists(
+                      to_user,
+                      from_user,
+                      user_nickname
+                    )
 
                   %{
                     event_name: "add_contact_to_list",
                     event_data: %{
                       contact_data: contact_data,
-                      status_request: status
+                      request: request
                     }
                   }
               end

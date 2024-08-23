@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useEventContext } from "../../EventContext";
 
 export default function Contact({ contact, isSelected, onSelect }) {
-  const { addEvent, getEventData, removeEvent } = useEventContext();
-  const [status, setStatus] = useState(contact.status_request);
+  const { addEvent } = useEventContext();
 
   const handleChat = () => {
     if (!isSelected) {
@@ -36,19 +35,6 @@ export default function Contact({ contact, isSelected, onSelect }) {
     }
   };
 
-  useEffect(() => {
-    const rejectedRequest = getEventData("rejected_request");
-    if (rejectedRequest) {
-      const isInvolved = (rejectedRequest.contact_name === contact.name && rejectedRequest.from_user_name === contact.from_user) ||
-        (rejectedRequest.contact_name === contact.from_user && rejectedRequest.from_user_name === contact.name);
-
-      if (isInvolved) {
-        setStatus(rejectedstatus_request);
-      }
-      removeEvent("status_request");
-    }
-  }, [getEventData]);
-
   return (
     <div
       className={`relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-200 ${getBackgroundContact()}`}
@@ -56,7 +42,7 @@ export default function Contact({ contact, isSelected, onSelect }) {
     >
       <div className="flex-shrink-0">
         <img
-          className="h-10 w-10 rounded-full"
+          className="h-10 w-10 rounded-full bg-white"
           src={contact.image} />
       </div>
       <div className="flex-1 min-w-20">
@@ -68,7 +54,7 @@ export default function Contact({ contact, isSelected, onSelect }) {
             </span>
             {(contact.status_request === "pending" || contact.status_request === "rejected") && (
               <span className={`text-white font-bold text-xs rounded-full px-1 py-0 ${getStatusBadgeClass()}`}>
-                {status}
+                {contact.status_request}
               </span>
             )}
           </div>

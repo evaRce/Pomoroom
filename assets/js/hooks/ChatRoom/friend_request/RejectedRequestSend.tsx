@@ -17,8 +17,7 @@ export default function RejectedRequestSend({ imageNumber }) {
   }, [getEventData]);
 
   const handleRejectedRequest = () => {
-    console.log("te deja clicar en open_rejected_request_send");
-    addEvent("delete_contact_from_list", requestData.from_user_data.nickname);
+    addEvent("delete_contact_from_list", requestData.request.from_user);
   };
 
   return (
@@ -30,7 +29,7 @@ export default function RejectedRequestSend({ imageNumber }) {
       />
       <div className="flex flex-col absolute justify-center items-center">
         <Text style={{ color: 'red' }}>
-          Has rechazado la solicitud de amistad de {requestData ? requestData.from_user_data.nickname : '...'}.
+          Has rechazado la solicitud de amistad de {requestData ? requestData.request.from_user : '...'}
         </Text>
         <br></br>
         <Button onClick={handleRejectedRequest}>

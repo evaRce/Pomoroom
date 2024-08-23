@@ -6,7 +6,7 @@ const { Text } = Typography;
 
 export default function RequestSend({ imageNumber }) {
   const { getEventData, removeEvent } = useEventContext();
-  const [requestData, setRequestData] = useState(null);
+  const [requestData, setRequestData] = useState({});
 
   useEffect(() => {
     const request = getEventData("open_chat_request_send");
@@ -24,7 +24,7 @@ export default function RequestSend({ imageNumber }) {
         className="object-cover w-full h-full opacity-45"
       />
       <Text className="flex absolute justify-center items-center">
-        Has enviado una solicitud de amistad a {requestData ? requestData.to_user_data.nickname : '...'}.
+        Has enviado una solicitud de amistad a {requestData ? requestData.to_user : '...'}.
         <br></br>
         Esperando respuesta.
       </Text>

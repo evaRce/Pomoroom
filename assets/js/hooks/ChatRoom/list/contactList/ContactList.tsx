@@ -11,6 +11,7 @@ export default function ContactList({ }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, contact: null });
   const [selectedContact, setSelectedContact] = useState(null);
+  const [userLogin, setUserLogin] = useState({});
 
   useEffect(() => {
     const contact = getEventData("add_contact_to_list");
@@ -32,6 +33,17 @@ export default function ContactList({ }) {
       deleteContact(contactToDelete);
       removeEvent("delete_contact_from_list");
     }
+
+    const userInfo = getEventData("show_user_info");
+    if (userInfo) {
+      setUserLogin(userInfo);
+    }
+
+    const requestRejected = getEventData("rejected_request");
+    if (requestRejected) {
+      updateContactStatusOnRejection(requestRejected.request);
+      removeEvent("rejected_request");
+    }
   }, [getEventData]);
 
   useEffect(() => {
@@ -42,14 +54,29 @@ export default function ContactList({ }) {
   }, [searchTerm, contacts]);
 
   const addContact = (contact) => {
-
-    console.log("AÑADE CONTACTO:" , contact)
     const newContact = {
       name: contact.contact_data.nickname,
       image: contact.contact_data.image_profile,
-      status_request: contact.status_request
+      status_request: contact.request.status
     };
     setContacts(prevContacts => [...prevContacts, newContact]);
+  };
+
+  const updateContactStatusOnRejection = (requestRejected) => {
+    setContacts(prevContacts =>
+      prevContacts.map(contact => {
+        const isInvolvedReceived = (contact.name === requestRejected.to_user && userLogin.nickname === requestRejected.from_user);
+        const isInvolvedSend = (contact.name === requestRejected.from_user && userLogin.nickname === requestRejected.to_user);
+
+        if ((isInvolvedReceived || isInvolvedSend) && contact.status_request !== "accepted") {
+          if (contact.status_request === "pending") {
+            return { ...contact, status_request: "rejected" };
+          }
+        }
+
+        return contact;
+      })
+    );
   };
 
   const handleSearch = (event) => {
@@ -80,6 +107,10 @@ export default function ContactList({ }) {
       setContacts(prevContacts => {
         const newContacts = [...prevContacts];
         newContacts.splice(index, 1);
+        // Restablece la selección si se eliminó el contacto seleccionado
+        if (selectedContact === contactName) {
+          setSelectedContact(null);
+        }
         return newContacts;
       });
     }
@@ -104,6 +135,7 @@ export default function ContactList({ }) {
                 contact={contact}
                 isSelected={selectedContact === contact.name}
                 onSelect={() => setSelectedContact(contact.name)}
+                userLogin={userLogin}
               />
             </div>
             <div className='border-t-2 mb-1'></div>

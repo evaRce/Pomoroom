@@ -29,7 +29,7 @@ export default function RejectedRequestReceived({ imageNumber }) {
       />
       <div className="flex flex-col absolute justify-center items-center">
         <Text style={{ color: 'red' }}>
-          Tu solicitud de amistad ha sido rechazada por {requestData ? requestData.to_user_data.nickname : '...'}.
+          Tu solicitud de amistad ha sido rechazada por {requestData ? requestData.to_user_data.nickname : '....'}
         </Text>
         <br></br>
         <Button onClick={handleRejectedRequest}>

@@ -22,7 +22,6 @@ export default function Chat() {
 
     const msg = getEventData("show_message_to_send");
     if (msg) {
-      console.log("mensaje a mostrar, ", msg);
       setFromUser(msg.from_user_data);
       setToUser(msg.to_user_data);
       addMessage(msg.message_data);

@@ -15,9 +15,9 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
     }
     setLoading(true);
     if (entryType === "contact") {
-      addEvent("send_friend_request", {to_user: inputStr})
+      addEvent("send_friend_request", { to_user: inputStr })
     } else if (entryType === "group") {
-      addEvent("add_contact", { name: inputStr, is_group: true});
+      addEvent("add_contact", { name: inputStr, is_group: true });
     }
     setInputStr("");
     form.resetFields();
@@ -41,9 +41,9 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
 
   useEffect(() => {
     const errorContact = getEventData("error_adding_contact");
-    if(errorContact) {
+    if (errorContact) {
       form.setFields([
-        {name: 'newContactName', errors: [errorContact]}
+        { name: 'newContactName', errors: [errorContact] }
       ]);
       removeEvent("error_adding_contact");
       setLoading(false);
@@ -51,12 +51,39 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
 
     const successContact = getEventData("add_contact_to_list");
     if (successContact) {
-      const successMessage = entryType === "contact" ? 'Invitación enviada!' : 'Grupo creado exitosamente!';
-      message.success(successMessage, 2);;
+      const messageText = entryType === "contact" ? handleContactMessage(successContact) : 'Grupo creado exitosamente!';
+      handleTypeMessage(messageText, successContact.request.status);
       removeEvent("add_contact_to_list");
       setLoading(false);
     }
   }, [getEventData]);
+
+
+  const handleContactMessage = (data) => {
+    if (data.request.status === "accepted") {
+      return 'Añade petición de amistad ya aceptada';
+    } else if (data.request.status === "rejected") {
+      if (data.contact_data.nickname === data.request.to_user) {
+        return 'Añade petición de amistad que ya le rechazaron';
+      } else {
+        return 'Añade petición de amistad que ya rechazo';
+      }
+    } else {
+      if (data.contact_data.nickname === data.request.to_user) {
+        return 'Petición de amistad recibida!';
+      } else {
+        return 'Petición de amistad enviada!';
+      }
+    }
+  };
+
+  const handleTypeMessage = (messageText, status) => {
+    if (status === "pending") {
+      return message.success(messageText, 2);
+    } else {
+      return message.warning(messageText, 2);
+    }
+  };
 
   return (
     <Modal
@@ -68,8 +95,8 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
           Cancelar
         </Button>,
         <Button key="add" onClick={handleAddEntry} disabled={loading}>
-        {loading ? <Spin /> : (entryType === "contact" ? "Añadir" : "Crear")}
-      </Button>
+          {loading ? <Spin /> : (entryType === "contact" ? "Añadir" : "Crear")}
+        </Button>
       ]}
     >
       <Form form={form} onFinish={sendNewEntry}>

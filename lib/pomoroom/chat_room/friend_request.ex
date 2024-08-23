@@ -80,15 +80,14 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
         {:error, %{error: "El chat no existe o no fue eliminado por este usuario"}}
 
       chat ->
-        request_query = %{"to_user" => to_user, "from_user" => from_user}
-
-        case Mongo.find_one(:mongo, "friend_requests", request_query) do
-          nil ->
+        case get(to_user, from_user) do
+          {:error, :not_found} ->
             {:error, "No hay una solicitud de amistad pendiente"}
 
-          _request ->
+          {:ok, request} ->
             PrivateChat.update_restore_deleted_contact(chat, who_restore)
-            {:ok, "Contacto restaurado"}
+            # "Contacto restaurado"
+            {:ok, request}
         end
     end
   end
@@ -184,6 +183,14 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
 
       _ ->
         false
+    end
+  end
+
+  def determine_friend_request_users(user1, user2) do
+    if is_owner_request?(user1, user2) do
+      {user1, user2}
+    else
+      {user2, user1}
     end
   end
 
