@@ -38,6 +38,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const visibility = getEventData("toggle_detail_visibility");
 		const addGroup = getEventData("add_group");
 		const selectedGroupChat = getEventData("selected_group_chat");
+		const groupToDelete = getEventData("delete_group");
 
 		if (contactToDelete) {
 			pushEventToLiveView("action.delete_contact", contactToDelete);
@@ -74,6 +75,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			setIsSelectedContact(true);
 			pushEventToLiveView("action.selected_group_chat", selectedGroupChat);
 			removeEvent("selected_group_chat");
+		}
+		if (groupToDelete) {
+			pushEventToLiveView("action.delete_group", groupToDelete);
+			setComponent("");
+			setIsSelectedContact(false);
+			removeEvent("delete_group");
 		}
 	}, [addEvent]);
 

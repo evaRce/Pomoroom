@@ -96,20 +96,24 @@ export default function ContactList({ }) {
 
   const handleMenuClick = (action) => {
     if (action === "delete") {
-      deleteContact(contextMenu.contact.name);
+      deleteContact(contextMenu.contact);
     }
     setContextMenu({ visible: false, x: 0, y: 0, contact: null });
   };
 
-  const deleteContact = (contactName) => {
-    const index = contacts.findIndex(contact => contact.name === contactName);
+  const deleteContact = (contact) => {
+    const index = contacts.findIndex(contactFind => contactFind.name === contact.name);
     if (index !== -1) {
-      addEvent("delete_contact", contactName);
+      if (contact.is_group) {
+        addEvent("delete_group", contact.name);
+      } else {
+        addEvent("delete_contact", contact.name);
+      }
       setContacts(prevContacts => {
         const newContacts = [...prevContacts];
         newContacts.splice(index, 1);
         // Restablece la selección si se eliminó el contacto seleccionado
-        if (selectedContact === contactName) {
+        if (selectedContact === contact.name) {
           setSelectedContact(null);
         }
         return newContacts;

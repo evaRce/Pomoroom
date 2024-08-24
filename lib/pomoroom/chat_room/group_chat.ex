@@ -116,20 +116,19 @@ defmodule Pomoroom.ChatRoom.GroupChat do
     end
   end
 
-  def delete_contact(chat_id, user) do
-    query = %{"chat_id" => chat_id}
+  def delete(group_name, user) do
+    case get_by("name", group_name) do
+      {:error, reason} ->
+        {:error, reason}
 
-    case Mongo.find_one(:mongo, "group_chats", query) do
-      nil ->
-        {:error, "Chat no encontrado"}
-
-      _ ->
+      {:ok, group_chat} ->
+        query = %{"chat_id" => group_chat.chat_id}
         # eliminar el user de members
         update(query, user, "$pull")
-        {:ok, updated_chat} = get_by("chat_id", chat_id)
+        {:ok, updated_chat} = get_by("chat_id", group_chat.chat_id)
 
-        if length(updated_chat.members) == 1 do
-          Chat.delete_chat("group_chats", chat_id)
+        if length(updated_chat.members) == 0 do
+          Chat.delete_chat("group_chats", group_chat.chat_id)
           {:ok, "Grupo eliminado, ya que el último usuario fue eliminado"}
         else
           {:ok, "Contacto eliminado"}

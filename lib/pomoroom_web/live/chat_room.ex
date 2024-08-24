@@ -93,9 +93,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               messages_with_images_user =
                 Enum.map(messages, fn msg ->
                   image_user =
-                    if Map.get(msg, "from_user") == user.nickname,
-                      do: from_user_data.image_profile,
-                      else: to_user_data.image_profile
+                    if msg.from_user == user.nickname do
+                      from_user_data.image_profile
+                    else
+                      to_user_data.image_profile
+                    end
 
                   %{
                     data: msg,
@@ -422,6 +424,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         payload = %{event_name: "error_adding_contact", event_data: reason}
         {:noreply, push_event(socket, "react", payload)}
     end
+  end
+
+  def handle_event("action.delete_group", group_name, %{assigns: %{user_info: user}} = socket) do
+    GroupChat.delete(group_name, user.nickname)
+    {:noreply, socket}
   end
 
   def put_session_assigns(socket, session) do

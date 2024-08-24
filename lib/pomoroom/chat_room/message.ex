@@ -112,7 +112,12 @@ defmodule Pomoroom.ChatRoom.Message do
 
     case find_messages do
       cursor ->
-        messages = Enum.map(cursor, fn message -> Map.delete(message, "_id") end)
+        messages =
+          Enum.map(cursor, fn message ->
+            Map.delete(message, "_id")
+            |> get_changes_from_changeset()
+          end)
+
         {:ok, Enum.reverse(messages)}
     end
   end
