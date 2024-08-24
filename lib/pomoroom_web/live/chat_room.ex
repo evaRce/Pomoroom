@@ -19,22 +19,22 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   end
 
   def handle_info(:get_list_contact, %{assigns: %{user_info: user}} = socket) do
-    case User.get_contacts(user.nickname) do
+    case User.get_all_contacts(user.nickname) do
       {:ok, []} ->
         {:noreply, socket}
 
       {:ok, contact_list} ->
         contact_list =
           Enum.map(contact_list, fn contact ->
-            {to_user, from_user} =
-              FriendRequest.determine_friend_request_users(contact.nickname, user.nickname)
+            if Map.has_key?(contact, :admin) do
+              %{group_data: contact, status: "accepted"}
+            else
+              {to_user, from_user} =
+                FriendRequest.determine_friend_request_users(contact.nickname, user.nickname)
 
-            {:ok, request} = FriendRequest.get(to_user, from_user)
-
-            %{
-              contact_data: contact,
-              request: request
-            }
+              {:ok, request} = FriendRequest.get(to_user, from_user)
+              %{contact_data: contact, request: request}
+            end
           end)
 
         payload = %{
@@ -43,9 +43,6 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         }
 
         {:noreply, push_event(socket, "react", payload)}
-
-      {:error, _reason} ->
-        {:noreply, socket}
     end
   end
 

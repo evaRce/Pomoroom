@@ -1,6 +1,7 @@
 defmodule Pomoroom.ChatRoom.Chat do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Pomoroom.ChatRoom.{PrivateChat, GroupChat}
   @max_num 1000
 
   def get_public_id_chat() do
@@ -51,6 +52,35 @@ defmodule Pomoroom.ChatRoom.Chat do
 
       _chat ->
         true
+    end
+  end
+
+  def get_chat_ids(collection, user) do
+    query = %{"members" => user}
+
+    case Mongo.find(:mongo, collection, query) |> Enum.to_list() do
+      [] ->
+        {:ok, []}
+
+      chat_list ->
+        chat_ids = Enum.map(chat_list, fn chat -> Map.get(chat, "chat_id") end)
+        {:ok, chat_ids}
+    end
+  end
+
+  def get_all_group_chats_data(user) do
+    {:ok, chat_ids} = get_chat_ids("group_chats", user)
+
+    if Enum.empty?(chat_ids) do
+      {:ok, []}
+    else
+      all_group_chats_data =
+        Enum.map(chat_ids, fn chat_id ->
+          {:ok, group_chat} = GroupChat.get(chat_id)
+          group_chat
+        end)
+
+      {:ok, all_group_chats_data}
     end
   end
 

@@ -1,6 +1,7 @@
 defmodule Pomoroom.User do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Pomoroom.ChatRoom.Chat
 
   schema "users" do
     field :email, :string
@@ -103,7 +104,7 @@ defmodule Pomoroom.User do
 
     case Mongo.find(:mongo, "private_chats", query) |> Enum.to_list() do
       [] ->
-        {:error, "El usuario #{user} no tiene conocidos"}
+        {:ok, []}
 
       chat_list ->
         contacts =
@@ -130,7 +131,7 @@ defmodule Pomoroom.User do
 
     case Mongo.find(:mongo, "private_chats", query) |> Enum.to_list() do
       [] ->
-        {:error, "El usuario #{user} no tiene conocidos"}
+        {:ok, []}
 
       chat_list ->
         contacts_name =
@@ -146,23 +147,17 @@ defmodule Pomoroom.User do
     end
   end
 
-  def get_chats(collection, user) do
-    query = %{"members" => user}
+  def get_all_contacts(user) do
+    {:ok, group_chat_data} = Chat.get_all_group_chats_data(user)
+    {:ok, private_contacts_data} = get_contacts(user)
 
-    case Mongo.find(:mongo, collection, query) |> Enum.to_list() do
+    case group_chat_data ++ private_contacts_data do
       [] ->
-        {:error, "No se encontro chats para el usuario #{user}"}
+        {:ok, []}
 
-      chat_list ->
-        chat_ids = Enum.map(chat_list, fn chat -> Map.get(chat, "chat_id") end)
-        {:ok, chat_ids}
+      list ->
+        {:ok, list}
     end
-  end
-
-  def get_all_chats(user) do
-    {:ok, private_chats} = get_chats("private_chats", user)
-    {:ok, group_chats} = get_chats("group_chats", user)
-    group_chats ++ private_chats
   end
 
   def exists?(nickname) do

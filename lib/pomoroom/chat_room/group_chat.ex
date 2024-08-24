@@ -69,8 +69,6 @@ defmodule Pomoroom.ChatRoom.GroupChat do
       )
       |> Chat.timestamps()
 
-    IO.inspect(group_changst, label: "CHANGESET: ")
-
     case group_changst.valid? do
       true ->
         case Mongo.insert_one(:mongo, "group_chats", group_changst.changes) do

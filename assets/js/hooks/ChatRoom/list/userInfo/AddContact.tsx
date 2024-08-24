@@ -58,7 +58,6 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
     }
     const successGroup = getEventData("add_group_to_list");
     if (successGroup) {
-      console.log("se creo el grupo....");
       message.success('Grupo creado exitosamente!', 2);
       removeEvent("group_created");
       setLoading(false);

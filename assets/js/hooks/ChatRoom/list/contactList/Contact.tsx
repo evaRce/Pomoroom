@@ -25,7 +25,7 @@ export default function Contact({ contact, isSelected, onSelect }) {
     }
   };
 
-  const getStatusBadgeClass = () => {
+  const getBackgroundStatus = () => {
     if (contact.status_request === "pending") {
       return "bg-yellow-400";
     } else if (contact.status_request === "rejected") {
@@ -40,7 +40,7 @@ export default function Contact({ contact, isSelected, onSelect }) {
       className={`relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-200 ${getBackgroundContact()}`}
       onClick={handleChat}
     >
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 rounded-full">
         <img
           className="h-10 w-10 rounded-full bg-white"
           src={contact.image} />
@@ -53,7 +53,7 @@ export default function Contact({ contact, isSelected, onSelect }) {
               {contact.name}
             </span>
             {(contact.status_request === "pending" || contact.status_request === "rejected") && (
-              <span className={`text-white font-bold text-xs rounded-full px-2 py-1 ${getStatusBadgeClass()}`}>
+              <span className={`text-white font-bold text-xs rounded-full px-2 py-1 ${getBackgroundStatus()}`}>
                 {contact.status_request}
               </span>
             )}
