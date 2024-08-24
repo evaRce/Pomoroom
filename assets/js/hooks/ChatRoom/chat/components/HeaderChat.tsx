@@ -20,12 +20,8 @@ export default function HeaderChat() {
 		}
 	}, [getEventData]);
 
-	const toggleUserDetails = () => {
-		setIsVisible(prevIsVisible => {
-			const newIsVisible = !prevIsVisible;
-			addEvent("toggle_detail_visibility", { isVisible: newIsVisible });
-			return newIsVisible;
-		});
+	const showUserDetails = () => {
+		addEvent("toggle_detail_visibility", { isVisible: true });
 	};
 
 	const setImageProfile = () => {
@@ -52,7 +48,7 @@ export default function HeaderChat() {
 						className="h-10 w-10 rounded-full bg-pink-50 cursor-pointer"
 						src={setImageProfile()}
 						alt="default"
-						onClick={toggleUserDetails}
+						onClick={showUserDetails}
 						style={{ cursor: 'pointer' }}
 					/>
 					<span className="text-grey-darkest ml-3">
@@ -62,7 +58,7 @@ export default function HeaderChat() {
 			)}
 			<Flex gap={"small"} >
 				<Button icon={<PhoneFilled />} />
-				<Button className="rounded px-3 text-sm" icon={<InfoOutlined />} onClick={toggleUserDetails} />
+				<Button className="rounded px-3 text-sm" icon={<InfoOutlined />} onClick={showUserDetails} />
 			</Flex>
 		</header>
 	);

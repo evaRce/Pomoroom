@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Avatar } from "antd";
+import { Avatar, Button } from "antd";
+import { CloseOutlined } from '@ant-design/icons';
 import { useEventContext } from "../EventContext";
 
 export default function Detail() {
-	const { getEventData, removeEvent } = useEventContext();
+	const { addEvent, getEventData, removeEvent } = useEventContext();
 	const [chatData, setChatData] = useState(null);
 
 	useEffect(() => {
@@ -13,9 +14,18 @@ export default function Detail() {
 		}
 	}, [getEventData]);
 
+	const hideUserDetails = () => {
+		addEvent("toggle_detail_visibility", { isVisible: false });
+	};
+
 	return (
 		<div className="hidden overflow-y-auto lg:pr-8 lg:flex-shrink-0 xl:pr-0 xl:block bg-gray-100 p-3">
 			<div className="min-w-[20vw]">
+				<Button
+					className=" top-0 left-0 bg-white"
+					icon={<CloseOutlined />}
+					onClick={hideUserDetails}
+				/>
 				{chatData &&
 					(<div className="text-center w-[19vw] mb-10">
 						<Avatar
