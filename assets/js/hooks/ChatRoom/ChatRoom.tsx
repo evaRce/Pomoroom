@@ -31,27 +31,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		const contactToDelete = getEventData("delete_contact");
-		const selectedChat = getEventData("selected_chat");
+		const selectedPrivateChat = getEventData("selected_private_chat");
 		const sendMessage = getEventData("send_message");
 		const sendFriendRequest = getEventData("send_friend_request");
 		const statusFriendRequest = getEventData("update_status_request");
 		const visibility = getEventData("toggle_detail_visibility");
 		const addGroup = getEventData("add_group");
+		const selectedGroupChat = getEventData("selected_group_chat");
 
-		if (addGroup) {
-			pushEventToLiveView("action.add_group", addGroup);
-			removeEvent("add_group");
-		}
 		if (contactToDelete) {
 			pushEventToLiveView("action.delete_contact", contactToDelete);
 			setComponent("");
 			setIsSelectedContact(false);
 			removeEvent("delete_contact");
 		}
-		if (selectedChat) {
+		if (selectedPrivateChat) {
 			setIsSelectedContact(true);
-			pushEventToLiveView("action.selected_chat", selectedChat);
-			removeEvent("selected_chat");
+			pushEventToLiveView("action.selected_private_chat", selectedPrivateChat);
+			removeEvent("selected_private_chat");
 		}
 		if (sendMessage) {
 			pushEventToLiveView("action.send_message", sendMessage);
@@ -68,6 +65,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		if (visibility) {
 			setIsVisibleDetail(visibility.isVisible);
 			removeEvent("toggle_detail_visibility");
+		}
+		if (addGroup) {
+			pushEventToLiveView("action.add_group", addGroup);
+			removeEvent("add_group");
+		}
+		if (selectedGroupChat) {
+			setIsSelectedContact(true);
+			pushEventToLiveView("action.selected_group_chat", selectedGroupChat);
+			removeEvent("selected_group_chat");
 		}
 	}, [addEvent]);
 
@@ -103,7 +109,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, [eventData.contact_list]);
 
 	useEffect(() => {
-		if (eventName === "open_chat" && eventData.to_user_data) {
+		if (eventName === "open_private_chat" && eventData.to_user_data) {
 			addEvent(eventName, eventData);
 			addEvent("show_list_messages", eventData);
 			addEvent("show_detail", eventData);
@@ -112,10 +118,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, [eventData.from_user_data, eventData.messages]);
 
 	useEffect(() => {
-		if (eventName === "show_message_to_send" && eventData.from_user_data) {
+		if (eventName === "show_message_to_send") {
 			addEvent(eventName, eventData);
 		}
-	}, [eventData.from_user_data, eventData.message_data]);
+	}, [eventData.message]);
 
 	useEffect(() => {
 		if (eventName === "open_chat_request_send" && userName == eventData.request.from_user) {
@@ -138,6 +144,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			setComponent("RejectedRequestReceived");
 		}
 	}, [eventData.to_user_data, eventData.from_user_data, eventData.request]);
+
+	useEffect(() => {
+		if (eventName === "open_group_chat" && eventData.group_data) {
+			addEvent(eventName, eventData);
+			addEvent("show_list_messages", eventData);
+			addEvent("show_detail", eventData);
+			setComponent("Chat");
+		}
+	}, [eventData.group_data, eventData.messages]);
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">

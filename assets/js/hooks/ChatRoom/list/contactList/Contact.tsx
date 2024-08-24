@@ -6,7 +6,11 @@ export default function Contact({ contact, isSelected, onSelect }) {
 
   const handleChat = () => {
     if (!isSelected) {
-      addEvent("selected_chat", { contact_name: contact.name });
+      if (contact.is_group) {
+        addEvent("selected_group_chat", { group_name: contact.name });
+      } else {
+        addEvent("selected_private_chat", { contact_name: contact.name });
+      }
       onSelect();
     }
   };

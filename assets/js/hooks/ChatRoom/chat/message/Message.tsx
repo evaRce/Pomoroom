@@ -1,7 +1,7 @@
 import { Avatar } from "antd";
-import React from "react";
+import React, { useEffect } from "react";
 
-export default function Message({ message, fromUser, toUser}) {
+export default function Message({ message, userLogin }) {
 	const setTime = (dateTime) => {
 		const date = new Date(dateTime);
 		const hours = date.getHours().toString().padStart(2, '0');
@@ -9,21 +9,20 @@ export default function Message({ message, fromUser, toUser}) {
 		return `${hours}:${minutes}`;
 	};
 
-	const messagePosition = message.from_user === fromUser.nickname ? "chat-end" : "chat-start";
-	const image_profile = message.from_user === fromUser.nickname ? fromUser.image_profile : toUser.image_profile;
+	const messagePosition = message.data.from_user === userLogin.nickname ? "chat-end" : "chat-start";
 
 	return (
 		<div className={`chat ${messagePosition}`}>
 			<div className="chat-image avatar">
-				<Avatar className="bg-red-50" src={image_profile} size={45} />
+				<Avatar className="bg-red-50" src={message.image_user} size={45} />
 			</div>
 			<div className="chat-header">
-				{message.from_user}
+				{message.data.from_user}
 			</div>
 			<div className="chat-bubble" style={{ maxWidth: "70%", wordWrap: "break-word" }}>
-				{message.text}
+				{message.data.text}
 				<div style={{ textAlign: "right" }}>
-					<time className="text-xs opacity-50">{setTime(message.inserted_at)}</time>
+					<time className="text-xs opacity-50">{setTime(message.data.inserted_at)}</time>
 				</div>
 			</div>
 		</div>

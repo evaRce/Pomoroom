@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Modal } from "antd";
+import { Button, Modal, message } from "antd";
 import EmojiPicker from 'emoji-picker-react';
 import {
   PictureOutlined,
@@ -15,7 +15,7 @@ export default function FooterChat({ addMessage }) {
   const [inputStr, setInputStr] = useState("");
   const [showPicker, setShowPicker] = useState(false);
   const { addEvent, getEventData, removeEvent } = useEventContext();
-  const [chatData, setChatData] = useState(null);
+  const [chatData, setChatData] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
 
   const onEmojiClick = (emojiObject, event) => {
@@ -24,10 +24,17 @@ export default function FooterChat({ addMessage }) {
   };
 
   useEffect(() => {
-    const chat = getEventData("open_chat");
-    if (chat) {
-      setChatData(chat);
-      removeEvent("open_chat");
+    const privateChat = getEventData("open_private_chat");
+    const groupChat = getEventData("open_group_chat");
+
+    if (privateChat) {
+      setChatData(privateChat);
+      removeEvent("open_private_chat");
+    }
+
+    if (groupChat) {
+      setChatData(groupChat);
+      removeEvent("open_group_chat");
     }
   }, [getEventData]);
 
@@ -37,7 +44,11 @@ export default function FooterChat({ addMessage }) {
       return;
     }
     console.log(inputStr);
-    addEvent("send_message", { message: inputStr, to_user: chatData.to_user_data.nickname })
+    if (chatData.group_data) {
+      addEvent("send_message", { message: inputStr, to_group_name: chatData.group_data.name })
+    } else {
+      addEvent("send_message", { message: inputStr, to_user: chatData.to_user_data.nickname })
+    }
     addMessage(inputStr);
     setInputStr("");
   };

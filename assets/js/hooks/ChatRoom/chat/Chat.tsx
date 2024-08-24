@@ -7,30 +7,31 @@ import { useEventContext } from "../EventContext";
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const { getEventData, removeEvent } = useEventContext();
-  const [fromUser, setFromUser] = useState({});
-  const [toUser, setToUser] = useState({});
   const messagesEndRef = useRef(null);
+  const [userLogin, setUserLogin] = useState(null);
 
   useEffect(() => {
     const msgs = getEventData("show_list_messages");
+    const msg = getEventData("show_message_to_send");
+    const user = getEventData("show_user_info");
+
     if (msgs) {
-      setFromUser(msgs.from_user_data);
-      setToUser(msgs.to_user_data);
       setMessages(msgs.messages);
       removeEvent("show_list_messages");
     }
 
-    const msg = getEventData("show_message_to_send");
     if (msg) {
-      setFromUser(msg.from_user_data);
-      setToUser(msg.to_user_data);
-      addMessage(msg.message_data);
+      addMessage(msg.message);
       removeEvent("show_message_to_send");
+    }
+
+    if (user) {
+      setUserLogin(user);
     }
   }, [getEventData]);
 
   const addMessage = (message) => {
-    if (!message || !message.text || message.text.trim() === "") {
+    if (!message || !message.data || message.data.text.trim() === "") {
       return; // No añadir mensajes vacíos
     }
     setMessages((prevMessages) => [...prevMessages, message]);
@@ -51,7 +52,7 @@ export default function Chat() {
         ref={messagesEndRef}
       >
         {messages.length > 0 && messages.map((message) => (
-          <Message key={message.msg_id} message={message} fromUser={fromUser} toUser={toUser} />
+          <Message key={message.data.msg_id} message={message} userLogin={userLogin} />
         ))}
         <div ref={messagesEndRef}></div>
       </main>

@@ -11,7 +11,6 @@ export default function ContactList({ }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, contact: null });
   const [selectedContact, setSelectedContact] = useState(null);
-  const [userLogin, setUserLogin] = useState({});
 
   useEffect(() => {
     const contact = getEventData("add_contact_to_list");
@@ -32,11 +31,6 @@ export default function ContactList({ }) {
     if (contactToDelete) {
       deleteContact(contactToDelete);
       removeEvent("delete_contact_from_list");
-    }
-
-    const userInfo = getEventData("show_user_info");
-    if (userInfo) {
-      setUserLogin(userInfo);
     }
 
     const requestRejected = getEventData("rejected_request");
@@ -63,7 +57,8 @@ export default function ContactList({ }) {
     const newContact = {
       name: contact.contact_data?.nickname || contact.group_data?.name,
       image: contact.contact_data?.image_profile || contact.group_data?.image,
-      status_request: contact.request?.status || contact.status
+      status_request: contact.request?.status || contact.status,
+      is_group: contact.is_group
     };
     setContacts(prevContacts => [...prevContacts, newContact]);
   };
@@ -141,7 +136,6 @@ export default function ContactList({ }) {
                 contact={contact}
                 isSelected={selectedContact === contact.name}
                 onSelect={() => setSelectedContact(contact.name)}
-                userLogin={userLogin}
               />
             </div>
             <div className='border-t-2 mb-1'></div>

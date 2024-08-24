@@ -9,9 +9,14 @@ export default function HeaderChat() {
 	const [isVisible, setIsVisible] = useState(false);
 
 	useEffect(() => {
-		const chat = getEventData("open_chat");
-		if (chat) {
-			setChatData(chat);
+		const privateChat = getEventData("open_private_chat");
+		const groupChat = getEventData("open_group_chat");
+
+		if (privateChat) {
+			setChatData(privateChat);
+		}
+		if (groupChat) {
+			setChatData(groupChat);
 		}
 	}, [getEventData]);
 
@@ -23,19 +28,35 @@ export default function HeaderChat() {
 		});
 	};
 
+	const setImageProfile = () => {
+		if (chatData.group_data) {
+			return chatData.group_data.image;
+		} else {
+			return chatData.to_user_data.image_profile;
+		}
+	};
+
+	const setNamechat = () => {
+		if (chatData.group_data) {
+			return chatData.group_data.name;
+		} else {
+			return chatData.to_user_data.nickname;
+		}
+	};
+
 	return (
 		<header className="flex h-[10vh] justify-between sm:items-center py-3 p-3">
 			{chatData && (
 				<div className="flex items-center space-x-3">
 					<img
 						className="h-10 w-10 rounded-full bg-pink-50 cursor-pointer"
-						src={chatData.to_user_data.image_profile}
+						src={setImageProfile()}
 						alt="default"
 						onClick={toggleUserDetails}
 						style={{ cursor: 'pointer' }}
 					/>
 					<span className="text-grey-darkest ml-3">
-						{chatData.to_user_data.nickname}
+						{setNamechat()}
 					</span>
 				</div>
 			)}

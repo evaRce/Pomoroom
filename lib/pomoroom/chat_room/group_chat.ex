@@ -126,7 +126,7 @@ defmodule Pomoroom.ChatRoom.GroupChat do
       _ ->
         # eliminar el user de members
         update(query, user, "$pull")
-        {:ok, updated_chat} = get(chat_id)
+        {:ok, updated_chat} = get_by("chat_id", chat_id)
 
         if length(updated_chat.members) == 1 do
           Chat.delete_chat("group_chats", chat_id)
@@ -137,8 +137,8 @@ defmodule Pomoroom.ChatRoom.GroupChat do
     end
   end
 
-  def get(chat_id) do
-    query = %{"chat_id" => chat_id}
+  def get_by(field, value) do
+    query = %{field => value}
 
     case Mongo.find_one(:mongo, "group_chats", query) do
       nil ->
