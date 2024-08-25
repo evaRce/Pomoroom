@@ -6,16 +6,47 @@ import { useEventContext } from "../EventContext";
 export default function Detail() {
 	const { addEvent, getEventData, removeEvent } = useEventContext();
 	const [chatData, setChatData] = useState(null);
+	const [userLogin, setUserLogin] = useState({});
 
 	useEffect(() => {
 		const chat = getEventData("show_detail");
+		const userInfo = getEventData("show_user_info");
+
 		if (chat) {
 			setChatData(chat);
+		}
+
+		if (userInfo) {
+			setUserLogin(userInfo);
 		}
 	}, [getEventData]);
 
 	const hideUserDetails = () => {
 		addEvent("toggle_detail_visibility", { isVisible: false });
+	};
+
+	const setImageProfile = () => {
+		if (chatData.group_data) {
+			return chatData.group_data.image;
+		} else {
+			if (userLogin.nickname == chatData.from_user_data.nickname) {
+				return chatData.to_user_data.image_profile;
+			} else if (userLogin.nickname == chatData.to_user_data.nickname) {
+				return chatData.from_user_data.image_profile;
+			}
+		}
+	};
+
+	const setNamechat = () => {
+		if (chatData.group_data) {
+			return chatData.group_data.name;
+		} else {
+			if (userLogin.nickname == chatData.from_user_data.nickname) {
+				return chatData.to_user_data.nickname;
+			} else if (userLogin.nickname == chatData.to_user_data.nickname) {
+				return chatData.from_user_data.nickname;
+			}
+		}
 	};
 
 	return (
@@ -29,11 +60,11 @@ export default function Detail() {
 				{chatData &&
 					(<div className="text-center w-[19vw] mb-10">
 						<Avatar
-							src={chatData.group_data ? chatData.group_data.image : chatData.to_user_data.image_profile}
+							src={setImageProfile()}
 							size={150} alt="defualt" className="bg-white"
 						/>
 						<h2 className="text-2xl mt-2">
-							{chatData.group_data ? chatData.group_data.name : chatData.to_user_data.nickname}
+							{setNamechat()}
 						</h2>
 					</div>)
 				}

@@ -132,18 +132,14 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                 %{
                   event_name: "open_rejected_request_received",
                   event_data: %{
-                    to_user_data: to_user_data,
-                    from_user_data: from_user_data,
-                    request: request
+                    rejected_request: request
                   }
                 }
               else
                 %{
                   event_name: "open_rejected_request_send",
                   event_data: %{
-                    to_user_data: to_user_data,
-                    from_user_data: from_user_data,
-                    request: request
+                    rejected_request: request
                   }
                 }
               end
@@ -200,7 +196,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         %{assigns: %{user_info: user}} = socket
       ) do
     {:ok, to_user_data} = User.get_by("nickname", contact_name)
-    {:ok, from_user_data} = User.get_by("nickname", user.nickname)
+    {:ok, from_user_data} = User.get_by("nickname", from_user_name)
     {:ok, request} = FriendRequest.get(contact_name, from_user_name)
 
     case status do
@@ -233,18 +229,14 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
             %{
               event_name: "open_rejected_request_received",
               event_data: %{
-                to_user_data: to_user_data,
-                from_user_data: from_user_data,
-                request: request
+                rejected_request: request
               }
             }
           else
             %{
               event_name: "open_rejected_request_send",
               event_data: %{
-                to_user_data: to_user_data,
-                from_user_data: from_user_data,
-                request: request
+                rejected_request: request
               }
             }
           end

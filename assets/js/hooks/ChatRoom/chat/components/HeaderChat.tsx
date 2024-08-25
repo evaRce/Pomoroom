@@ -4,7 +4,7 @@ import { PhoneFilled, InfoOutlined, UsergroupAddOutlined } from '@ant-design/ico
 import { useEventContext } from "../../EventContext";
 import AddContactsToGroup from "./AddContactsToGroup";
 
-export default function HeaderChat() {
+export default function HeaderChat({ userLogin }) {
 	const { addEvent, getEventData } = useEventContext();
 	const [chatData, setChatData] = useState(null);
 	const [isModalVisible, setIsModalVisible] = useState(false);
@@ -30,7 +30,11 @@ export default function HeaderChat() {
 		if (chatData.group_data) {
 			return chatData.group_data.image;
 		} else {
-			return chatData.to_user_data.image_profile;
+			if (userLogin.nickname == chatData.from_user_data.nickname) {
+				return chatData.to_user_data.image_profile;
+			} else if (userLogin.nickname == chatData.to_user_data.nickname) {
+				return chatData.from_user_data.image_profile;
+			}
 		}
 	};
 
@@ -38,7 +42,11 @@ export default function HeaderChat() {
 		if (chatData.group_data) {
 			return chatData.group_data.name;
 		} else {
-			return chatData.to_user_data.nickname;
+			if (userLogin.nickname == chatData.from_user_data.nickname) {
+				return chatData.to_user_data.nickname;
+			} else if (userLogin.nickname == chatData.to_user_data.nickname) {
+				return chatData.from_user_data.nickname;
+			}
 		}
 	};
 
@@ -52,11 +60,11 @@ export default function HeaderChat() {
 	}
 
 	return (
-		<header className="flex h-[10vh] justify-between sm:items-center py-3 p-3">
+		<header className="flex h-[10vh] justify-between sm:items-center py-3 p-3 bg-gray-100 ">
 			{chatData && (
 				<div className="flex items-center space-x-3">
 					<img
-						className="h-10 w-10 rounded-full bg-pink-50 cursor-pointer"
+						className="h-10 w-10 rounded-full bg-white cursor-pointer"
 						src={setImageProfile()}
 						alt="default"
 						onClick={showUserDetails}
@@ -69,10 +77,10 @@ export default function HeaderChat() {
 			)}
 			<Flex gap={"small"} >
 				{chatData?.group_data && (
-					<Button className="rounded-md" icon={<UsergroupAddOutlined />} onClick={addContactsToGroup} title="Añadir miembros" />
+					<Button className="rounded-md bg-white" icon={<UsergroupAddOutlined />} onClick={addContactsToGroup} title="Añadir miembros" />
 				)}
-				<Button icon={<PhoneFilled />} title="LLamar" />
-				<Button className="rounded px-3 text-sm" icon={<InfoOutlined />} onClick={showUserDetails} title="Detalles del contacto" />
+				<Button className="bg-white" icon={<PhoneFilled />} title="LLamar" />
+				<Button className="rounded px-3 text-sm bg-white" icon={<InfoOutlined />} onClick={showUserDetails} title="Detalles del contacto" />
 			</Flex>
 			{chatData?.group_data && (
 				<AddContactsToGroup chatData={chatData} isModalVisibleFromAddContacts={handleModalVisible} isModalVisibleFromHeader={isModalVisible} />

@@ -11,6 +11,7 @@ export default function ContactList({ }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, contact: null });
   const [selectedContact, setSelectedContact] = useState(null);
+  const [userLogin, setUserLogin] = useState({});
 
   useEffect(() => {
     const contact = getEventData("add_contact_to_list");
@@ -27,16 +28,21 @@ export default function ContactList({ }) {
       removeEvent("show_list_contact");
     }
 
-    const contactToDelete = getEventData("delete_contact_from_list");
+    const contactToDelete = getEventData("delete_rejected_contact");
     if (contactToDelete) {
-      deleteContact(contactToDelete);
-      removeEvent("delete_contact_from_list");
+      deleteContact({ name: contactToDelete, is_group: false });
+      removeEvent("delete_rejected_contact");
     }
 
-    const requestRejected = getEventData("rejected_request");
-    if (requestRejected) {
-      updateContactStatusOnRejection(requestRejected.request);
-      removeEvent("rejected_request");
+    const userInfo = getEventData("show_user_info");
+    if (userInfo) {
+      setUserLogin(userInfo);
+    }
+
+    const updateRequest = getEventData("update_contact_status");
+    if (updateRequest) {
+      updateContactStatus(updateRequest.request, updateRequest.new_status);
+      removeEvent("update_contact_status");
     }
 
     const group = getEventData("add_group_to_list");
@@ -63,16 +69,14 @@ export default function ContactList({ }) {
     setContacts(prevContacts => [...prevContacts, newContact]);
   };
 
-  const updateContactStatusOnRejection = (requestRejected) => {
+  const updateContactStatus = (request, new_status) => {
     setContacts(prevContacts =>
       prevContacts.map(contact => {
-        const isInvolvedReceived = (contact.name === requestRejected.to_user && userLogin.nickname === requestRejected.from_user);
-        const isInvolvedSend = (contact.name === requestRejected.from_user && userLogin.nickname === requestRejected.to_user);
+        const isInvolvedReceived = (contact.name === request.to_user && userLogin.nickname === request.from_user);
+        const isInvolvedSend = (contact.name === request.from_user && userLogin.nickname === request.to_user);
 
-        if ((isInvolvedReceived || isInvolvedSend) && contact.status_request !== "accepted") {
-          if (contact.status_request === "pending") {
-            return { ...contact, status_request: "rejected" };
-          }
+        if ((isInvolvedReceived || isInvolvedSend) && contact.status_request === "pending") {
+          return { ...contact, status_request: new_status };
         }
 
         return contact;
@@ -106,6 +110,7 @@ export default function ContactList({ }) {
   };
 
   const deleteContact = (contact) => {
+
     const index = contacts.findIndex(contactFind => contactFind.name === contact.name);
     if (index !== -1) {
       if (contact.is_group) {

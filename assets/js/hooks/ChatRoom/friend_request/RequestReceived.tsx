@@ -16,13 +16,9 @@ export default function RequestReceived({ imageNumber }) {
     }
   }, [getEventData]);
 
-  const handleAccept = () => {
-    addEvent("update_status_request", { status: "accepted", contact_name: requestData.to_user, from_user_name: requestData.from_user });
-  };
-
-  const handleReject = () => {
-    addEvent("update_status_request", { status: "rejected", contact_name: requestData.to_user, from_user_name: requestData.from_user });
-    addEvent("rejected_request", { request: requestData });
+  const handleStatus = (newStatus) => {
+    addEvent("update_status_request", { status: newStatus, contact_name: requestData.to_user, from_user_name: requestData.from_user });
+    addEvent("update_contact_status", { request: requestData, new_status: newStatus });
   };
 
   return (
@@ -35,10 +31,10 @@ export default function RequestReceived({ imageNumber }) {
       <div className="flex flex-col absolute justify-center items-center">
         <Text>{requestData ? `${requestData.from_user} te ha enviado una solicitud de amistad.` : 'Cargando...'}</Text>
         <Space style={{ marginTop: 16 }}>
-          <Button onClick={handleAccept}>
+          <Button onClick={() => handleStatus("accepted")}>
             Aceptar
           </Button>
-          <Button danger onClick={handleReject}>
+          <Button danger onClick={() => handleStatus("rejected")}>
             Rechazar
           </Button>
         </Space>

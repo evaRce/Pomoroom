@@ -90,11 +90,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, [addEvent]);
 
 	useEffect(() => {
-		if (eventName === "show_user_info" && eventData.email) {
+		if (eventName === "show_user_info" && eventData.nickname) {
 			setUserName(eventData.nickname);
 			addEvent(eventName, eventData);
 		}
-	}, [eventData.email]);
+	}, [eventData.nickname]);
 
 	useEffect(() => {
 		if (eventName === "add_contact_to_list" && eventData.contact_data) {
@@ -121,7 +121,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, [eventData.all_contact_list]);
 
 	useEffect(() => {
-		if (eventName === "open_private_chat" && eventData.to_user_data) {
+		if (eventName === "open_private_chat") {
 			addEvent(eventName, eventData);
 			addEvent("show_list_messages", eventData);
 			addEvent("show_detail", eventData);
@@ -136,26 +136,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	}, [eventData.message]);
 
 	useEffect(() => {
-		if (eventName === "open_chat_request_send" && userName == eventData.request.from_user) {
+		if (eventName === "open_chat_request_send" && userName === eventData.request.from_user) {
 			addEvent(eventName, eventData.request);
 			setComponent("RequestSend");
 		}
-		if (eventName === "open_chat_request_received" && userName == eventData.request.to_user) {
+		if (eventName === "open_chat_request_received" && userName === eventData.request.to_user) {
 			addEvent(eventName, eventData.request);
 			setComponent("RequestReceived");
 		}
 	}, [eventData.request]);
 
 	useEffect(() => {
-		if (eventName === "open_rejected_request_send" && userName == eventData.request.to_user) {
-			addEvent(eventName, eventData);
+		if (eventName === "open_rejected_request_send" && userName === eventData.rejected_request.to_user) {
+			addEvent(eventName, eventData.rejected_request);
 			setComponent("RejectedRequestSend");
 		}
-		if (eventName === "open_rejected_request_received" && userName == eventData.request.from_user) {
-			addEvent(eventName, eventData);
+		if (eventName === "open_rejected_request_received" && userName === eventData.rejected_request.from_user) {
+			addEvent(eventName, eventData.rejected_request);
 			setComponent("RejectedRequestReceived");
 		}
-	}, [eventData.to_user_data, eventData.from_user_data, eventData.request]);
+	}, [eventData.rejected_request]);
 
 	useEffect(() => {
 		if (eventName === "open_group_chat" && eventData.group_data) {

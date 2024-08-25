@@ -45,7 +45,7 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col flex-grow w-full border-l border-r">
-      <HeaderChat />
+      <HeaderChat userLogin={userLogin} />
       <main
         className="flex flex-col h-[83vh] overflow-y-auto overflow-x-hidden p-5 border-t border-b"
         style={{ scrollbarWidth: "thin" }}
