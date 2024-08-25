@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Button, Avatar, Flex } from "antd";
-import { PhoneFilled, InfoOutlined } from '@ant-design/icons';
+import { Button, Flex } from "antd";
+import { PhoneFilled, InfoOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { useEventContext } from "../../EventContext";
+import AddContactsToGroup from "./AddContactsToGroup";
 
 export default function HeaderChat() {
 	const { addEvent, getEventData } = useEventContext();
 	const [chatData, setChatData] = useState(null);
-	const [isVisible, setIsVisible] = useState(false);
+	const [isModalVisible, setIsModalVisible] = useState(false);
+
 
 	useEffect(() => {
 		const privateChat = getEventData("open_private_chat");
@@ -40,6 +42,15 @@ export default function HeaderChat() {
 		}
 	};
 
+	const addContactsToGroup = () => {
+		addEvent("get_my_contacts_in_group", {});
+		setIsModalVisible(true);
+	};
+
+	const handleModalVisible = (isModalVisible) => {
+		setIsModalVisible(isModalVisible);
+	}
+
 	return (
 		<header className="flex h-[10vh] justify-between sm:items-center py-3 p-3">
 			{chatData && (
@@ -57,9 +68,15 @@ export default function HeaderChat() {
 				</div>
 			)}
 			<Flex gap={"small"} >
-				<Button icon={<PhoneFilled />} />
-				<Button className="rounded px-3 text-sm" icon={<InfoOutlined />} onClick={showUserDetails} />
+				{chatData?.group_data && (
+					<Button className="rounded-md" icon={<UsergroupAddOutlined />} onClick={addContactsToGroup} title="Añadir miembros" />
+				)}
+				<Button icon={<PhoneFilled />} title="LLamar" />
+				<Button className="rounded px-3 text-sm" icon={<InfoOutlined />} onClick={showUserDetails} title="Detalles del contacto" />
 			</Flex>
+			{chatData?.group_data && (
+				<AddContactsToGroup chatData={chatData} isModalVisibleFromAddContacts={handleModalVisible} isModalVisibleFromHeader={isModalVisible} />
+			)}
 		</header>
 	);
 }

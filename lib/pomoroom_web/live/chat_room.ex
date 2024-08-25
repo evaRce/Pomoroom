@@ -23,9 +23,9 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       {:ok, []} ->
         {:noreply, socket}
 
-      {:ok, contact_list} ->
-        contact_list =
-          Enum.map(contact_list, fn contact ->
+      {:ok, all_contacts} ->
+        all_contact_list =
+          Enum.map(all_contacts, fn contact ->
             if Map.has_key?(contact, :admin) do
               %{
                 is_group: true,
@@ -48,7 +48,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
         payload = %{
           event_name: "show_list_contact",
-          event_data: %{contact_list: contact_list}
+          event_data: %{all_contact_list: all_contact_list}
         }
 
         {:noreply, push_event(socket, "react", payload)}
@@ -429,6 +429,48 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   def handle_event("action.delete_group", group_name, %{assigns: %{user_info: user}} = socket) do
     GroupChat.delete(group_name, user.nickname)
     {:noreply, socket}
+  end
+
+  def handle_event(
+        "action.get_my_contacts_in_group",
+        _args,
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    case User.get_contacts(user.nickname) do
+      {:ok, []} ->
+        {:noreply, socket}
+
+      {:ok, contacts} ->
+        contact_list =
+          Enum.map(contacts, fn contact ->
+            {to_user, from_user} =
+              FriendRequest.determine_friend_request_users(contact.nickname, user.nickname)
+
+            case FriendRequest.get(to_user, from_user) do
+              {:ok, request} ->
+                if request.status == "accepted" do
+                  %{
+                    is_group: false,
+                    contact_data: contact,
+                    request: request
+                  }
+                else
+                  nil
+                end
+
+              _ ->
+                nil
+            end
+          end)
+          |> Enum.reject(&is_nil/1)
+
+        payload = %{
+          event_name: "show_my_contacts_in_group",
+          event_data: %{contact_list: contact_list}
+        }
+
+        {:noreply, push_event(socket, "react", payload)}
+    end
   end
 
   def put_session_assigns(socket, session) do

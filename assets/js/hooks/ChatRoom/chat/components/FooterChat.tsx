@@ -85,7 +85,7 @@ export default function FooterChat({ addMessage }) {
               onClick={() => setShowPicker(val => !val)}
               icon={<SmileOutlined />} />
             <Button
-              className="bg-blue-300 rounded-l-none rounded-r-lg"
+              className="bg-sky-400 rounded-l-none rounded-r-lg"
               icon={<SendOutlined />}
               onClick={(e) => handleSendMessage(e)} />
             {showPicker && (<EmojiPicker onEmojiClick={onEmojiClick} />)}

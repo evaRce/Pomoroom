@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "antd";
-import { MoreOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import { MoreOutlined, UserAddOutlined } from '@ant-design/icons';
 import AddContact from "./AddContact";
 import { useEventContext } from "../../EventContext";
 
@@ -40,7 +40,7 @@ export default function UserInfo() {
 							{userLogin.nickname}
 						</span>
 						<div className="flex gap-1">
-							<Button className="rounded-md" icon={<UsergroupAddOutlined />} onClick={showAddEntryModal} />
+							<Button className="rounded-md" icon={<UserAddOutlined />} onClick={showAddEntryModal} title="Añadir contacto/grupo" />
 							<Button className="rounded-md" icon={<MoreOutlined />} />
 						</div>
 					</div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from "react";
-import { Button } from "antd";
-import { DeleteOutlined } from '@ant-design/icons';
+import { Button, Input } from "antd";
+import { DeleteOutlined, SearchOutlined, CloseOutlined } from '@ant-design/icons';
 import Contact from "./Contact";
 import { useEventContext } from "../../EventContext";
 
@@ -84,6 +84,10 @@ export default function ContactList({ }) {
     setSearchTerm(event.target.value);
   };
 
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
+
   const handleContextMenu = (event, contact) => {
     event.preventDefault();
     setContextMenu({
@@ -123,14 +127,19 @@ export default function ContactList({ }) {
 
   return (
     <div className="flex flex-col h-[90vh] w-[20vw]" onClick={() => setContextMenu({ visible: false, x: 0, y: 0, contact: null })}>
-      <div className="flex py-2 px-1 w-[20vw] justify-center">
-        <input
-          className="input h-auto w-[20vw] focus:outline-none bg-gray-100"
+      <div className="flex items-center w-[20vw] bg-gray-100">
+        <Input
+          className="my-2 ml-2 mr-1 w-[16vw]"
           type="text"
-          placeholder="Search"
+          placeholder="Buscar a mis panas"
           value={searchTerm}
           onChange={handleSearch}
         />
+        {searchTerm ? (
+          <Button className="bg-red-300 mr-2" icon={<CloseOutlined />} onClick={clearSearch} />
+        ) : (
+          <Button className="bg-sky-400 mr-2" icon={<SearchOutlined />} onClick={handleSearch} />
+        )}
       </div>
       <div className="overflow-auto w-[20vw] p-1" style={{ scrollbarWidth: 'thin' }}>
         {filteredContacts.map(contact => (
