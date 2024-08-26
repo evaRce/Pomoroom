@@ -1,7 +1,7 @@
 defmodule Pomoroom.ChatRoom.GroupChat do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Pomoroom.ChatRoom.Chat
+  alias Pomoroom.ChatRoom.{Chat, Message}
 
   schema "group_chats" do
     field :chat_id, :string
@@ -129,6 +129,7 @@ defmodule Pomoroom.ChatRoom.GroupChat do
 
         if length(updated_chat.members) == 0 do
           Chat.delete_chat("group_chats", group_chat.chat_id)
+          Message.delete_all_belongs_to_chat(updated_chat.chat_id)
           {:ok, "Grupo eliminado, ya que el último usuario fue eliminado"}
         else
           {:ok, "Contacto eliminado"}
@@ -150,11 +151,11 @@ defmodule Pomoroom.ChatRoom.GroupChat do
 
   defp generate_invite_link(chat_id) do
     encoded_chat_id = Base.url_encode64(chat_id, padding: false)
-    "https://pomoroom/#{encoded_chat_id}"
+    "https://pomoroom/chat/#{encoded_chat_id}"
   end
 
   defp decode_chat_id_from_invite_link(invite_link) do
-    [_base_url, encoded_chat_id] = String.split(invite_link, "/")
+    [_base_url, _chat, encoded_chat_id] = String.split(invite_link, "/")
 
     case Base.url_decode64(encoded_chat_id, padding: false) do
       {:ok, chat_id} ->

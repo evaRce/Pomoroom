@@ -38,6 +38,10 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
     setSearchTerm("");
   };
 
+  const inviteToGroup = (contact_data) => {
+    console.log(`Selected: ${contact_data.nickname}`);
+  };
+
   return (
     <Modal
       title={`Añade a tus panas a ${chatData?.group_data.name}`}
@@ -67,7 +71,7 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
           renderItem={item => (
             <SimpleContact
               contact={item}
-              onSelect={() => console.log(`Selected: ${item.contact_data.nickname}`)}
+              onSelect={() => inviteToGroup(item.contact_data)}
             />
           )}
         />

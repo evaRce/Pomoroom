@@ -26,22 +26,23 @@ export default function UserInfo() {
 	};
 
 	return (
-		<div className="flex h-[10vh] w-[20vw] gap-2 justify-between items-center">
+		<div className="flex h-[10vh] w-[20vw] justify-between sm:items-center py-7 px-2 gap-2 ">
 			{userLogin && (
-				<div className="flex relative p-1 rounded-lg items-center space-x-2 mb-1">
+				<div className="flex relative rounded-lg items-center space-x-2 mb-1">
 					<div className="flex-shrink-0">
 						<img
 							className="h-10 w-10 rounded-full bg-pink-50"
 							src={userLogin.image_profile}
 							alt="default" />
 					</div>
+					
 					<div className="flex w-[18vw] items-center justify-between">
-						<span className="text-sm max-h-[8vh] max-w-[7vw] overflow-ellipsis overflow-hidden whitespace-nowrap truncate" title={userLogin.nickname}>
+						<span className="overflow-ellipsis overflow-hidden whitespace-nowrap truncate" title={userLogin.nickname}>
 							{userLogin.nickname}
 						</span>
 						<div className="flex gap-1">
-							<Button className="rounded-md" icon={<UserAddOutlined />} onClick={showAddEntryModal} title="Añadir contacto/grupo" />
-							<Button className="rounded-md" icon={<MoreOutlined />} />
+							<Button icon={<UserAddOutlined />} onClick={showAddEntryModal} title="Añadir contacto/grupo" />
+							<Button icon={<MoreOutlined />} />
 						</div>
 					</div>
 				</div>)

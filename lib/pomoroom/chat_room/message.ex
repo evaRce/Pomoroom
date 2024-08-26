@@ -73,11 +73,10 @@ defmodule Pomoroom.ChatRoom.Message do
     Mongo.delete_one(:mongo, "messages", msg_query)
   end
 
-  defp parse_duplicate_key_error(errmsg) do
-    cond do
-      String.contains?(errmsg, "msg_id") ->
-        %{msg_id: "Este public id ya está siendo usado"}
-    end
+  def delete_all_belongs_to_chat(chat_id) do
+    msg_query = %{"chat_id" => chat_id}
+
+    Mongo.delete_many(:mongo, "messages", msg_query)
   end
 
   def get_by_id(""), do: {:error, :not_found}
@@ -119,6 +118,13 @@ defmodule Pomoroom.ChatRoom.Message do
           end)
 
         {:ok, Enum.reverse(messages)}
+    end
+  end
+
+  defp parse_duplicate_key_error(errmsg) do
+    cond do
+      String.contains?(errmsg, "msg_id") ->
+        %{msg_id: "Este public id ya está siendo usado"}
     end
   end
 

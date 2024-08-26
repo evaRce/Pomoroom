@@ -60,7 +60,7 @@ export default function HeaderChat({ userLogin }) {
 	}
 
 	return (
-		<header className="flex h-[10vh] justify-between sm:items-center py-3 p-3 bg-gray-100 ">
+		<header className="flex h-[10vh] justify-between items-center py-7 px-3 bg-gray-100 ">
 			{chatData && (
 				<div className="flex items-center space-x-3">
 					<img
@@ -75,13 +75,13 @@ export default function HeaderChat({ userLogin }) {
 					</span>
 				</div>
 			)}
-			<Flex gap={"small"} >
+			<div className="flex items-center gap-2">
 				{chatData?.group_data && (
-					<Button className="rounded-md bg-white" icon={<UsergroupAddOutlined />} onClick={addContactsToGroup} title="Añadir miembros" />
+					<Button className="bg-white" icon={<UsergroupAddOutlined />} onClick={addContactsToGroup} title="Añadir miembros" />
 				)}
 				<Button className="bg-white" icon={<PhoneFilled />} title="LLamar" />
-				<Button className="rounded px-3 text-sm bg-white" icon={<InfoOutlined />} onClick={showUserDetails} title="Detalles del contacto" />
-			</Flex>
+				<Button className="bg-white" icon={<InfoOutlined />} onClick={showUserDetails} title="Detalles del contacto" />
+			</div>
 			{chatData?.group_data && (
 				<AddContactsToGroup chatData={chatData} isModalVisibleFromAddContacts={handleModalVisible} isModalVisibleFromHeader={isModalVisible} />
 			)}

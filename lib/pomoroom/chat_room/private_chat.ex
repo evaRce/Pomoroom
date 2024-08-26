@@ -1,7 +1,7 @@
 defmodule Pomoroom.ChatRoom.PrivateChat do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Pomoroom.ChatRoom.{Chat, FriendRequest}
+  alias Pomoroom.ChatRoom.{Chat, FriendRequest, Message}
 
   schema "private_chats" do
     field :chat_id, :string
@@ -84,6 +84,7 @@ defmodule Pomoroom.ChatRoom.PrivateChat do
         if both_users_deleted?(updated_chat.deleted_by, [member1, member2]) do
           Chat.delete_chat("private_chats", chat_id)
           FriendRequest.delete_request(member1, member2)
+          Message.delete_all_belongs_to_chat(chat_id)
         end
 
         {:ok, "Contacto eliminado"}

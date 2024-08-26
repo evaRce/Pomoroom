@@ -54,7 +54,7 @@ export default function FooterChat({ addMessage }) {
   };
 
   return (
-    <footer className="flex justify-between bg-gray-300 h-[7vh] px-4">
+    <footer className="flex justify-between bg-gray-300 h-[7vh] px-4 py-6">
       <form className="flex w-full gap-3" onSubmit={handleSendMessage}>
         <div className="flex items-center gap-2">
           <Button className="bg-gray-100" icon={<PictureOutlined />} />
