@@ -7,55 +7,25 @@ import SimpleContact from "../chat/components/SimpleContact";
 export default function Detail() {
 	const { addEvent, getEventData, removeEvent } = useEventContext();
 	const [chatData, setChatData] = useState(null);
-	const [userLogin, setUserLogin] = useState({});
 	const [members, setMembers] = useState([]);
 
 	useEffect(() => {
 		const chat = getEventData("show_detail");
-		const userInfo = getEventData("show_user_info");
-		const membersData = getEventData("show_members_in_group");
+		const membersData = getEventData("show_members");
 
 		if (chat) {
 			setChatData(chat);
-			removeEvent("show_detail")
-		}
-
-		if (userInfo) {
-			setUserLogin(userInfo);
 		}
 
 		if (membersData) {
-			console.log("MIEMBROS: ", membersData);
-			setMembers(membersData.members_data);
+			setMembers(membersData);
+			removeEvent("show_members");
 		}
 	}, [getEventData]);
 
 	const hideUserDetails = () => {
-		addEvent("toggle_detail_visibility", { isVisible: false, is_group: false, group_name: setNamechat() });
-	};
-
-	const setImageProfile = () => {
-		if (chatData.group_data) {
-			return chatData.group_data.image;
-		} else {
-			if (userLogin.nickname == chatData.from_user_data.nickname) {
-				return chatData.to_user_data.image_profile;
-			} else if (userLogin.nickname == chatData.to_user_data.nickname) {
-				return chatData.from_user_data.image_profile;
-			}
-		}
-	};
-
-	const setNamechat = () => {
-		if (chatData.group_data) {
-			return chatData.group_data.name;
-		} else {
-			if (userLogin.nickname == chatData.from_user_data.nickname) {
-				return chatData.to_user_data.nickname;
-			} else if (userLogin.nickname == chatData.to_user_data.nickname) {
-				return chatData.from_user_data.nickname;
-			}
-		}
+		addEvent("toggle_detail_visibility", { isVisible: false, is_group: false, group_name: chatData?.chat_name });
+		removeEvent("show_detail");
 	};
 
 	return (
@@ -69,11 +39,11 @@ export default function Detail() {
 				{chatData &&
 					(<div className="text-center w-[27vw] mb-10">
 						<Avatar
-							src={setImageProfile()}
+							src={chatData.image}
 							size={150} alt="defualt" className="bg-white"
 						/>
 						<h2 className="text-2xl mt-2">
-							{setNamechat()}
+							{chatData.chat_name}
 						</h2>
 					</div>)
 				}
@@ -87,11 +57,13 @@ export default function Detail() {
 						</div>
 					))}
 				</div>
-				{chatData?.group_data && (
-					<div className="h-[26vh] w-[27vw] overflow-y-auto bg-gray-100 mt-4" style={{ scrollbarWidth: "thin" }}>
-						<div className="mb-2">
-							<h4>Miembros</h4>
-						</div>
+				{chatData?.is_group && (
+					<div className="my-4">
+						<span>{members.length} Miembros</span>
+					</div>
+				)}
+				{chatData?.is_group && (
+					<div className="h-[40vh] w-[27vw] overflow-y-auto bg-gray-100" style={{ scrollbarWidth: "thin" }}>
 						<List
 							bordered
 							dataSource={members}

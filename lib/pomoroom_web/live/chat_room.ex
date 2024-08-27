@@ -161,32 +161,39 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         ensure_chat_server_exists(group_chat.chat_id)
         messages = ChatServer.get_messages(group_chat.chat_id, 3)
 
-        messages_with_images_user =
-          Enum.map(messages, fn msg ->
-            case User.get_by("nickname", msg.from_user) do
-              {:ok, user_data} ->
-                %{
-                  data: msg,
-                  image_user: user_data.image_profile
-                }
+        case GroupChat.get_members(group_name) do
+          {:ok, members_data} ->
+            messages_with_images_user =
+              Enum.map(messages, fn msg ->
+                case User.get_by("nickname", msg.from_user) do
+                  {:ok, user_data} ->
+                    %{
+                      data: msg,
+                      image_user: user_data.image_profile
+                    }
 
-              {:error, _reason} ->
-                %{
-                  data: msg,
-                  image_user: nil
-                }
-            end
-          end)
+                  {:error, _reason} ->
+                    %{
+                      data: msg,
+                      image_user: nil
+                    }
+                end
+              end)
 
-        payload = %{
-          event_name: "open_group_chat",
-          event_data: %{
-            group_data: group_chat,
-            messages: messages_with_images_user
-          }
-        }
+            payload = %{
+              event_name: "open_group_chat",
+              event_data: %{
+                group_data: group_chat,
+                messages: messages_with_images_user,
+                members_data: members_data
+              }
+            }
 
-        {:noreply, push_event(socket, "react", payload)}
+            {:noreply, push_event(socket, "react", payload)}
+
+          {:error, _reason} ->
+            {:noreply, socket}
+        end
     end
   end
 
@@ -424,8 +431,8 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   end
 
   def handle_event(
-        "action.get_my_contacts_in_group",
-        _args,
+        "action.get_my_contacts",
+        %{"group_name" => group_name},
         %{assigns: %{user_info: user}} = socket
       ) do
     case User.get_contacts(user.nickname) do
@@ -433,31 +440,10 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         {:noreply, socket}
 
       {:ok, contacts} ->
-        contact_list =
-          Enum.map(contacts, fn contact ->
-            {to_user, from_user} =
-              FriendRequest.determine_friend_request_users(contact.nickname, user.nickname)
-
-            case FriendRequest.get(to_user, from_user) do
-              {:ok, request} ->
-                if request.status == "accepted" do
-                  %{
-                    is_group: false,
-                    contact_data: contact,
-                    request: request
-                  }
-                else
-                  nil
-                end
-
-              _ ->
-                nil
-            end
-          end)
-          |> Enum.reject(&is_nil/1)
+        contact_list = get_contacts_for_group(contacts, user.nickname, group_name)
 
         payload = %{
-          event_name: "show_my_contacts_in_group",
+          event_name: "show_my_contacts",
           event_data: %{contact_list: contact_list}
         }
 
@@ -466,23 +452,14 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   end
 
   def handle_event(
-        "action.get_members_group",
+        "action.get_members",
         %{"group_name" => group_name, "is_group" => _is_group, "is_visible" => _is_visible},
         socket
       ) do
     case GroupChat.get_members(group_name) do
-      {:ok, members} ->
-        members_data =
-          Enum.map(members, fn member ->
-            case User.get_by("nickname", member) do
-              {:ok, user} -> user
-              {:error, _reason} -> nil
-            end
-          end)
-          |> Enum.reject(&is_nil/1)
-
+      {:ok, members_data} ->
         payload = %{
-          event_name: "show_members_in_group",
+          event_name: "show_members",
           event_data: %{members_data: members_data}
         }
 
@@ -494,24 +471,72 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   end
 
   def handle_event(
-        "action.add_contact_to_group",
+        "action.add_member",
         %{"group_name" => group_name, "new_member" => new_member},
         %{assigns: %{user_info: user}} = socket
       ) do
     case GroupChat.add_member(group_name, user.nickname, new_member) do
       {:error, reason} ->
-        IO.inspect(reason)
         {:noreply, socket}
 
       {:ok, result} ->
-        IO.inspect(result)
-        {:noreply, socket}
+        case User.get_contacts(user.nickname) do
+          {:ok, []} ->
+            {:noreply, socket}
+
+          {:ok, contacts} ->
+            case GroupChat.get_members(group_name) do
+              {:ok, members_data} ->
+                contact_list = get_contacts_for_group(contacts, user.nickname, group_name)
+
+                payload = %{
+                  event_name: "update_show_my_contacts_and_members",
+                  event_data: %{contact_list: contact_list, members_data: members_data}
+                }
+
+                {:noreply, push_event(socket, "react", payload)}
+
+              {:error, _reason} ->
+                {:noreply, socket}
+              end
+        end
     end
   end
 
   def put_session_assigns(socket, session) do
     socket
     |> assign(:user_info, Map.get(session, "user_info", %{}))
+  end
+
+  defp get_contacts_for_group(contacts, user_nickname, group_name) do
+    {:ok, group_chat} = GroupChat.get_by("name", group_name)
+    Enum.map(contacts, fn contact ->
+      {to_user, from_user} =
+        FriendRequest.determine_friend_request_users(contact.nickname, user_nickname)
+
+      case FriendRequest.get(to_user, from_user) do
+        {:ok, request} ->
+          if request.status == "accepted" do
+            %{
+              is_group: false,
+              contact_data: contact,
+              request: request
+            }
+          else
+            nil
+          end
+
+        _ ->
+          nil
+      end
+    end)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.reject(fn %{contact_data: contact} ->
+      # Filtra los contactos que ya están en el grupo
+      Enum.any?(group_chat.members, fn member ->
+        member == contact.nickname
+      end)
+    end)
   end
 
   defp ensure_chat_server_exists(chat_id) do

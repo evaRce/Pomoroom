@@ -26,6 +26,7 @@ export default function HeaderChat({ userLogin }) {
 
 	const showUserDetails = () => {
 		addEvent("toggle_detail_visibility", { is_visible: true, is_group: isGroup, group_name: setNamechat() });
+		addEvent("show_detail", { chat_name: setNamechat(), image: setImageProfile(), is_group: isGroup })
 	};
 
 	const setImageProfile = () => {
@@ -53,7 +54,7 @@ export default function HeaderChat({ userLogin }) {
 	};
 
 	const addContactsToGroup = () => {
-		addEvent("get_my_contacts_in_group", {});
+		addEvent("get_my_contacts", { group_name: chatData.group_data.name });
 		setIsModalVisible(true);
 	};
 

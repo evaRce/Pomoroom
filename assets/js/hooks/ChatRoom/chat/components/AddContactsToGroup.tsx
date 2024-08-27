@@ -11,10 +11,10 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
   const [filteredContacts, setFilteredContacts] = useState([]);
 
   useEffect(() => {
-    const myContacts = getEventData("show_my_contacts_in_group");
+    const myContacts = getEventData("show_my_contacts");
     if (myContacts) {
       setContacts(myContacts);
-      removeEvent("show_my_contacts_in_group");
+      removeEvent("show_my_contacts");
     }
   }, [getEventData]);
 
@@ -40,7 +40,7 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
 
   const inviteToGroup = (contactData) => {
     console.log(`Selected: ${contactData.nickname}`);
-    addEvent("add_contact_to_group", { group_name: chatData.group_data.name, new_member: contactData.nickname });
+    addEvent("add_member", { group_name: chatData.group_data.name, new_member: contactData.nickname });
   };
 
   return (
