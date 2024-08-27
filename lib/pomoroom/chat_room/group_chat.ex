@@ -84,23 +84,22 @@ defmodule Pomoroom.ChatRoom.GroupChat do
     end
   end
 
-  def add_user_to_group_chat(chat_id, user) do
-    query = %{"chat_id" => chat_id}
+  def add_member(group_name, user, new_member) do
+    case get_by("name", group_name) do
+      {:error, reason} ->
+        {:error, reason}
 
-    case Mongo.find_one(:mongo, "group_chats", query) do
-      nil ->
-        {:error, "Grupo no encontrado"}
-
-      chat ->
-        if user in chat.members do
-          {:error, "El usuario ya es miembro del grupo"}
+      {:ok, group_chat} ->
+        if new_member in group_chat.members do
+          {:error, "El usuario #{new_member} ya es miembro del grupo"}
         else
-          if user in chat.admin do
+          if user in group_chat.admin do
+            query = %{"chat_id" => group_chat.chat_id}
             # añade un user sin duplicados
-            update(query, user, "$addToSet")
-            {:ok, "Usuario añadido al grupo"}
+            update(query, new_member, "$addToSet")
+            {:ok, "Usuario #{new_member} añadido al grupo"}
           else
-            {:error, "El usuario no tiene permiso para unirse al grupo"}
+            {:error, "El usuario #{user} no tiene permiso para añadir miembros al grupo"}
           end
         end
     end
@@ -109,7 +108,8 @@ defmodule Pomoroom.ChatRoom.GroupChat do
   def join_group_with_link(invite_link, user) do
     case decode_chat_id_from_invite_link(invite_link) do
       {:ok, chat_id} ->
-        add_user_to_group_chat(chat_id, user)
+        # cambiar chat_id por chat_name
+        add_member(chat_id, user, user)
 
       {:error, reason} ->
         {:error, reason}
@@ -133,6 +133,31 @@ defmodule Pomoroom.ChatRoom.GroupChat do
           {:ok, "Grupo eliminado, ya que el último usuario fue eliminado"}
         else
           {:ok, "Contacto eliminado"}
+        end
+    end
+  end
+
+  def delete_member(group_name, user, member) do
+    case get_by("name", group_name) do
+      {:error, reason} ->
+        {:error, reason}
+
+      {:ok, group_chat} ->
+        if user in group_chat.admin do
+          query = %{"chat_id" => group_chat.chat_id}
+          # eliminar el user de members
+          update(query, member, "$pull")
+          {:ok, updated_chat} = get_by("chat_id", group_chat.chat_id)
+
+          if length(updated_chat.members) == 0 do
+            Chat.delete_chat("group_chats", group_chat.chat_id)
+            Message.delete_all_belongs_to_chat(updated_chat.chat_id)
+            {:ok, "Grupo eliminado, ya que el último usuario fue eliminado"}
+          else
+            {:ok, "Usuario #{member} eliminado del grupo"}
+          end
+        else
+          {:error, "El usuario #{user} no tiene permiso para eliminar miembros del grupo"}
         end
     end
   end

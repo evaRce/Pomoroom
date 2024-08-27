@@ -5,7 +5,7 @@ import { useEventContext } from "../../EventContext";
 import SimpleContact from "./SimpleContact";
 
 export default function AddContactsToGroup({ chatData, isModalVisibleFromAddContacts, isModalVisibleFromHeader }) {
-  const { getEventData, removeEvent } = useEventContext();
+  const { addEvent, getEventData, removeEvent } = useEventContext();
   const [contacts, setContacts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredContacts, setFilteredContacts] = useState([]);
@@ -38,8 +38,9 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
     setSearchTerm("");
   };
 
-  const inviteToGroup = (contactName) => {
-    console.log(`Selected: ${contactName}`);
+  const inviteToGroup = (contactData) => {
+    console.log(`Selected: ${contactData.nickname}`);
+    addEvent("add_contact_to_group", { group_name: chatData.group_data.name, new_member: contactData.nickname });
   };
 
   return (
@@ -71,7 +72,7 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
           renderItem={item => (
             <SimpleContact
               contact={item.contact_data}
-              onSelect={() => inviteToGroup(item.contact_data.nickname)}
+              onSelect={() => inviteToGroup(item.contact_data)}
             />
           )}
         />

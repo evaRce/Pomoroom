@@ -493,6 +493,22 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     end
   end
 
+  def handle_event(
+        "action.add_contact_to_group",
+        %{"group_name" => group_name, "new_member" => new_member},
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    case GroupChat.add_member(group_name, user.nickname, new_member) do
+      {:error, reason} ->
+        IO.inspect(reason)
+        {:noreply, socket}
+
+      {:ok, result} ->
+        IO.inspect(result)
+        {:noreply, socket}
+    end
+  end
+
   def put_session_assigns(socket, session) do
     socket
     |> assign(:user_info, Map.get(session, "user_info", %{}))

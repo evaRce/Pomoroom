@@ -40,6 +40,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const selectedGroupChat = getEventData("selected_group_chat");
 		const groupToDelete = getEventData("delete_group");
 		const showMyContactsInGroup = getEventData("get_my_contacts_in_group");
+		const addContactToGroup = getEventData("add_contact_to_group");
 
 		if (contactToDelete) {
 			pushEventToLiveView("action.delete_contact", contactToDelete);
@@ -90,6 +91,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		if (showMyContactsInGroup) {
 			pushEventToLiveView("action.get_my_contacts_in_group", showMyContactsInGroup);
 			removeEvent("get_my_contacts_in_group");
+		}
+		if (addContactToGroup) {
+			pushEventToLiveView("action.add_contact_to_group", addContactToGroup);
+			removeEvent("add_contact_to_group");
 		}
 	}, [addEvent]);
 
