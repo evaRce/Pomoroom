@@ -65,7 +65,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			removeEvent("update_status_request");
 		}
 		if (visibility) {
-			setIsVisibleDetail(visibility.isVisible);
+			setIsVisibleDetail(visibility.is_visible);
+			if (visibility.is_group) {
+				console.log("mostrar miembros del grupo ", visibility.group_name);
+				pushEventToLiveView("action.get_members_group", visibility);
+			}
 			removeEvent("toggle_detail_visibility");
 		}
 		if (addGroup) {
@@ -168,9 +172,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "show_my_contacts_in_group" && eventData.contact_list) {
-			addEvent("show_my_contacts_in_group", eventData.contact_list)
+			addEvent("show_my_contacts_in_group", eventData.contact_list);
 		}
 	}, [eventData.contact_list]);
+
+	useEffect(() => {
+		if (eventName === "show_members_in_group") {
+			addEvent(eventName, eventData);
+		}
+	}, [eventData.members_data])
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">

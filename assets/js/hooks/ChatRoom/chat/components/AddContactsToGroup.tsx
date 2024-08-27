@@ -38,8 +38,8 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
     setSearchTerm("");
   };
 
-  const inviteToGroup = (contact_data) => {
-    console.log(`Selected: ${contact_data.nickname}`);
+  const inviteToGroup = (contactName) => {
+    console.log(`Selected: ${contactName}`);
   };
 
   return (
@@ -64,14 +64,14 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
         )}
       </div>
 
-      <div className="h-[26vh] overflow-y-auto bg-gray-50" style={{ scrollbarWidth: "thin" }}>
+      <div className="h-[26vh] overflow-y-auto bg-gray-100" style={{ scrollbarWidth: "thin" }}>
         <List
           bordered
           dataSource={filteredContacts}
           renderItem={item => (
             <SimpleContact
-              contact={item}
-              onSelect={() => inviteToGroup(item.contact_data)}
+              contact={item.contact_data}
+              onSelect={() => inviteToGroup(item.contact_data.nickname)}
             />
           )}
         />

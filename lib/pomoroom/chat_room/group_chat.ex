@@ -149,6 +149,16 @@ defmodule Pomoroom.ChatRoom.GroupChat do
     end
   end
 
+  def get_members(group_name) do
+    case get_by("name", group_name) do
+      {:error, reason} ->
+        {:error, reason}
+
+      {:ok, group_chat} ->
+        {:ok, group_chat.members}
+    end
+  end
+
   defp generate_invite_link(chat_id) do
     encoded_chat_id = Base.url_encode64(chat_id, padding: false)
     "https://pomoroom/chat/#{encoded_chat_id}"

@@ -8,22 +8,24 @@ export default function HeaderChat({ userLogin }) {
 	const { addEvent, getEventData } = useEventContext();
 	const [chatData, setChatData] = useState(null);
 	const [isModalVisible, setIsModalVisible] = useState(false);
-
+	const [isGroup, setIsGroup] = useState(false);
 
 	useEffect(() => {
 		const privateChat = getEventData("open_private_chat");
 		const groupChat = getEventData("open_group_chat");
 
 		if (privateChat) {
+			setIsGroup(false);
 			setChatData(privateChat);
 		}
 		if (groupChat) {
+			setIsGroup(true);
 			setChatData(groupChat);
 		}
 	}, [getEventData]);
 
 	const showUserDetails = () => {
-		addEvent("toggle_detail_visibility", { isVisible: true });
+		addEvent("toggle_detail_visibility", { is_visible: true, is_group: isGroup, group_name: setNamechat() });
 	};
 
 	const setImageProfile = () => {

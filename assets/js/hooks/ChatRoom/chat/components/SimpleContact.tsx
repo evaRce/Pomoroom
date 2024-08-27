@@ -8,10 +8,10 @@ export default function SimpleContact({ contact, onSelect }) {
         <div className="flex-shrink-0">
           <img
             className="h-10 w-10 rounded-full bg-white"
-            src={contact.contact_data.image_profile}
+            src={contact.image_profile}
           />
         </div>
-        <span>{contact.contact_data.nickname}</span>
+        <span>{contact.nickname}</span>
       </div>
       <Button className="bg-lime-400" onClick={onSelect}>Invitar</Button>
     </div>

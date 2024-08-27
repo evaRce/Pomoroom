@@ -465,6 +465,34 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     end
   end
 
+  def handle_event(
+        "action.get_members_group",
+        %{"group_name" => group_name, "is_group" => _is_group, "is_visible" => _is_visible},
+        socket
+      ) do
+    case GroupChat.get_members(group_name) do
+      {:ok, members} ->
+        members_data =
+          Enum.map(members, fn member ->
+            case User.get_by("nickname", member) do
+              {:ok, user} -> user
+              {:error, _reason} -> nil
+            end
+          end)
+          |> Enum.reject(&is_nil/1)
+
+        payload = %{
+          event_name: "show_members_in_group",
+          event_data: %{members_data: members_data}
+        }
+
+        {:noreply, push_event(socket, "react", payload)}
+
+      {:error, _reason} ->
+        {:noreply, socket}
+    end
+  end
+
   def put_session_assigns(socket, session) do
     socket
     |> assign(:user_info, Map.get(session, "user_info", %{}))
