@@ -84,6 +84,12 @@ defmodule Pomoroom.ChatRoom.Chat do
     end
   end
 
+  def get_all_chats_id(user) do
+    {:ok, group_chats_id} = get_chat_ids("group_chats", user)
+    {:ok, private_chats_id} = get_chat_ids("private_chats", user)
+    group_chats_id ++ private_chats_id
+  end
+
   def timestamps(changeset) do
     change(changeset, %{inserted_at: NaiveDateTime.utc_now(), updated_at: NaiveDateTime.utc_now()})
   end

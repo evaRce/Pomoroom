@@ -160,6 +160,10 @@ defmodule Pomoroom.User do
     end
   end
 
+  def get_all_my_chats_id(user) do
+    Chat.get_all_chats_id(user)
+  end
+
   def exists?(nickname) do
     contact_query = %{"nickname" => nickname}
 

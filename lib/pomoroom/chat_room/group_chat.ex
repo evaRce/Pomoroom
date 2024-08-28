@@ -189,6 +189,7 @@ defmodule Pomoroom.ChatRoom.GroupChat do
             end
           end)
           |> Enum.reject(&is_nil/1)
+
         {:ok, members_data}
     end
   end

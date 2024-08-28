@@ -9,8 +9,8 @@ defmodule Pomoroom.ChatRoom.ChatServer do
     )
   end
 
-  def send_message(chat_id, user, message) do
-    GenServer.call(via_tuple(chat_id), {:send_message, user, message})
+  def send_message(chat_id, user, image_profile, message) do
+    GenServer.call(via_tuple(chat_id), {:send_message, user, image_profile, message})
   end
 
   def get_messages(chat_id, limit \\ :all) do
@@ -27,10 +27,20 @@ defmodule Pomoroom.ChatRoom.ChatServer do
     {:ok, state}
   end
 
-  def handle_call({:send_message, user, message}, _from, state) do
+  def handle_call({:send_message, user, image_profile, message}, _from, state) do
     case Message.new_message(message, user, state.chat_id) do
       {:ok, msg} ->
-        PubSub.broadcast(Pomoroom.PubSub, chat_topic(state.chat_id), {:new_message, msg})
+        msg_with_image = %{
+          data: msg,
+          image_user: image_profile
+        }
+
+        PubSub.broadcast(
+          Pomoroom.PubSub,
+          chat_topic(state.chat_id),
+          {:new_message, msg_with_image}
+        )
+
         new_messages = state.messages ++ [msg]
         {:reply, {:ok, msg}, %{state | messages: new_messages}}
 
@@ -65,7 +75,7 @@ defmodule Pomoroom.ChatRoom.ChatServer do
     {:reply, :ok, state}
   end
 
-  def handle_info({:new_message, _msg}, state) do
+  def handle_info({:new_message, _msg_with_image}, state) do
     {:noreply, state}
   end
 

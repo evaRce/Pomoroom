@@ -3,6 +3,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   use PomoroomWeb, :live_view
   alias Pomoroom.User
   alias Pomoroom.ChatRoom.{PrivateChat, ChatServer, FriendRequest, GroupChat}
+  alias Phoenix.PubSub
 
   def mount(_params, session, socket) do
     socket =
@@ -12,6 +13,15 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
     if connected?(socket) do
       send(self(), :get_list_contact)
+
+      user_nickname = socket.assigns.user_info.nickname
+      all_chats_id = User.get_all_my_chats_id(user_nickname)
+
+      Enum.each(all_chats_id, fn chat_id ->
+        ensure_chat_server_exists(chat_id)
+        ChatServer.join_chat(chat_id)
+        PubSub.subscribe(Pomoroom.PubSub, "chat:#{chat_id}")
+      end)
     end
 
     # IO.inspect(socket, structs: false, limit: :infinity)
@@ -55,6 +65,21 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     end
   end
 
+  def handle_info({:new_message, args}, socket) do
+    # Recibe el mensaje todos los procesos suscritos a un chat
+    payload = %{
+      event_name: "show_message_to_send",
+      event_data: %{
+        message: %{
+          data: args.data,
+          image_user: args.image_user
+        }
+      }
+    }
+
+    {:noreply, push_event(socket, "react", payload)}
+  end
+
   def handle_event("action.get_user_info", _args, %{assigns: %{user_info: user}} = socket) do
     payload = %{event_name: "show_user_info", event_data: user}
     {:noreply, push_event(socket, "react", payload)}
@@ -88,7 +113,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         payload =
           case FriendRequest.get_status(contact_name, user.nickname) do
             "accepted" ->
-              messages = ChatServer.get_messages(private_chat.chat_id, 3)
+              messages = ChatServer.get_messages(private_chat.chat_id, 20)
 
               messages_with_images_user =
                 Enum.map(messages, fn msg ->
@@ -159,7 +184,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
       {:ok, group_chat} ->
         ensure_chat_server_exists(group_chat.chat_id)
-        messages = ChatServer.get_messages(group_chat.chat_id, 3)
+        messages = ChatServer.get_messages(group_chat.chat_id, 20)
 
         case GroupChat.get_members(group_name) do
           {:ok, members_data} ->
@@ -265,21 +290,16 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
     case PrivateChat.get(to_user, from_user) do
       {:ok, private_chat} ->
-        case ChatServer.send_message(private_chat.chat_id, user.nickname, message) do
-          {:ok, msg} ->
-            {:ok, from_user_data} = User.get_by("nickname", user.nickname)
+        {:ok, from_user_data} = User.get_by("nickname", user.nickname)
 
-            payload = %{
-              event_name: "show_message_to_send",
-              event_data: %{
-                message: %{
-                  data: msg,
-                  image_user: from_user_data.image_profile
-                }
-              }
-            }
-
-            {:noreply, push_event(socket, "react", payload)}
+        case ChatServer.send_message(
+               private_chat.chat_id,
+               from_user_data.nickname,
+               from_user_data.image_profile,
+               message
+             ) do
+          {:ok, _msg} ->
+            {:noreply, socket}
 
           {:error, reason} ->
             payload = %{event_name: "error_sending_message", event_data: reason}
@@ -301,21 +321,16 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         {:noreply, socket}
 
       {:ok, group_chat} ->
-        case ChatServer.send_message(group_chat.chat_id, user.nickname, message) do
-          {:ok, msg} ->
-            {:ok, from_user_data} = User.get_by("nickname", user.nickname)
+        {:ok, from_user_data} = User.get_by("nickname", user.nickname)
 
-            payload = %{
-              event_name: "show_message_to_send",
-              event_data: %{
-                message: %{
-                  data: msg,
-                  image_user: from_user_data.image_profile
-                }
-              }
-            }
-
-            {:noreply, push_event(socket, "react", payload)}
+        case ChatServer.send_message(
+               group_chat.chat_id,
+               from_user_data.nickname,
+               from_user_data.image_profile,
+               message
+             ) do
+          {:ok, _msg} ->
+            {:noreply, socket}
 
           {:error, reason} ->
             payload = %{event_name: "error_sending_message", event_data: reason}
@@ -408,6 +423,8 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       ) do
     case GroupChat.create_group_chat(user.nickname, name_group) do
       {:ok, group_chat} ->
+        ChatServer.join_chat(group_chat.chat_id)
+
         payload = %{
           event_name: "add_group_to_list",
           event_data: %{
@@ -476,10 +493,10 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         %{assigns: %{user_info: user}} = socket
       ) do
     case GroupChat.add_member(group_name, user.nickname, new_member) do
-      {:error, reason} ->
+      {:error, _reason} ->
         {:noreply, socket}
 
-      {:ok, result} ->
+      {:ok, _result} ->
         case User.get_contacts(user.nickname) do
           {:ok, []} ->
             {:noreply, socket}
@@ -498,7 +515,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
               {:error, _reason} ->
                 {:noreply, socket}
-              end
+            end
         end
     end
   end
@@ -510,6 +527,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
   defp get_contacts_for_group(contacts, user_nickname, group_name) do
     {:ok, group_chat} = GroupChat.get_by("name", group_name)
+
     Enum.map(contacts, fn contact ->
       {to_user, from_user} =
         FriendRequest.determine_friend_request_users(contact.nickname, user_nickname)
