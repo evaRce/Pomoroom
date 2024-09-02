@@ -497,27 +497,18 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         {:noreply, socket}
 
       {:ok, _result} ->
-        case User.get_contacts(user.nickname) do
-          {:ok, []} ->
-            {:noreply, socket}
-
-          {:ok, contacts} ->
-            case GroupChat.get_members(group_name) do
-              {:ok, members_data} ->
-                contact_list = get_contacts_for_group(contacts, user.nickname, group_name)
-
-                payload = %{
-                  event_name: "update_show_my_contacts_and_members",
-                  event_data: %{contact_list: contact_list, members_data: members_data}
-                }
-
-                {:noreply, push_event(socket, "react", payload)}
-
-              {:error, _reason} ->
-                {:noreply, socket}
-            end
-        end
+        handle_member_update(group_name, user, socket)
     end
+  end
+
+  def handle_event(
+        "action.delete_member",
+        %{"group_name" => group_name, "member_name" => member_name},
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    IO.inspect(member_name, label: "Miembro eliminado, ")
+    GroupChat.delete_member(group_name, user.nickname, member_name)
+    handle_member_update(group_name, user, socket)
   end
 
   def put_session_assigns(socket, session) do
@@ -555,6 +546,29 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         member == contact.nickname
       end)
     end)
+  end
+
+  defp handle_member_update(group_name, user, socket) do
+    case User.get_contacts(user.nickname) do
+      {:ok, []} ->
+        {:noreply, socket}
+
+      {:ok, contacts} ->
+        case GroupChat.get_members(group_name) do
+          {:ok, members_data} ->
+            contact_list = get_contacts_for_group(contacts, user.nickname, group_name)
+
+            payload = %{
+              event_name: "update_show_my_contacts_and_members",
+              event_data: %{contact_list: contact_list, members_data: members_data}
+            }
+
+            {:noreply, push_event(socket, "react", payload)}
+
+          {:error, _reason} ->
+            {:noreply, socket}
+        end
+    end
   end
 
   defp ensure_chat_server_exists(chat_id) do

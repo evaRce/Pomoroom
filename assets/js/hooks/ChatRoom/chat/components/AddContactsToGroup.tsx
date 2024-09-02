@@ -73,6 +73,7 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
             <SimpleContact
               contact={item.contact_data}
               onSelect={() => inviteToGroup(item.contact_data)}
+              isInModal={true}
             />
           )}
         />
