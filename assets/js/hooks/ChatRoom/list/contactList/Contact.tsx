@@ -41,7 +41,7 @@ export default function Contact({ contact, isSelected, onSelect }) {
 
   return (
     <div
-      className={`relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-200 ${getBackgroundContact()}`}
+      className={`relative rounded-lg p-2 flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 mb-1 hover:bg-gray-400 ${getBackgroundContact()}`}
       onClick={handleChat}
     >
       <div className="flex-shrink-0 rounded-full">

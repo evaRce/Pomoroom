@@ -2,17 +2,19 @@ import React, { useEffect, useState } from "react";
 import { Button, Flex } from "antd";
 import { PhoneFilled, InfoOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import { useEventContext } from "../../EventContext";
-import AddContactsToGroup from "./AddContactsToGroup";
+import AddMembersToGroup from "./AddMembersToGroup";
 
 export default function HeaderChat({ userLogin }) {
-	const { addEvent, getEventData } = useEventContext();
+	const { addEvent, getEventData, removeEvent } = useEventContext();
 	const [chatData, setChatData] = useState(null);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isGroup, setIsGroup] = useState(false);
+	const [checkAdmin,  setCheckAdmin] = useState({});
 
 	useEffect(() => {
 		const privateChat = getEventData("open_private_chat");
 		const groupChat = getEventData("open_group_chat");
+		const adminData = getEventData("check_admin");
 
 		if (privateChat) {
 			setIsGroup(false);
@@ -21,6 +23,9 @@ export default function HeaderChat({ userLogin }) {
 		if (groupChat) {
 			setIsGroup(true);
 			setChatData(groupChat);
+		}
+		if (adminData) {
+			setCheckAdmin(adminData);
 		}
 	}, [getEventData]);
 
@@ -53,7 +58,7 @@ export default function HeaderChat({ userLogin }) {
 		}
 	};
 
-	const addContactsToGroup = () => {
+	const addMembersToGroup = () => {
 		addEvent("get_my_contacts", { group_name: chatData.group_data.name });
 		setIsModalVisible(true);
 	};
@@ -79,14 +84,14 @@ export default function HeaderChat({ userLogin }) {
 				</div>
 			)}
 			<div className="flex items-center gap-2">
-				{chatData?.group_data && (
-					<Button className="bg-white" icon={<UsergroupAddOutlined />} onClick={addContactsToGroup} title="Añadir miembros" />
+				{chatData?.group_data && checkAdmin.is_admin && (
+					<Button className="bg-white" icon={<UsergroupAddOutlined />} onClick={addMembersToGroup} title="Añadir miembros" />
 				)}
 				<Button className="bg-white" icon={<PhoneFilled />} title="LLamar" />
 				<Button className="bg-white" icon={<InfoOutlined />} onClick={showUserDetails} title="Detalles del contacto" />
 			</div>
 			{chatData?.group_data && (
-				<AddContactsToGroup chatData={chatData} isModalVisibleFromAddContacts={handleModalVisible} isModalVisibleFromHeader={isModalVisible} />
+				<AddMembersToGroup chatData={chatData} isModalVisibleFromAddContacts={handleModalVisible} isModalVisibleFromHeader={isModalVisible} />
 			)}
 		</header>
 	);

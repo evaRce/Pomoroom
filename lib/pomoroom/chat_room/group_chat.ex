@@ -97,7 +97,7 @@ defmodule Pomoroom.ChatRoom.GroupChat do
           if user in group_chat.admin do
             query = %{"chat_id" => group_chat.chat_id}
             # añade un user sin duplicados
-            update(query, new_member, "$addToSet")
+            update(query, "$addToSet", %{members: new_member})
             {:ok, "Usuario #{new_member} añadido al grupo"}
           else
             {:error, "El usuario #{user} no tiene permiso para añadir miembros al grupo"}
@@ -125,7 +125,11 @@ defmodule Pomoroom.ChatRoom.GroupChat do
       {:ok, group_chat} ->
         query = %{"chat_id" => group_chat.chat_id}
         # eliminar el user de members
-        update(query, user, "$pull")
+        if is_admin?(group_name, user) do
+          delete_admin(group_name, user, user)
+        end
+
+        update(query, "$pull", %{members: user})
         {:ok, updated_chat} = get_by("chat_id", group_chat.chat_id)
 
         if length(updated_chat.members) == 0 do
@@ -133,7 +137,7 @@ defmodule Pomoroom.ChatRoom.GroupChat do
           Message.delete_all_belongs_to_chat(updated_chat.chat_id)
           {:ok, "Grupo eliminado, ya que el último usuario fue eliminado"}
         else
-          {:ok, "Contacto eliminado"}
+          {:ok, "Contacto eliminado del grupo #{group_name}"}
         end
     end
   end
@@ -147,7 +151,7 @@ defmodule Pomoroom.ChatRoom.GroupChat do
         if user in group_chat.admin do
           query = %{"chat_id" => group_chat.chat_id}
           # eliminar el user de members
-          update(query, member, "$pull")
+          update(query, "$pull", %{members: member})
           {:ok, updated_chat} = get_by("chat_id", group_chat.chat_id)
 
           if length(updated_chat.members) == 0 do
@@ -184,13 +188,87 @@ defmodule Pomoroom.ChatRoom.GroupChat do
         members_data =
           Enum.map(group_chat.members, fn member ->
             case User.get_by("nickname", member) do
-              {:ok, user} -> user
-              {:error, _reason} -> nil
+              {:ok, user} ->
+                is_admin = member in group_chat.admin
+                Map.put(user, :is_admin, is_admin)
+
+              {:error, _reason} ->
+                nil
             end
           end)
           |> Enum.reject(&is_nil/1)
 
         {:ok, members_data}
+    end
+  end
+
+  def is_admin?(group_name, user) do
+    case get_by("name", group_name) do
+      {:error, reason} ->
+        {:error, reason}
+
+      {:ok, group_chat} ->
+        if user in group_chat.admin do
+          true
+        else
+          false
+        end
+    end
+  end
+
+  def add_admin(group_name, user, member) do
+    case get_by("name", group_name) do
+      {:error, reason} ->
+        {:error, reason}
+
+      {:ok, group_chat} ->
+        if user in group_chat.admin do
+          if member in group_chat.members do
+            query = %{"chat_id" => group_chat.chat_id}
+            # añade el member a la lista de admin
+            update(query, "$addToSet", %{admin: member})
+            {:ok, "Usuario #{member} añadido como admin al grupo"}
+          else
+            {:error, "El usuario #{member} no es miembro del grupo"}
+          end
+        else
+          {:error, "El usuario #{user} no tiene permiso para añadir admins al grupo"}
+        end
+    end
+  end
+
+  def delete_admin(group_name, user, member) do
+    case get_by("name", group_name) do
+      {:error, reason} ->
+        {:error, reason}
+
+      {:ok, group_chat} ->
+        if user in group_chat.admin do
+          if member in group_chat.members do
+            if length(group_chat.admin) == 1 and user == member do
+              new_admin = Enum.find(group_chat.members, fn m -> m != user end)
+
+              if new_admin do
+                query = %{"chat_id" => group_chat.chat_id}
+                update(query, "$pull", %{admin: member})
+                update(query, "$push", %{admin: new_admin})
+
+                {:ok,
+                 "Usuario #{member} eliminado como admin del grupo y #{new_admin} asignado como nuevo admin."}
+              else
+                {:error, "No hay otros miembros disponibles para ser administradores."}
+              end
+            else
+              query = %{"chat_id" => group_chat.chat_id}
+              update(query, "$pull", %{admin: member})
+              {:ok, "Usuario #{member} eliminado como admin del grupo"}
+            end
+          else
+            {:error, "El usuario #{member} no es miembro del grupo"}
+          end
+        else
+          {:error, "El usuario #{user} no tiene permiso para eliminar admins del grupo"}
+        end
     end
   end
 
@@ -217,12 +295,12 @@ defmodule Pomoroom.ChatRoom.GroupChat do
     end
   end
 
-  defp update(filter, user, operator) do
+  defp update(filter, operator, operation) do
     Mongo.update_one(
       :mongo,
       "group_chats",
       filter,
-      %{operator => %{members: user}, "$set" => %{updated_at: NaiveDateTime.utc_now()}}
+      %{operator => operation, "$set" => %{updated_at: NaiveDateTime.utc_now()}}
     )
   end
 

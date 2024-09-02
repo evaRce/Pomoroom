@@ -177,7 +177,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     end
   end
 
-  def handle_event("action.selected_group_chat", %{"group_name" => group_name}, socket) do
+  def handle_event(
+        "action.selected_group_chat",
+        %{"group_name" => group_name},
+        %{assigns: %{user_info: user}} = socket
+      ) do
     case GroupChat.get_by("name", group_name) do
       {:error, _reason} ->
         {:noreply, socket}
@@ -208,6 +212,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
             payload = %{
               event_name: "open_group_chat",
               event_data: %{
+                is_admin: GroupChat.is_admin?(group_chat.name, user.nickname),
                 group_data: group_chat,
                 messages: messages_with_images_user,
                 members_data: members_data
@@ -506,9 +511,24 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         %{"group_name" => group_name, "member_name" => member_name},
         %{assigns: %{user_info: user}} = socket
       ) do
-    IO.inspect(member_name, label: "Miembro eliminado, ")
     GroupChat.delete_member(group_name, user.nickname, member_name)
     handle_member_update(group_name, user, socket)
+  end
+
+  def handle_event(
+        "action.set_admin",
+        %{"group_name" => group_name, "member_name" => member_name, "operation" => operation},
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    case operation do
+      "add" ->
+        GroupChat.add_admin(group_name, user.nickname, member_name)
+        {:noreply, socket}
+
+      "delete" ->
+        GroupChat.delete_admin(group_name, user.nickname, member_name)
+        {:noreply, socket}
+    end
   end
 
   def put_session_assigns(socket, session) do

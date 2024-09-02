@@ -42,10 +42,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const showMyContactsInGroup = getEventData("get_my_contacts");
 		const addContactToGroup = getEventData("add_member");
 		const deleteMember = getEventData("delete_member");
+		const setAdmin = getEventData("set_admin");
 
 		if (contactToDelete) {
 			pushEventToLiveView("action.delete_contact", contactToDelete);
 			setComponent("");
+			if (isVisibleDetail) {
+				setIsVisibleDetail(false);
+			}
 			setIsSelectedContact(false);
 			removeEvent("delete_contact");
 		}
@@ -85,6 +89,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		if (groupToDelete) {
 			pushEventToLiveView("action.delete_group", groupToDelete);
 			setComponent("");
+			if (isVisibleDetail) {
+				setIsVisibleDetail(false);
+			}
 			setIsSelectedContact(false);
 			removeEvent("delete_group");
 		}
@@ -97,9 +104,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			removeEvent("add_member");
 		}
 		if (deleteMember) {
-			console.log("Eliminar miembro ", deleteMember, " de la lista de miembros");
 			pushEventToLiveView("action.delete_member", deleteMember);
 			removeEvent("delete_member");
+		}
+		if (setAdmin) {
+			pushEventToLiveView("action.set_admin", setAdmin);
+			removeEvent("set_admin");
 		}
 	}, [addEvent]);
 
@@ -180,14 +190,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 	useEffect(() => {
 		if (eventName === "open_group_chat" && eventData.group_data) {
 			addEvent(eventName, eventData);
+			addEvent("check_admin", { is_admin: eventData.is_admin })
 			addEvent("show_list_messages", eventData);
 			if (isVisibleDetail) {
 				addEvent("show_detail", { chat_name: eventData.group_data.name, image: eventData.group_data.image, is_group: true })
-				addEvent("show_members", eventData.members_data);
+				addEvent("show_members", { members: eventData.members_data });
 			}
 			setComponent("Chat");
 		}
-	}, [eventData.group_data, eventData.messages, eventData.members_data]);
+	}, [eventData.is_admin, eventData.group_data, eventData.messages, eventData.members_data]);
 
 	useEffect(() => {
 		if (eventName === "show_my_contacts" && eventData.contact_list) {
@@ -197,14 +208,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
 	useEffect(() => {
 		if (eventName === "show_members") {
-			addEvent(eventName, eventData.members_data);
+			addEvent(eventName, { members: eventData.members_data });
 		}
 	}, [eventData.members_data]);
 
 	useEffect(() => {
 		if (eventName === "update_show_my_contacts_and_members") {
 			addEvent("show_my_contacts", eventData.contact_list);
-			addEvent("show_members", eventData.members_data)
+			addEvent("show_members", { members: eventData.members_data })
 		}
 	}, [eventData.contact_list, eventData.members_data]);
 

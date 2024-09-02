@@ -2,24 +2,28 @@ import React, { useState, useEffect } from "react";
 import { Avatar, Button, List } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 import { useEventContext } from "../EventContext";
-import SimpleContact from "../chat/components/SimpleContact";
+import Member from "../chat/components/Member";
 
 export default function Detail() {
   const { addEvent, getEventData, removeEvent } = useEventContext();
   const [chatData, setChatData] = useState(null);
   const [members, setMembers] = useState([]);
+  const [checkAdmin, setCheckAdmin] = useState({});
 
   useEffect(() => {
     const chat = getEventData("show_detail");
     const membersData = getEventData("show_members");
+    const adminData = getEventData("check_admin");
 
     if (chat) {
       setChatData(chat);
     }
-
     if (membersData) {
-      setMembers(membersData);
+      setMembers(membersData.members);
       removeEvent("show_members");
+    }
+    if (adminData) {
+      setCheckAdmin(adminData.is_admin);
     }
   }, [getEventData, removeEvent]);
 
@@ -29,12 +33,12 @@ export default function Detail() {
       is_group: false,
       group_name: chatData?.chat_name,
     });
+    removeEvent("check_admin");
     removeEvent("show_detail");
   };
 
-  const setAdmin = (memberName) => {
-    console.log(`Setear admin ${memberName}`);
-    // Aquí puedes agregar la lógica para establecer el admin
+  const setAdmin = (memberName, operation) => {
+    addEvent("set_admin", {member_name: memberName, group_name: chatData.chat_name, operation: operation})
   };
 
   const deleteMember = (memberName) => {
@@ -93,7 +97,7 @@ export default function Detail() {
         )}
         {chatData?.is_group && (
           <div
-            className="h-[40vh] w-[27vw] overflow-y-auto bg-gray-100 relative"
+            className="h-[40vh] w-[27vw] overflow-y-auto relative"
             style={{ scrollbarWidth: "thin" }}
           >
             <List
@@ -101,11 +105,12 @@ export default function Detail() {
               dataSource={members}
               renderItem={(item, index) => (
                 <div key={index} style={{ position: "relative" }}>
-                  <SimpleContact
+                  <Member
                     contact={item}
                     onSelect={() => console.log("Miembro ", item.nickname)}
                     onSetAdmin={setAdmin}
                     onDelete={deleteMember}
+                    imAdmin={checkAdmin}
                   />
                 </div>
               )}

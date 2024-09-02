@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Button, Modal, Input, List } from "antd";
 import { CopyOutlined, SearchOutlined, CloseOutlined } from '@ant-design/icons';
 import { useEventContext } from "../../EventContext";
-import SimpleContact from "./SimpleContact";
+import Member from "./Member";
 
-export default function AddContactsToGroup({ chatData, isModalVisibleFromAddContacts, isModalVisibleFromHeader }) {
+export default function AddMembersToGroup({ chatData, isModalVisibleFromAddContacts, isModalVisibleFromHeader }) {
   const { addEvent, getEventData, removeEvent } = useEventContext();
   const [contacts, setContacts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,7 +39,6 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
   };
 
   const inviteToGroup = (contactData) => {
-    console.log(`Selected: ${contactData.nickname}`);
     addEvent("add_member", { group_name: chatData.group_data.name, new_member: contactData.nickname });
   };
 
@@ -70,10 +69,13 @@ export default function AddContactsToGroup({ chatData, isModalVisibleFromAddCont
           bordered
           dataSource={filteredContacts}
           renderItem={item => (
-            <SimpleContact
+            <Member
               contact={item.contact_data}
               onSelect={() => inviteToGroup(item.contact_data)}
               isInModal={true}
+              onSetAdmin={null}
+              onDelete={null}
+              imAdmin={false}
             />
           )}
         />
