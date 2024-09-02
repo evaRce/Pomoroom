@@ -38,7 +38,7 @@ export default function Detail() {
   };
 
   const setAdmin = (memberName, operation) => {
-    addEvent("set_admin", {member_name: memberName, group_name: chatData.chat_name, operation: operation})
+    addEvent("set_admin", { member_name: memberName, group_name: chatData.chat_name, operation: operation })
   };
 
   const deleteMember = (memberName) => {
@@ -57,7 +57,7 @@ export default function Detail() {
 
   return (
     <div
-      className="hidden overflow-y-auto lg:pr-8 lg:flex-shrink-0 xl:pr-0 xl:block bg-gray-100 p-3"
+      className="overflow-y-auto lg:pr-8 lg:flex-shrink-0 xl:pr-0 xl:block bg-gray-100 p-3"
       style={{ scrollbarWidth: "thin" }}
     >
       <div className="min-w-[28vw]">

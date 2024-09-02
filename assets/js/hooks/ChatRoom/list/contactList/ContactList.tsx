@@ -1,15 +1,14 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { Button, Input } from "antd";
-import { DeleteOutlined, SearchOutlined, CloseOutlined } from '@ant-design/icons';
+import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
 import Contact from "./Contact";
 import { useEventContext } from "../../EventContext";
 
-export default function ContactList({ }) {
+export default function ContactList() {
   const { addEvent, getEventData, removeEvent } = useEventContext();
   const [contacts, setContacts] = useState([]);
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, contact: null });
   const [selectedContact, setSelectedContact] = useState(null);
   const [userLogin, setUserLogin] = useState({});
 
@@ -22,9 +21,7 @@ export default function ContactList({ }) {
 
     const contactList = getEventData("show_list_contact");
     if (contactList) {
-      contactList.map(contact =>
-        addContact(contact)
-      );
+      contactList.forEach(contact => addContact(contact));
       removeEvent("show_list_contact");
     }
 
@@ -92,25 +89,8 @@ export default function ContactList({ }) {
     setSearchTerm("");
   };
 
-  const handleContextMenu = (event, contact) => {
-    event.preventDefault();
-    setContextMenu({
-      visible: true,
-      x: event.clientX,
-      y: event.clientY,
-      contact: contact
-    });
-  };
-
-  const handleMenuClick = (action) => {
-    if (action === "delete") {
-      deleteContact(contextMenu.contact);
-    }
-    setContextMenu({ visible: false, x: 0, y: 0, contact: null });
-  };
-
   const deleteContact = (contact) => {
-
+    console.log("CONTACTO: ", contact);
     const index = contacts.findIndex(contactFind => contactFind.name === contact.name);
     if (index !== -1) {
       if (contact.is_group) {
@@ -121,7 +101,6 @@ export default function ContactList({ }) {
       setContacts(prevContacts => {
         const newContacts = [...prevContacts];
         newContacts.splice(index, 1);
-        // Restablece la selección si se eliminó el contacto seleccionado
         if (selectedContact === contact.name) {
           setSelectedContact(null);
         }
@@ -130,8 +109,12 @@ export default function ContactList({ }) {
     }
   };
 
+  const handleSelectedContact = (contactName) => {
+    setSelectedContact(contactName);
+  };
+
   return (
-    <div className="flex flex-col h-[90vh] w-[20vw]" onClick={() => setContextMenu({ visible: false, x: 0, y: 0, contact: null })}>
+    <div className="flex flex-col h-[90vh] w-[20vw]">
       <div className="flex items-center w-[20vw] bg-gray-100">
         <Input
           className="my-2 ml-2 mr-1 w-[16vw]"
@@ -143,43 +126,22 @@ export default function ContactList({ }) {
         {searchTerm ? (
           <Button className="bg-red-300 mr-2" icon={<CloseOutlined />} onClick={clearSearch} />
         ) : (
-          <Button className="bg-sky-400 mr-2" icon={<SearchOutlined />} onClick={handleSearch} />
+          <Button className="bg-sky-400 mr-2" icon={<SearchOutlined />} />
         )}
       </div>
       <div className="overflow-auto w-[20vw] p-1" style={{ scrollbarWidth: 'thin' }}>
         {filteredContacts.map(contact => (
           <Fragment key={contact.name}>
-            <div onContextMenu={(event) => handleContextMenu(event, contact)}>
-              <Contact
-                contact={contact}
-                isSelected={selectedContact === contact.name}
-                onSelect={() => setSelectedContact(contact.name)}
-              />
-            </div>
+            <Contact
+              contact={contact}
+              isSelected={selectedContact === contact.name}
+              onSelect={() => handleSelectedContact(contact.name)}
+              onDelete={() => deleteContact(contact)}
+            />
             <div className='border-t-2 mb-1'></div>
           </Fragment>
         ))}
       </div>
-      {contextMenu.visible && (
-        <div
-          style={{
-            position: 'absolute',
-            top: contextMenu.y,
-            left: contextMenu.x,
-            background: 'white',
-            // boxShadow: '0px 0px 5px rgba(0,0,0,0.3)',
-            zIndex: 1000
-          }}
-        >
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={() => handleMenuClick("delete")}
-            style={{ width: '100%' }}
-          >
-            Eliminar contacto
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

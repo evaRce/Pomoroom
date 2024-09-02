@@ -241,6 +241,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         case PrivateChat.get(contact_name, from_user_name) do
           {:ok, private_chat} ->
             ChatServer.join_chat(private_chat.chat_id)
+            PubSub.subscribe(Pomoroom.PubSub, "chat:#{private_chat.chat_id}")
             FriendRequest.accept_friend_request(contact_name, from_user_name)
 
             payload = %{
@@ -428,6 +429,8 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       ) do
     case GroupChat.create_group_chat(user.nickname, name_group) do
       {:ok, group_chat} ->
+        ensure_chat_server_exists(group_chat.chat_id)
+        PubSub.subscribe(Pomoroom.PubSub, "chat:#{group_chat.chat_id}")
         ChatServer.join_chat(group_chat.chat_id)
 
         payload = %{

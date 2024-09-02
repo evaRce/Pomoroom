@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
+import { Button, Dropdown } from "antd";
 import { useEventContext } from "../../EventContext";
+import { DownOutlined, DeleteOutlined } from "@ant-design/icons";
 
-export default function Contact({ contact, isSelected, onSelect }) {
+export default function Contact({ contact, isSelected, onSelect, onDelete }) {
   const { addEvent } = useEventContext();
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const handleChat = () => {
     if (!isSelected) {
@@ -16,27 +19,57 @@ export default function Contact({ contact, isSelected, onSelect }) {
   };
 
   const getBackgroundContact = () => {
-    if (!isSelected) {
-      if (contact.status_request === "pending") {
-        return 'bg-yellow-100';
-      } else if (contact.status_request === "rejected") {
-        return 'bg-red-300';
-      } else {
-        return '';
-      }
-    } else {
+    if (isSelected) {
       return 'bg-gray-300';
+    }
+    switch (contact.status_request) {
+      case "pending":
+        return 'bg-yellow-100';
+      case "rejected":
+        return 'bg-red-300';
+      default:
+        return '';
     }
   };
 
   const getBackgroundStatus = () => {
-    if (contact.status_request === "pending") {
-      return "bg-yellow-400";
-    } else if (contact.status_request === "rejected") {
-      return "bg-red-400";
-    } else {
-      return "";
+    switch (contact.status_request) {
+      case "pending":
+        return "bg-yellow-400";
+      case "rejected":
+        return "bg-red-400";
+      default:
+        return "";
     }
+  };
+
+  const handleMenuClick = (key) => {
+    if (key === "deleteMember") {
+      onDelete(contact.nickname);
+    }
+    setDropdownVisible(false);
+  };
+
+  const items = [
+    {
+      label: contact.is_group ? "Eliminar grupo" : "Eliminar contacto",
+      key: "deleteMember",
+      icon: <DeleteOutlined />,
+    },
+  ];
+
+  const menuProps = {
+    items,
+    onClick: (e) => handleMenuClick(e.key),
+  };
+
+  const handleDropdownVisibility = (visible) => {
+    setDropdownVisible(visible);
+  };
+
+  const handleButtonClick = (e) => {
+    e.stopPropagation(); // Prevent the click from bubbling up to the contact div
+    setDropdownVisible(!dropdownVisible); // Toggle dropdown visibility
   };
 
   return (
@@ -47,7 +80,9 @@ export default function Contact({ contact, isSelected, onSelect }) {
       <div className="flex-shrink-0 rounded-full">
         <img
           className="h-10 w-10 rounded-full bg-white"
-          src={contact.image} />
+          src={contact.image}
+          alt={contact.name}
+        />
       </div>
       <div className="flex-1 min-w-20">
         <a className="focus:outline-none" onClick={handleChat}>
@@ -61,9 +96,22 @@ export default function Contact({ contact, isSelected, onSelect }) {
                 {contact.status_request}
               </span>
             )}
+            {contact.status_request === "accepted" && (
+              <Dropdown
+                menu={menuProps}
+                trigger={["click"]}
+                open={dropdownVisible}
+                onOpenChange={handleDropdownVisibility}
+              >
+                <Button
+                  icon={<DownOutlined />}
+                  onClick={handleButtonClick}
+                />
+              </Dropdown>
+            )}
           </div>
         </a>
       </div>
     </div>
-  )
+  );
 }
