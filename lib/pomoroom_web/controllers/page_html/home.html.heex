@@ -1,66 +1,251 @@
 <.flash_group flash={@flash} />
+<div class="min-h-screen overflow-y-hidden"
+  style="scrollbar-width: thin;">
+  <header class="flex h-[10vh] min-h-[70px] items-center justify-center max-h-md shadow-md px-4 sm:px-10  font-[sans-serif] tracking-wide relative z-50 bg-blue-300">
+    <div class="flex items-center justify-between w-full px-3">
+      <a href="home" class="inline-block align-middle">
+        <span class="lg:text-3xl text-2xl text-black font-mono inline-block align-middle">
+          POMOROOM
+        </span>
+      </a>
+    </div>
+    <div class="flex space-x-3">
+      <button class="whitespace-nowrap rounded-full font-bold text-white border-2 border-transparent transition-all duration-700 bg-blue-500 hover:bg-transparent hover:text-blue-500 hover:border-blue-500">
+        <a href="login" class="flex lg:px-5 px-2 py-2 rounded-full">
+          Iniciar sesión
+        </a>
+      </button>
+      <button class="whitespace-nowrap rounded-full font-bold text-white border-2 border-transparent transition-all duration-700 bg-blue-500 hover:bg-transparent hover:text-blue-500 hover:border-blue-500">
+        <a href="signup" class="flex lg:px-5 px-2 py-2 rounded-full">
+          Registrarse
+        </a>
+      </button>
+    </div>
+  </header>
 
-<%!-- <div class="flex flex-col items-center justify-center h-screen px-4 py-15 sm:px-6 sm:py-10 lg:px-8 xl:px-28 xl:py-32"> --%>
-<div class="px-4 py-10 sm:px-6 sm:py-10 lg:px-8 xl:px-28 xl:py-32">
-  <p class="text-7xl mt-4 font-semibold leading-10 tracking-tighter text-zinc-900 text-balance ">
-    POMOROOM
-  </p>
-  <p class="mt-4 text-base leading-7 text-zinc-600" id="eslogan">
-    Aula de estudio para organizarte solo o con tus panas
-  </p>
-  <script>
-    const options_list = [ 
-      'Aula de estudio para organizarte sola o con tus panas', 
-      'Aula de estudio para organizarte sole o con tus panas',
-      'Aula de estudio para organizarte solo o con tus panas'
-    ]; 
-    let index = 0; 
-    function changeText() { 
-      document.getElementById('eslogan').innerText = options_list[index]; 
-      index = (index + 1) % options_list.length; 
-    } 
-    setInterval(changeText, 5000); 
-  </script>
-  <div class="flex ">
-    <div class="w-full sm:w-auto">
-      <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-        <p
-          class="group relative rounded-2xl px-6 py-4 text-sm font-semibold leading-6 text-zinc-900 sm:py-6"
-          style="max-width: 300px;"
-        >
-          <span class="absolute inset-0 rounded-2xl bg-zinc-50 transition group-hover:bg-zinc-100 sm:group-hover:scale-105">
-          </span>
-          <span class="relative flex items-center gap-4 sm:flex-col">
-            Administra tu tiempo de forma más eficiente y ordenada
-          </span>
+  <main class="flex flex-col h-[89vh] w-full justify-center items-center">
+    <section class="text-center max-w-[83vw] my-5">
+      <h1 class="lg:text-5xl text-4xl font-mono text-blue-600 mt-5">
+        Organiza tu tiempo de manera eficiente
+      </h1>
+      <!-- Mensaje dinámico -->
+      <p class="lg:text-xl font-mono text-gray-700 max-w-[90vw] lg:max-w-[40vw] mx-auto">
+        POMOROOM es tu espacio para estudiar y trabajar con enfoque, ya sea
+        <span id="soloVariant">solo</span>
+        o en grupo.
+      </p>
+    </section>
+    <!-- Grid de dos columnas con dimensiones iguales -->
+    <div
+      class="grid grid-cols-1 lg:grid-cols-2 gap-7 w-full max-w-[83vw] lg:h-[38vh] h-[50vh] lg:px-0 my-5  overflow-y-auto lg:overflow-hidden"
+      style="scrollbar-width: thin;"
+    >
+      <!-- 1er elemento: Carrusel de mensajes -->
+      <div class="relative flex items-center justify-center lg:h-[38vh] h-[50vh] bg-gray-300 rounded-xl shadow-lg  w-full text-center text-lg">
+        <!-- Contador de imágenes -->
+        <div class="absolute right-5 top-5 z-10 rounded-full bg-gray-600 px-2 text-center text-sm text-white">
+          <span id="messageIndexId">1</span>/<span id="totalMessagesId"></span>
+        </div>
+        <p id="messageCarousel" class="font-mono m-12  text-black">
+          Crea o únete a salas de estudio para trabajar con tus amigos y compañeros de clase.
         </p>
-        <p
-          class="group relative rounded-2xl px-6 py-4 text-sm font-semibold leading-6 text-zinc-900 sm:py-6"
-          style="max-width: 300px;"
+        <!-- Botón para mensaje anterior -->
+        <button
+          type="button"
+          class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
+          id="prevMsgBtn"
         >
-          <span class="absolute inset-0 rounded-2xl bg-zinc-50 transition group-hover:bg-zinc-100 sm:group-hover:scale-105">
+          <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-800/30 group-hover:bg-blue-800/60 group-focus:outline-none">
+            <svg
+              class="w-5 h-5 text-white dark:text-gray-800"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 6 10"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 1 1 5l4 4"
+              />
+            </svg>
+            <span class="sr-only">Previous</span>
           </span>
-          <span class="relative flex items-center gap-4 sm:flex-col">
-            <img
-              id="image"
-              src="https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU"
-            />
-            <script>
-              const options_list2 = [ 
-                'https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU', 
-                'https://fastly.picsum.photos/id/12/2500/1667.jpg?hmac=Pe3284luVre9ZqNzv1jMFpLihFI6lwq7TPgMSsNXw2w',
-                'https://fastly.picsum.photos/id/43/1280/831.jpg?hmac=glK-rQ0ppFClW-lvjk9FqEWKog07XkOxJf6Xg_cU9LI'
-              ]; 
-              let index2 = 0; 
-              function changeImage() { 
-                document.getElementById('image').src = options_list2[index2]; 
-                index2 = (index2 + 1) % options_list2.length; 
-              } 
-              setInterval(changeImage, 5000); 
-            </script>
+        </button>
+        <!-- Botón para mensaje siguiente -->
+        <button
+          type="button"
+          class="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
+          id="nextMsgBtn"
+        >
+          <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-800/30 group-hover:bg-blue-800/60 group-focus:outline-none">
+            <svg
+              class="w-5 h-5 text-white dark:text-gray-800"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 6 10"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m1 9 4-4-4-4"
+              />
+            </svg>
+            <span class="sr-only">Next</span>
           </span>
-        </p>
+        </button>
+      </div>
+      <!-- 2do elemento: Carrusel de imágenes -->
+      <div class="relative mx-auto max-w-lg rounded-lg lg:h-[38vh] h-[50vh] w-full flex items-center justify-center bg-pink-400">
+        <!-- Contador de imágenes -->
+        <div class="absolute right-5 top-5 z-10 rounded-full bg-gray-600 px-2 text-center text-sm text-white">
+          <span id="currentImageIndex">1</span>/<span id="totalImages"></span>
+        </div>
+        <!-- Botón para ir hacia la imagen anterior -->
+        <button
+          type="button"
+          class="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
+          id="prevBtn"
+        >
+          <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-800/30 group-hover:bg-blue-800/60 group-focus:outline-none">
+            <svg
+              class="w-5 h-5 text-white dark:text-gray-800"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 6 10"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 1 1 5l4 4"
+              />
+            </svg>
+            <span class="sr-only">Previous</span>
+          </span>
+        </button>
+        <!-- Botón para ir hacia la imagen siguiente -->
+        <button
+          type="button"
+          class="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-2 cursor-pointer group focus:outline-none"
+          id="nextBtn"
+        >
+          <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-800/30 group-hover:bg-blue-800/60 group-focus:outline-none">
+            <svg
+              class="w-5 h-5 text-white dark:text-gray-800"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 6 10"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m1 9 4-4-4-4"
+              />
+            </svg>
+            <span class="sr-only">Next</span>
+          </span>
+        </button>
+        <!-- Contenedor de imágenes -->
+        <div class="relative h-64 w-full">
+          <img
+            id="carouselImage"
+            src="https://fastly.picsum.photos/id/0/5000/3333.jpg?hmac=_j6ghY5fCfSD6tvtcV74zXivkJSPIfR9B8w34XeQmvU"
+            alt="Imagen del Carrusel"
+            class="rounded-sm w-full h-full object-cover"
+          />
+        </div>
       </div>
     </div>
-  </div>
+
+    <script>
+      // Carrusel de mensajes
+      const messages = [
+        "Crea o únete a salas de estudio para trabajar con tus compas y panas de clase.",
+        "Utiliza nuestros temporizadores estilo Pomodoro para organizar sesiones de trabajo efectivas.",
+        "Usa la pizarra para explayar tus ideas."
+      ];
+      let messageIndex = 0;
+      const messageCarousel = document.getElementById('messageCarousel');
+      const messageIndexDisplay = document.getElementById('messageIndexId');
+      const totalMessagesDisplay = document.getElementById('totalMessagesId');
+
+      totalMessagesDisplay.textContent = messages.length;
+
+      function updateMessage() {
+        messageCarousel.textContent = messages[messageIndex];
+        messageIndexDisplay.textContent = messageIndex + 1;
+      }
+
+      document.getElementById('prevMsgBtn').addEventListener('click', () => {
+        messageIndex = (messageIndex > 0) ? messageIndex - 1 : messages.length - 1;
+        messageCarousel.textContent = messages[messageIndex];
+        updateMessage();
+      });
+
+      document.getElementById('nextMsgBtn').addEventListener('click', () => {
+        messageIndex = (messageIndex < messages.length - 1) ? messageIndex + 1 : 0;
+        messageCarousel.textContent = messages[messageIndex];
+        updateMessage();
+      });
+
+      // Carrusel de imágenes
+      const images = [
+        "/images/wireframes/login1.png",
+        "/images/wireframes/signup1.png",
+        "/images/wireframes/im1.jpg"
+      ];
+
+      let currentImageIndex = 0;
+      const carouselImage = document.getElementById('carouselImage');
+      const currentImageIndexDisplay = document.getElementById('currentImageIndex');
+      const totalImagesDisplay = document.getElementById('totalImages');
+
+      totalImagesDisplay.textContent = images.length;
+
+      function updateImage() {
+        carouselImage.src = images[currentImageIndex];
+        currentImageIndexDisplay.textContent = currentImageIndex + 1;
+      }
+
+      document.getElementById('prevBtn').addEventListener('click', () => {
+        currentImageIndex = (currentImageIndex > 0) ? currentImageIndex - 1 : images.length - 1;
+        updateImage();
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        currentImageIndex = (currentImageIndex < images.length - 1) ? currentImageIndex + 1 : 0;
+        updateImage();
+      });
+
+      function updateCarousels() {
+        currentImageIndex = (currentImageIndex + 1) % images.length;
+        messageIndex = (messageIndex + 1) % messages.length;
+        updateImage();
+        updateMessage();
+      }
+
+      // Configura el intervalo para actualizar ambos carruseles cada 8 segundos
+      setInterval(updateCarousels, 8000);
+
+      // Cambiar la palabra 'solo' dinámicamente
+      const variants = ['solo', 'sola', 'sole'];
+      let soloIndex = 0;
+
+      setInterval(() => {
+        document.getElementById('soloVariant').textContent = variants[soloIndex];
+        soloIndex = (soloIndex + 1) % variants.length;
+      }, 8000);
+    </script>
+  </main>
 </div>
