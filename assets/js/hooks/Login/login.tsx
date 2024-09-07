@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, Input } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import { HomeOutlined } from '@ant-design/icons';
 
 export interface LoginProps {
   searchUser(email: string, password: string): any;
@@ -43,8 +44,16 @@ export const Login: React.FC<LoginProps> = (props: LoginProps) => {
         backgroundColor: "rgba(255, 255, 255, 0.5)",
         backgroundBlendMode: "overlay",
       }}
-    >
-      <div className="max-w-md w-full">
+    > 
+      <a href="home">
+        <Button 
+          className="absolute top-8 left-8 shadow bg-white" 
+          icon={<HomeOutlined />} 
+          size="large" 
+          title="Página de inicio" 
+        />
+      </a>
+      <div className="max-w-md w-full mt-16">
         <div className="p-5 rounded-2xl bg-white shadow">
           <p className="text-gray-800 text-center text-2xl font-bold">
             ¡Nos alegra verte otra vez!

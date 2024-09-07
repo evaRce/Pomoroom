@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, Input } from "antd";
-import { LockOutlined, UserOutlined, RobotOutlined } from "@ant-design/icons";
+import { LockOutlined, UserOutlined, RobotOutlined, HomeOutlined } from "@ant-design/icons";
 
 export interface SignUpProps {
   submitUser(
@@ -48,6 +48,14 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
         backgroundBlendMode: "overlay",
       }}
     >
+      <a href="home">
+        <Button 
+          className="absolute top-8 left-8 shadow bg-white" 
+          icon={<HomeOutlined />} 
+          size="large" 
+          title="Página de inicio" 
+        />
+      </a>
       <div className="max-w-md w-full">
         <div className="p-5 rounded-2xl bg-white shadow">
           <p className="text-gray-800 text-center text-2xl font-bold">
