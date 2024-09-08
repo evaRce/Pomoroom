@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "antd";
-import { MoreOutlined, UserAddOutlined } from '@ant-design/icons';
+import { Button, Modal } from "antd";
+import { ClockCircleOutlined, UserAddOutlined } from '@ant-design/icons';
 import AddContact from "./AddContact";
 import { useEventContext } from "../../EventContext";
+import CountdownTimer from "../../chat/CountdownTimer";
 
 export default function UserInfo() {
 	const [userLogin, setUserLogin] = useState(null);
 	const [showModal, setShowModal] = useState(false);
 	const { getEventData, removeEvent } = useEventContext();
+	const [showTimerModal, setShowTimerModal] = useState(false);
 
 	useEffect(() => {
 		const user = getEventData("show_user_info");
@@ -25,6 +27,15 @@ export default function UserInfo() {
 		setShowModal(showModal);
 	};
 
+	const showTimerModalHandler = () => {
+		setShowTimerModal(true); // Abre el modal del temporizador
+	};
+
+	const closeTimerModalHandler = () => {
+		setShowTimerModal(false); // Cierra el modal del temporizador
+	};
+
+
 	return (
 		<div className="flex h-[10vh] w-[20vw] justify-between sm:items-center py-7 px-2 gap-2 ">
 			{userLogin && (
@@ -35,19 +46,29 @@ export default function UserInfo() {
 							src={userLogin.image_profile}
 							alt="default" />
 					</div>
-					
+
 					<div className="flex w-[18vw] items-center justify-between">
 						<span className="overflow-ellipsis overflow-hidden whitespace-nowrap truncate" title={userLogin.nickname}>
 							{userLogin.nickname}
 						</span>
 						<div className="flex gap-1">
 							<Button icon={<UserAddOutlined />} onClick={showAddEntryModal} title="Añadir contacto/grupo" />
-							<Button icon={<MoreOutlined />} />
+							<Button icon={<ClockCircleOutlined onClick={showTimerModalHandler} title="Temporizador" />} />
 						</div>
 					</div>
 				</div>)
 			}
 			<AddContact sendDataToParent={handleDataFromChild} receiveDataFromParent={showModal} />
+			<Modal
+				width="auto"
+				title="Temporizador Pomodoro"
+				open={showTimerModal}
+				onCancel={closeTimerModalHandler}
+				footer={null} // No mostrar botones en el footer del modal
+				centered // Centrar el modal en la pantalla
+			>
+				<CountdownTimer />
+			</Modal>
 		</div>
 	);
 }
