@@ -1,7 +1,7 @@
 <.flash_group flash={@flash} />
 <div class="min-h-screen overflow-y-hidden"
   style="scrollbar-width: thin;">
-  <header class="flex h-[10vh] min-h-[70px] items-center justify-center max-h-md shadow-md px-4 sm:px-10  font-[sans-serif] tracking-wide relative z-50 bg-blue-300">
+  <header class="flex h-[10vh] min-h-[70px] items-center justify-center max-h-md px-4 sm:px-10  font-[sans-serif] tracking-wide relative z-50 bg-blue-300">
     <div class="flex items-center justify-between w-full px-3">
       <a href="home" class="inline-block align-middle">
         <span class="lg:text-3xl text-2xl text-black font-mono inline-block align-middle">
@@ -10,12 +10,12 @@
       </a>
     </div>
     <div class="flex space-x-3">
-      <button class="whitespace-nowrap rounded-full font-bold text-white border-2 border-transparent transition-all duration-700 bg-blue-500 hover:bg-transparent hover:text-blue-500 hover:border-blue-500">
+      <button class="whitespace-nowrap rounded-full font-bold text-white border-2 border-transparent transition-all duration-700 bg-blue-500 hover:bg-transparent hover:text-white hover:border-blue-500">
         <a href="login" class="flex lg:px-5 px-2 py-2 rounded-full">
           Iniciar sesión
         </a>
       </button>
-      <button class="whitespace-nowrap rounded-full font-bold text-white border-2 border-transparent transition-all duration-700 bg-blue-500 hover:bg-transparent hover:text-blue-500 hover:border-blue-500">
+      <button class="whitespace-nowrap rounded-full font-bold text-white border-2 border-transparent transition-all duration-700 bg-blue-500 hover:bg-transparent hover:text-white hover:border-blue-500">
         <a href="signup" class="flex lg:px-5 px-2 py-2 rounded-full">
           Registrarse
         </a>
@@ -29,7 +29,7 @@
         Organiza tu tiempo de manera eficiente
       </h1>
       <!-- Mensaje dinámico -->
-      <p class="lg:text-xl font-mono text-gray-700 max-w-[90vw] lg:max-w-[40vw] mx-auto">
+      <p class="lg:text-xl font-mono text-gray-700 max-w-[90vw] lg:max-w-[60vw] mx-auto">
         POMOROOM es tu espacio para estudiar y trabajar con enfoque, ya sea
         <span id="soloVariant">solo</span>
         o en grupo.
@@ -37,11 +37,11 @@
     </section>
     <!-- Grid de dos columnas con dimensiones iguales -->
     <div
-      class="grid grid-cols-1 lg:grid-cols-2 gap-7 w-full max-w-[83vw] lg:h-[38vh] h-[50vh] lg:px-0 my-5  overflow-y-auto lg:overflow-hidden"
+      class="grid grid-cols-1 lg:grid-cols-2 gap-7 w-full max-w-[83vw] lg:h-[40vh] h-[45vh] lg:px-0 my-5 overflow-y-auto lg:overflow-hidden"
       style="scrollbar-width: thin;"
     >
       <!-- 1er elemento: Carrusel de mensajes -->
-      <div class="relative flex items-center justify-center lg:h-[38vh] h-[50vh] bg-gray-300 rounded-xl shadow-lg  w-full text-center text-lg">
+      <div class="relative flex items-center justify-center lg:h-[38vh] h-[40vh] bg-blue-400/30 rounded-xl w-full text-center text-lg">
         <!-- Contador de imágenes -->
         <div class="absolute right-5 top-5 z-10 rounded-full bg-gray-600 px-2 text-center text-sm text-white">
           <span id="messageIndexId">1</span>/<span id="totalMessagesId"></span>
@@ -101,7 +101,7 @@
         </button>
       </div>
       <!-- 2do elemento: Carrusel de imágenes -->
-      <div class="relative mx-auto max-w-lg rounded-lg lg:h-[38vh] h-[50vh] w-full flex items-center justify-center bg-pink-400">
+      <div class="relative mx-auto max-w-lg rounded-lg lg:h-[38vh] h-[40vh] w-full flex items-center justify-center bg-blue-400/30">
         <!-- Contador de imágenes -->
         <div class="absolute right-5 top-5 z-10 rounded-full bg-gray-600 px-2 text-center text-sm text-white">
           <span id="currentImageIndex">1</span>/<span id="totalImages"></span>
