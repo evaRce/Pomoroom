@@ -53,7 +53,7 @@ export default function UserInfo() {
 						</span>
 						<div className="flex gap-1">
 							<Button icon={<UserAddOutlined />} onClick={showAddEntryModal} title="Añadir contacto/grupo" />
-							<Button icon={<ClockCircleOutlined onClick={showTimerModalHandler} title="Temporizador" />} />
+							<Button icon={<ClockCircleOutlined />} onClick={showTimerModalHandler} title="Temporizador Pomodoro"/>
 						</div>
 					</div>
 				</div>)
@@ -61,7 +61,6 @@ export default function UserInfo() {
 			<AddContact sendDataToParent={handleDataFromChild} receiveDataFromParent={showModal} />
 			<Modal
 				width="auto"
-				title="Temporizador Pomodoro"
 				open={showTimerModal}
 				onCancel={closeTimerModalHandler}
 				footer={null} // No mostrar botones en el footer del modal

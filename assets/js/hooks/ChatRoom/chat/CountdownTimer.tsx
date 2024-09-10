@@ -7,32 +7,62 @@ import {
 } from "@ant-design/icons";
 
 export default function CountdownTimer() {
-  const seconds = 25 * 60;
-  const [time, setTime] = useState(seconds); // tiempo en segundos
+  const workSeconds = 25 * 60;
+  const breakSeconds = 5 * 60;
+  const [time, setTime] = useState(workSeconds);
   const [isRunning, setIsRunning] = useState(false);
+  const [isWorkTime, setIsWorkTime] = useState(true);
+  const [isFinish, setIsFinish] = useState(false);
   const timerRef = useRef(null);
+  const audioWork = useRef(new Audio("/sounds/bell-notification.wav"));
+  const audioRest = useRef(new Audio("/sounds/happy-bells-notification.wav"));
 
   const startTimer = () => {
     if (!isRunning) {
       setIsRunning(true);
       timerRef.current = setInterval(() => {
-        setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+        setTime((prevTime) => {
+          if (prevTime <= 0) {
+            setIsFinish(true);
+            clearInterval(timerRef.current);
+            return 0;
+          }
+          return prevTime - 1;
+        });
       }, 1000);
     }
   };
 
+  useEffect(() => {
+    if (isFinish) {
+      if (isWorkTime) {
+        audioRest.current.play();
+      } else {
+        audioWork.current.play();
+      }
+      setIsWorkTime((prevIsWorkTime) => !prevIsWorkTime);
+      clearInterval(timerRef.current);
+      setIsRunning(false);
+      setTime(isWorkTime ? breakSeconds : workSeconds);
+      setIsFinish(false);
+    }
+  }, [isFinish, isWorkTime, breakSeconds, workSeconds]);
+
   const stopTimer = () => {
-    clearInterval(timerRef.current);
-    setIsRunning(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      setIsRunning(false);
+    }
   };
 
   const resetTimer = () => {
     clearInterval(timerRef.current);
-    setTime(60); // Restablece el tiempo a 1 minuto
+    setTime(workSeconds);
     setIsRunning(false);
+    setIsWorkTime(true);
+    setIsFinish(false);
   };
 
-  // Formatear el tiempo (minutos y segundos)
   const formatTime = () => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
@@ -42,16 +72,14 @@ export default function CountdownTimer() {
     )}`;
   };
 
-  // Limpieza del temporizador cuando el componente se desmonte
   useEffect(() => {
     return () => clearInterval(timerRef.current);
   }, []);
 
   return (
     <div className="flex flex-col w-[20vw] mt-4 items-center justify-center rounded-lg space-y-4">
-      {/* Pantalla del temporizador */}
+      <span className="text-xl font-mono"> {isWorkTime ? "Trabajo" : "Descanso"}</span>
       <div className="text-5xl font-mono">{formatTime()}</div>
-      {/* Botones */}
       <div className="flex space-x-3">
         <Button
           onClick={startTimer}
