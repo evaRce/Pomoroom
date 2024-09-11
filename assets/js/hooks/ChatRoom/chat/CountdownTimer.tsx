@@ -1,18 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button } from "antd";
+import { Button, InputNumber, Modal, Form } from "antd";
 import {
   CaretRightOutlined,
   PauseOutlined,
   UndoOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 
 export default function CountdownTimer() {
-  const workSeconds = 25 * 60;
-  const breakSeconds = 5 * 60;
+  const [workSeconds, setWorkSeconds] = useState(25 * 60);
+  const [breakSeconds, setBreakSeconds] = useState(5 * 60);
+  const [longBreakSeconds, setLongBreakSeconds] = useState(15 * 60);
   const [time, setTime] = useState(workSeconds);
   const [isRunning, setIsRunning] = useState(false);
   const [isWorkTime, setIsWorkTime] = useState(true);
   const [isFinish, setIsFinish] = useState(false);
+  const [pomodoroCount, setPomodoroCount] = useState(0);
+  const [isConfigModalVisible, setIsConfigModalVisible] = useState(false);
+  const [form] = Form.useForm();
   const timerRef = useRef(null);
   const audioWork = useRef(new Audio("/sounds/bell-notification.wav"));
   const audioRest = useRef(new Audio("/sounds/happy-bells-notification.wav"));
@@ -36,17 +41,33 @@ export default function CountdownTimer() {
   useEffect(() => {
     if (isFinish) {
       if (isWorkTime) {
+        setPomodoroCount((prevCount) => prevCount + 1);
         audioRest.current.play();
       } else {
         audioWork.current.play();
       }
+
+      const isLongBreak = !isWorkTime && pomodoroCount % 4 === 3;
+
+      setTime(
+        isWorkTime
+          ? isLongBreak
+            ? longBreakSeconds
+            : breakSeconds
+          : workSeconds
+      );
       setIsWorkTime((prevIsWorkTime) => !prevIsWorkTime);
-      clearInterval(timerRef.current);
       setIsRunning(false);
-      setTime(isWorkTime ? breakSeconds : workSeconds);
       setIsFinish(false);
     }
-  }, [isFinish, isWorkTime, breakSeconds, workSeconds]);
+  }, [
+    isFinish,
+    isWorkTime,
+    breakSeconds,
+    workSeconds,
+    longBreakSeconds,
+    pomodoroCount,
+  ]);
 
   const stopTimer = () => {
     if (timerRef.current) {
@@ -61,6 +82,7 @@ export default function CountdownTimer() {
     setIsRunning(false);
     setIsWorkTime(true);
     setIsFinish(false);
+    setPomodoroCount(0);
   };
 
   const formatTime = () => {
@@ -72,13 +94,45 @@ export default function CountdownTimer() {
     )}`;
   };
 
+  const openConfigModal = () => {
+    setIsConfigModalVisible(true);
+    form.setFieldsValue({
+      workTime: workSeconds / 60,
+      shortBreakTime: breakSeconds / 60,
+      longBreakTime: longBreakSeconds / 60,
+    });
+  };
+
+  const handleConfigSubmit = (values) => {
+    const { workTime, shortBreakTime, longBreakTime } = values;
+
+    if (shortBreakTime >= longBreakTime) {
+      alert(
+        "El tiempo de `descanso corto` debe ser menor que el tiempo de `descanso largo`."
+      );
+      return;
+    }
+
+    setWorkSeconds(workTime * 60);
+    setBreakSeconds(shortBreakTime * 60);
+    setLongBreakSeconds(longBreakTime * 60);
+    setTime(workTime * 60);
+    setIsConfigModalVisible(false);
+  };
+
+  const handleCancelConfig = () => {
+    setIsConfigModalVisible(false);
+  };
+
   useEffect(() => {
     return () => clearInterval(timerRef.current);
   }, []);
 
   return (
-    <div className="flex flex-col w-[20vw] mt-4 items-center justify-center rounded-lg space-y-4">
-      <span className="text-xl font-mono"> {isWorkTime ? "Trabajo" : "Descanso"}</span>
+    <div className="flex flex-col lg:w-[15vw] w-auto mt-4 items-center justify-center rounded-lg space-y-4">
+      <span className="text-xl font-mono">
+        {isWorkTime ? "Trabajo" : "Descanso"}
+      </span>
       <div className="text-5xl font-mono">{formatTime()}</div>
       <div className="flex space-x-3">
         <Button
@@ -94,7 +148,77 @@ export default function CountdownTimer() {
           title="Parar"
         />
         <Button onClick={resetTimer} icon={<UndoOutlined />} title="Resetear" />
+        <Button
+          onClick={openConfigModal}
+          icon={<SettingOutlined />}
+          title="Configurar"
+        />
       </div>
+
+      <Modal
+        width={300}
+        title="Configurar tiempos"
+        open={isConfigModalVisible}
+        onCancel={handleCancelConfig}
+        footer={[
+          <Button key="cancel" onClick={handleCancelConfig}>
+            Cancelar
+          </Button>,
+          <Button
+            key="ok"
+            className="bg-sky-400/80"
+            onClick={() => form.submit()}
+          >
+            Aceptar
+          </Button>,
+        ]}
+        centered
+        className="font-mono"
+      >
+        <Form
+          className="m-0"
+          form={form}
+          onFinish={handleConfigSubmit}
+          layout="vertical"
+        >
+          <Form.Item
+            label="Tiempo de trabajo (minutos)"
+            name="workTime"
+            rules={[
+              {
+                required: true,
+                message: "Ingresa un tiempo de trabajo.",
+              },
+            ]}
+          >
+            <InputNumber min={1} style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            label="Descanso corto (minutos)"
+            name="shortBreakTime"
+            rules={[
+              {
+                required: true,
+                message: "Ingresa un tiempo de descanso corto.",
+              },
+            ]}
+          >
+            <InputNumber min={1} style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            label="Descanso largo (minutos)"
+            name="longBreakTime"
+            rules={[
+              {
+                required: true,
+                message: "Ingresa un tiempo de descanso largo.",
+              },
+            ]}
+          >
+            <InputNumber min={1} style={{ width: "100%" }} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

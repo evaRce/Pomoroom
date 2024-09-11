@@ -28,11 +28,11 @@ export default function UserInfo() {
 	};
 
 	const showTimerModalHandler = () => {
-		setShowTimerModal(true); // Abre el modal del temporizador
+		setShowTimerModal(true);
 	};
 
 	const closeTimerModalHandler = () => {
-		setShowTimerModal(false); // Cierra el modal del temporizador
+		setShowTimerModal(false);
 	};
 
 
@@ -63,8 +63,9 @@ export default function UserInfo() {
 				width="auto"
 				open={showTimerModal}
 				onCancel={closeTimerModalHandler}
-				footer={null} // No mostrar botones en el footer del modal
-				centered // Centrar el modal en la pantalla
+				footer={null}
+				centered
+				className="m-5"
 			>
 				<CountdownTimer />
 			</Modal>
