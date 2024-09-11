@@ -35,39 +35,39 @@ export default function CountdownTimer() {
           return prevTime - 1;
         });
       }, 1000);
+      if (isWorkTime) {
+        setPomodoroCount((prevCount) => prevCount + 1);
+      }
     }
   };
 
   useEffect(() => {
     if (isFinish) {
       if (isWorkTime) {
-        setPomodoroCount((prevCount) => prevCount + 1);
+        console.log("PomodoroCount: ", pomodoroCount);
         audioRest.current.play();
       } else {
         audioWork.current.play();
       }
 
-      const isLongBreak = !isWorkTime && pomodoroCount % 4 === 3;
+      // Cada 4 ciclos de trabajo, es un descanso largo.
+      const isLongBreak = pomodoroCount > 0 && pomodoroCount % 4 === 0;
 
-      setTime(
-        isWorkTime
-          ? isLongBreak
-            ? longBreakSeconds
-            : breakSeconds
-          : workSeconds
-      );
+      if (isWorkTime) {
+        if (isLongBreak) {
+          setTime(longBreakSeconds);
+        } else {
+          setTime(breakSeconds);
+        }
+      } else {
+        setTime(workSeconds);
+      }
+
       setIsWorkTime((prevIsWorkTime) => !prevIsWorkTime);
       setIsRunning(false);
       setIsFinish(false);
     }
-  }, [
-    isFinish,
-    isWorkTime,
-    breakSeconds,
-    workSeconds,
-    longBreakSeconds,
-    pomodoroCount,
-  ]);
+  }, [isFinish, isWorkTime, breakSeconds, workSeconds, longBreakSeconds]);
 
   const stopTimer = () => {
     if (timerRef.current) {
