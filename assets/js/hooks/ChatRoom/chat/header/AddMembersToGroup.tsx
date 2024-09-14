@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Button, Modal, Input, List } from "antd";
-import { CopyOutlined, SearchOutlined, CloseOutlined } from '@ant-design/icons';
+import { CopyOutlined, SearchOutlined, CloseOutlined } from "@ant-design/icons";
 import { useEventContext } from "../../EventContext";
-import Member from "./Member";
+import Member from "../../detail/Member";
 
-export default function AddMembersToGroup({ chatData, isModalVisibleFromAddContacts, isModalVisibleFromHeader }) {
+export default function AddMembersToGroup({
+  chatData,
+  isModalVisibleFromAddContacts,
+  isModalVisibleFromHeader,
+}) {
   const { addEvent, getEventData, removeEvent } = useEventContext();
   const [contacts, setContacts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,8 +23,10 @@ export default function AddMembersToGroup({ chatData, isModalVisibleFromAddConta
   }, [getEventData]);
 
   useEffect(() => {
-    const results = contacts.filter(contact =>
-      contact.contact_data?.nickname.toLowerCase().includes(searchTerm.toLowerCase())
+    const results = contacts.filter((contact) =>
+      contact.contact_data?.nickname
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
     );
     setFilteredContacts(results);
   }, [searchTerm, contacts]);
@@ -39,7 +45,10 @@ export default function AddMembersToGroup({ chatData, isModalVisibleFromAddConta
   };
 
   const inviteToGroup = (contactData) => {
-    addEvent("add_member", { group_name: chatData.group_data.name, new_member: contactData.nickname });
+    addEvent("add_member", {
+      group_name: chatData.group_data.name,
+      new_member: contactData.nickname,
+    });
   };
 
   return (
@@ -58,17 +67,28 @@ export default function AddMembersToGroup({ chatData, isModalVisibleFromAddConta
           onChange={handleSearch}
         />
         {searchTerm ? (
-          <Button className="bg-red-300" icon={<CloseOutlined />} onClick={clearSearch} />
+          <Button
+            className="bg-red-300"
+            icon={<CloseOutlined />}
+            onClick={clearSearch}
+          />
         ) : (
-          <Button className="bg-sky-400" icon={<SearchOutlined />} onClick={handleSearch} />
+          <Button
+            className="bg-sky-400"
+            icon={<SearchOutlined />}
+            onClick={handleSearch}
+          />
         )}
       </div>
 
-      <div className="h-[26vh] overflow-y-auto bg-gray-100" style={{ scrollbarWidth: "thin" }}>
+      <div
+        className="h-[26vh] overflow-y-auto bg-gray-100"
+        style={{ scrollbarWidth: "thin" }}
+      >
         <List
           bordered
           dataSource={filteredContacts}
-          renderItem={item => (
+          renderItem={(item) => (
             <Member
               contact={item.contact_data}
               onSelect={() => inviteToGroup(item.contact_data)}
@@ -89,8 +109,12 @@ export default function AddMembersToGroup({ chatData, isModalVisibleFromAddConta
         <span className="mx-2 overflow-ellipsis overflow-hidden whitespace-nowrap truncate">
           {chatData?.group_data.invite_link}
         </span>
-        <Button className="bg-sky-400" icon={<CopyOutlined />}
-          onClick={() => navigator.clipboard.writeText(`${chatData?.group_data.invite_link}`)}
+        <Button
+          className="bg-sky-400"
+          icon={<CopyOutlined />}
+          onClick={() =>
+            navigator.clipboard.writeText(`${chatData?.group_data.invite_link}`)
+          }
         >
           Copiar enlace
         </Button>

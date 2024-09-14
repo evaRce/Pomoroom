@@ -3,7 +3,7 @@ import { Button, Modal } from "antd";
 import { ClockCircleOutlined, UserAddOutlined } from '@ant-design/icons';
 import AddContact from "./AddContact";
 import { useEventContext } from "../../EventContext";
-import CountdownTimer from "../../chat/CountdownTimer";
+import CountdownTimer from "../../timer/CountdownTimer";
 
 export default function UserInfo() {
 	const [userLogin, setUserLogin] = useState(null);

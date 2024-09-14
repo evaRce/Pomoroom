@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Avatar, Button, List } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 import { useEventContext } from "../EventContext";
-import Member from "../chat/components/Member";
+import Member from "./Member";
 
 export default function Detail() {
   const { addEvent, getEventData, removeEvent } = useEventContext();
@@ -38,7 +38,11 @@ export default function Detail() {
   };
 
   const setAdmin = (memberName, operation) => {
-    addEvent("set_admin", { member_name: memberName, group_name: chatData.chat_name, operation: operation })
+    addEvent("set_admin", {
+      member_name: memberName,
+      group_name: chatData.chat_name,
+      operation: operation,
+    });
   };
 
   const deleteMember = (memberName) => {
@@ -46,7 +50,10 @@ export default function Detail() {
       (memberFind) => memberFind.nickname === memberName
     );
     if (index !== -1) {
-      addEvent("delete_member", { member_name: memberName, group_name: chatData.chat_name });
+      addEvent("delete_member", {
+        member_name: memberName,
+        group_name: chatData.chat_name,
+      });
       setMembers((prevMembers) => {
         const newMembers = [...prevMembers];
         newMembers.splice(index, 1);

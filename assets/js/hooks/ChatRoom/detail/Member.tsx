@@ -1,8 +1,19 @@
 import React, { useState } from "react";
 import { Button, Dropdown } from "antd";
-import { DownOutlined, ThunderboltOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  DownOutlined,
+  ThunderboltOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 
-export default function Member({ contact, onSelect, onSetAdmin, onDelete, isInModal = false, imAdmin }) {
+export default function Member({
+  contact,
+  onSelect,
+  onSetAdmin,
+  onDelete,
+  isInModal = false,
+  imAdmin,
+}) {
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const handleMenuClick = (key) => {

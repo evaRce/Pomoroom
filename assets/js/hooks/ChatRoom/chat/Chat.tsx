@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import HeaderChat from "./components/HeaderChat";
-import Message from "./message/Message";
-import FooterChat from "./components/FooterChat";
+import HeaderChat from "./header/HeaderChat";
+import Message from "./body/Message";
+import FooterChat from "./footer/FooterChat";
 import { useEventContext } from "../EventContext";
 
 export default function Chat() {
@@ -51,9 +51,14 @@ export default function Chat() {
         style={{ scrollbarWidth: "thin" }}
         ref={messagesEndRef}
       >
-        {messages.length > 0 && messages.map((message) => (
-          <Message key={message.data.msg_id} message={message} userLogin={userLogin} />
-        ))}
+        {messages.length > 0 &&
+          messages.map((message) => (
+            <Message
+              key={message.data.msg_id}
+              message={message}
+              userLogin={userLogin}
+            />
+          ))}
         <div ref={messagesEndRef}></div>
       </main>
       <FooterChat addMessage={addMessage} />

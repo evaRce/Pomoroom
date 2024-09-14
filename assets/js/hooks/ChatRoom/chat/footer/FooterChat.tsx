@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Button, Modal, message } from "antd";
-import EmojiPicker from 'emoji-picker-react';
+import EmojiPicker from "emoji-picker-react";
 import {
   PictureOutlined,
   AudioOutlined,
   AudioMutedOutlined,
   SendOutlined,
-  SmileOutlined
-} from '@ant-design/icons';
+  SmileOutlined,
+} from "@ant-design/icons";
 import { useEventContext } from "../../EventContext";
 
 export default function FooterChat({ addMessage }) {
@@ -19,7 +19,7 @@ export default function FooterChat({ addMessage }) {
   const [modalVisible, setModalVisible] = useState(false);
 
   const onEmojiClick = (emojiObject, event) => {
-    setInputStr(prevInput => prevInput + emojiObject.emoji);
+    setInputStr((prevInput) => prevInput + emojiObject.emoji);
     setShowPicker(false);
   };
 
@@ -45,9 +45,15 @@ export default function FooterChat({ addMessage }) {
     }
     console.log(inputStr);
     if (chatData.group_data) {
-      addEvent("send_message", { message: inputStr, to_group_name: chatData.group_data.name })
+      addEvent("send_message", {
+        message: inputStr,
+        to_group_name: chatData.group_data.name,
+      });
     } else {
-      addEvent("send_message", { message: inputStr, to_user: chatData.to_user_data.nickname })
+      addEvent("send_message", {
+        message: inputStr,
+        to_user: chatData.to_user_data.nickname,
+      });
     }
     addMessage(inputStr);
     setInputStr("");
@@ -82,13 +88,15 @@ export default function FooterChat({ addMessage }) {
           <div className="flex">
             <Button
               className="bg-gray-100 rounded-none"
-              onClick={() => setShowPicker(val => !val)}
-              icon={<SmileOutlined />} />
+              onClick={() => setShowPicker((val) => !val)}
+              icon={<SmileOutlined />}
+            />
             <Button
               className="bg-sky-400 rounded-l-none rounded-r-lg"
               icon={<SendOutlined />}
-              onClick={(e) => handleSendMessage(e)} />
-            {showPicker && (<EmojiPicker onEmojiClick={onEmojiClick} />)}
+              onClick={(e) => handleSendMessage(e)}
+            />
+            {showPicker && <EmojiPicker onEmojiClick={onEmojiClick} />}
           </div>
         </div>
       </form>
