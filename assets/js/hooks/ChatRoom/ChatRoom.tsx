@@ -43,6 +43,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const addContactToGroup = getEventData("add_member");
 		const deleteMember = getEventData("delete_member");
 		const setAdmin = getEventData("set_admin");
+		const startVoiceCall = getEventData("start_voice_call");
+		const endVoiceCall = getEventData("end_voice_call");
 
 		if (contactToDelete) {
 			pushEventToLiveView("action.delete_contact", contactToDelete);
@@ -110,6 +112,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		if (setAdmin) {
 			pushEventToLiveView("action.set_admin", setAdmin);
 			removeEvent("set_admin");
+		}
+		if (startVoiceCall) {
+			console.log("Entra al pushToLiveView para LLAMAR");
+			pushEventToLiveView("action.start_voice_call", startVoiceCall);
+			removeEvent("start_voice_call");
+		}
+		if (endVoiceCall) {
+			console.log("Entra al pushToLiveView para CORTAR");
+			pushEventToLiveView("action.end_voice_call", endVoiceCall);
+			removeEvent("end_voice_call");
 		}
 	}, [addEvent]);
 

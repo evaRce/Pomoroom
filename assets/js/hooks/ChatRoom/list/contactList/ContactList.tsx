@@ -117,7 +117,7 @@ export default function ContactList() {
     <div className="flex flex-col h-[90vh] w-[20vw]">
       <div className="flex items-center w-[20vw] bg-gray-100">
         <Input
-          className="my-2 ml-2 mr-1 w-[16vw]"
+          className="my-2 ml-2 mr-1 lg:w-[18vw] w-[16vw]"
           type="text"
           placeholder="Buscar a mis panas"
           value={searchTerm}
