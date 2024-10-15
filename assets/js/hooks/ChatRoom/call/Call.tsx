@@ -26,14 +26,13 @@ export default function Call({ chatName }) {
     try {
       // Cambia el estado antes de solicitar el video
       setModalVisible(true);
-      console.log("CHAT_NAME:", chatName);
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       setLocalStream(stream);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
       if (!callStarted) {
-        addEvent("start_private_call", { contact_name: "lois1" });
+        addEvent("start_private_call", { contact_name: chatName });
         callStarted = true; // Marcar que la llamada ha comenzado
       }
     } catch (error) {

@@ -113,7 +113,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			removeEvent("set_admin");
 		}
 		if (startCall) {
-			console.log("Entra al pushToLiveView para LLAMAR");
 			pushEventToLiveView("action.start_private_call", startCall);
 			removeEvent("start_private_call");
 		}

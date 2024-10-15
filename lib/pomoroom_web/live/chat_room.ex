@@ -566,7 +566,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       ) do
     {to_user, from_user} =
       FriendRequest.determine_friend_request_users(contact_name, user.nickname)
-
+    IO.inspect("ENTROOOOOOO")
     {:ok, private_chat} = PrivateChat.get(to_user, from_user)
     chat_id = private_chat.chat_id
     PubSub.subscribe(Pomoroom.PubSub, call_topic(chat_id))
