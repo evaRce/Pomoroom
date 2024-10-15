@@ -4,6 +4,8 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   alias Pomoroom.User
   alias Pomoroom.ChatRoom.{PrivateChat, ChatServer, FriendRequest, GroupChat}
   alias Phoenix.PubSub
+  alias PomoroomWeb.Presence
+  alias Phoenix.Socket.Broadcast
 
   def mount(_params, session, socket) do
     socket =
@@ -23,6 +25,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         PubSub.subscribe(Pomoroom.PubSub, "chat:#{chat_id}")
       end)
     end
+
+    socket =
+      socket
+      |> assign(:chat_id, "")
+      |> assign(:connected_users, [])
 
     # IO.inspect(socket, structs: false, limit: :infinity)
     {:ok, socket, layout: false}
@@ -80,6 +87,22 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     {:noreply, push_event(socket, "react", payload)}
   end
 
+  def handle_info(%Broadcast{topic: _topic, event: "presence_diff", payload: _payload}, socket) do
+    chat_id = socket.assigns.chat_id
+    connected_users = list_present(chat_id)
+
+    socket =
+      socket
+      |> assign(:connected_users, connected_users)
+
+    payload = %{
+      event_name: "connected_users",
+      event_data: %{connected_users: connected_users}
+    }
+
+    {:noreply, push_event(socket, "react", payload)}
+  end
+
   def handle_event("action.get_user_info", _args, %{assigns: %{user_info: user}} = socket) do
     payload = %{event_name: "show_user_info", event_data: user}
     {:noreply, push_event(socket, "react", payload)}
@@ -110,7 +133,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         {:ok, from_user_data} = User.get_by("nickname", user.nickname)
         {:ok, request} = FriendRequest.get(to_user, from_user)
 
-        payload =
+        {payload, socket} =
           case FriendRequest.get_status(contact_name, user.nickname) do
             "accepted" ->
               messages = ChatServer.get_messages(private_chat.chat_id, 20)
@@ -130,43 +153,45 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                   }
                 end)
 
-              %{
-                event_name: "open_private_chat",
-                event_data: %{
-                  from_user_data: from_user_data,
-                  to_user_data: to_user_data,
-                  messages: messages_with_images_user
-                }
-              }
+              socket = assign(socket, :chat_id, private_chat.chat_id)
+
+              {%{
+                 event_name: "open_private_chat",
+                 event_data: %{
+                   from_user_data: from_user_data,
+                   to_user_data: to_user_data,
+                   messages: messages_with_images_user
+                 }
+               }, socket}
 
             "pending" ->
               if FriendRequest.is_owner_request?(contact_name, user.nickname) do
-                %{
-                  event_name: "open_chat_request_send",
-                  event_data: %{request: request}
-                }
+                {%{
+                   event_name: "open_chat_request_send",
+                   event_data: %{request: request}
+                 }, socket}
               else
-                %{
-                  event_name: "open_chat_request_received",
-                  event_data: %{request: request}
-                }
+                {%{
+                   event_name: "open_chat_request_received",
+                   event_data: %{request: request}
+                 }, socket}
               end
 
             "rejected" ->
               if FriendRequest.is_owner_request?(contact_name, user.nickname) do
-                %{
-                  event_name: "open_rejected_request_received",
-                  event_data: %{
-                    rejected_request: request
-                  }
-                }
+                {%{
+                   event_name: "open_rejected_request_received",
+                   event_data: %{
+                     rejected_request: request
+                   }
+                 }, socket}
               else
-                %{
-                  event_name: "open_rejected_request_send",
-                  event_data: %{
-                    rejected_request: request
-                  }
-                }
+                {%{
+                   event_name: "open_rejected_request_send",
+                   event_data: %{
+                     rejected_request: request
+                   }
+                 }, socket}
               end
           end
 
@@ -534,9 +559,36 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     end
   end
 
+  def handle_event(
+        "action.start_private_call",
+        %{"contact_name" => contact_name},
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    {to_user, from_user} =
+      FriendRequest.determine_friend_request_users(contact_name, user.nickname)
+
+    {:ok, private_chat} = PrivateChat.get(to_user, from_user)
+    chat_id = private_chat.chat_id
+    PubSub.subscribe(Pomoroom.PubSub, call_topic(chat_id))
+    {:ok, _ref} = Presence.track(self(), call_topic(chat_id), user.nickname, %{})
+    connected_users = list_present(chat_id)
+
+    socket =
+      socket
+      |> assign(:chat_id, chat_id)
+      |> assign(:connected_users, connected_users)
+
+    {:noreply, socket}
+  end
+
   def put_session_assigns(socket, session) do
     socket
     |> assign(:user_info, Map.get(session, "user_info", %{}))
+  end
+
+  defp list_present(chat_id) do
+    Presence.list(call_topic(chat_id))
+    |> Enum.map(fn {nickname, _} -> nickname end)
   end
 
   defp get_contacts_for_group(contacts, user_nickname, group_name) do
@@ -604,4 +656,6 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         :ok
     end
   end
+
+  defp call_topic(chat_id), do: "call:#{chat_id}"
 end

@@ -1,28 +1,40 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button, Modal } from "antd";
+import { useEventContext } from "../EventContext";
 
 export default function Call({ chatName }) {
   const localVideoRef = useRef(null);
-  const localVideoRef2 = useRef(null);
-  const localVideoRef3 = useRef(null);
-  const localVideoRef4 = useRef(null);
-  const localVideoRef5 = useRef(null);
   const [localStream, setLocalStream] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const { addEvent, getEventData, removeEvent } = useEventContext();
+  const [connectedUsers, setConnectedUsers] = useState([]);
+
+  useEffect(() => {
+    const connect_users_list = getEventData("connected_users");
+    if (connect_users_list) {
+      setConnectedUsers(connect_users_list);
+      removeEvent("connected_users");
+    }
+  }, [getEventData]);
 
   const handleGetMedia = async () => {
     const constraints = {
       video: true,
       audio: true,
     };
+    let callStarted = false;
     try {
       // Cambia el estado antes de solicitar el video
       setModalVisible(true);
-
+      console.log("CHAT_NAME:", chatName);
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       setLocalStream(stream);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
+      }
+      if (!callStarted) {
+        addEvent("start_private_call", { contact_name: "lois1" });
+        callStarted = true; // Marcar que la llamada ha comenzado
       }
     } catch (error) {
       console.error("Error al acceder a los dispositivos de media:", error);
@@ -67,8 +79,18 @@ export default function Call({ chatName }) {
             autoPlay
             muted
             className="w-full md:w-1/2 lg:w-1/3 max-h-screen object-contain p-2"
-            style={{transform: "rotateY(180deg)"}}
+            style={{ transform: "rotateY(180deg)" }}
           ></video>
+          <div className="w-full mt-4 text-center">
+            <h3 className="text-xl font-semibold">Usuarios Conectados:</h3>
+            <ul className="list-disc list-inside">
+              {connectedUsers.length > 0 ? (
+                connectedUsers.map((user, index) => <li key={index}>{user}</li>)
+              ) : (
+                <li>No hay usuarios conectados</li>
+              )}
+            </ul>
+          </div>
         </div>
       </Modal>
     </div>

@@ -43,8 +43,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 		const addContactToGroup = getEventData("add_member");
 		const deleteMember = getEventData("delete_member");
 		const setAdmin = getEventData("set_admin");
-		const startVoiceCall = getEventData("start_voice_call");
-		const endVoiceCall = getEventData("end_voice_call");
+		const startCall = getEventData("start_private_call");
 
 		if (contactToDelete) {
 			pushEventToLiveView("action.delete_contact", contactToDelete);
@@ -113,15 +112,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			pushEventToLiveView("action.set_admin", setAdmin);
 			removeEvent("set_admin");
 		}
-		if (startVoiceCall) {
+		if (startCall) {
 			console.log("Entra al pushToLiveView para LLAMAR");
-			pushEventToLiveView("action.start_voice_call", startVoiceCall);
-			removeEvent("start_voice_call");
-		}
-		if (endVoiceCall) {
-			console.log("Entra al pushToLiveView para CORTAR");
-			pushEventToLiveView("action.end_voice_call", endVoiceCall);
-			removeEvent("end_voice_call");
+			pushEventToLiveView("action.start_private_call", startCall);
+			removeEvent("start_private_call");
 		}
 	}, [addEvent]);
 
@@ -230,6 +224,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 			addEvent("show_members", { members: eventData.members_data })
 		}
 	}, [eventData.contact_list, eventData.members_data]);
+
+	useEffect(() => {
+		if (eventName === "connected_users") {
+			addEvent("connected_users", eventData.connected_users);
+		}
+	}, [eventData.connected_users]);
 
 	return (
 		<div className="flex h-screen w-screen min-h-screen md:min-h-48 overflow-x-hidden">

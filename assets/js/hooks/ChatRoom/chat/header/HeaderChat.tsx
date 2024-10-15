@@ -13,6 +13,8 @@ export default function HeaderChat({ userLogin }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isGroup, setIsGroup] = useState(false);
   const [checkAdmin, setCheckAdmin] = useState({});
+  const [chatName, setChatName] = useState("");
+  const [chatImage, setChatImage] = useState("");
 
   useEffect(() => {
     const privateChat = getEventData("open_private_chat");
@@ -32,15 +34,22 @@ export default function HeaderChat({ userLogin }) {
     }
   }, [getEventData]);
 
+  useEffect(() => {
+    if (chatData) {
+      setChatName(setNameChat());
+      setChatImage(setImageProfile());
+    }
+  }, [chatData]);
+
   const showUserDetails = () => {
     addEvent("toggle_detail_visibility", {
       is_visible: true,
       is_group: isGroup,
-      group_name: setNamechat(),
+      group_name: chatName,
     });
     addEvent("show_detail", {
-      chat_name: setNamechat(),
-      image: setImageProfile(),
+      chat_name: chatName,
+      image: chatImage,
       is_group: isGroup,
     });
   };
@@ -49,21 +58,21 @@ export default function HeaderChat({ userLogin }) {
     if (chatData.group_data) {
       return chatData.group_data.image;
     } else {
-      if (userLogin.nickname == chatData.from_user_data.nickname) {
+      if (userLogin.nickname === chatData.from_user_data.nickname) {
         return chatData.to_user_data.image_profile;
-      } else if (userLogin.nickname == chatData.to_user_data.nickname) {
+      } else if (userLogin.nickname === chatData.to_user_data.nickname) {
         return chatData.from_user_data.image_profile;
       }
     }
   };
 
-  const setNamechat = () => {
+  const setNameChat = () => {
     if (chatData.group_data) {
       return chatData.group_data.name;
     } else {
-      if (userLogin.nickname == chatData.from_user_data.nickname) {
+      if (userLogin.nickname === chatData.from_user_data.nickname) {
         return chatData.to_user_data.nickname;
-      } else if (userLogin.nickname == chatData.to_user_data.nickname) {
+      } else if (userLogin.nickname === chatData.to_user_data.nickname) {
         return chatData.from_user_data.nickname;
       }
     }
@@ -84,12 +93,12 @@ export default function HeaderChat({ userLogin }) {
         <div className="flex items-center space-x-3">
           <img
             className="h-10 w-10 rounded-full bg-white cursor-pointer"
-            src={setImageProfile()}
+            src={chatImage}
             alt="default"
             onClick={showUserDetails}
             style={{ cursor: "pointer" }}
           />
-          <span className="text-grey-darkest ml-3">{setNamechat()}</span>
+          <span className="text-grey-darkest ml-3">{chatName}</span>
         </div>
       )}
       <div className="flex items-center gap-2">
@@ -101,7 +110,7 @@ export default function HeaderChat({ userLogin }) {
             title="Añadir miembros"
           />
         )}
-        <Call chatName="lois1" />
+        <Call chatName={chatName} />
         <Button
           className="bg-white"
           icon={
