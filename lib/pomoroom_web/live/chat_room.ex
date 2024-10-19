@@ -30,6 +30,10 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       socket
       |> assign(:chat_id, "")
       |> assign(:connected_users, [])
+      |> assign(:offer_requests, [])
+      |> assign(:ice_candidate_offers, [])
+      |> assign(:sdp_offers, [])
+      |> assign(:answers, [])
 
     # IO.inspect(socket, structs: false, limit: :infinity)
     {:ok, socket, layout: false}
@@ -98,6 +102,95 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     payload = %{
       event_name: "connected_users",
       event_data: %{connected_users: connected_users}
+    }
+
+    {:noreply, push_event(socket, "react", payload)}
+  end
+
+  # Las request_offers solo le llegan al que INICIO la llamada
+  def handle_info({:request_offers, %{from_user: request_from_user}}, socket) do
+    new_offer_request = socket.assigns.offer_requests ++ [request_from_user]
+
+    socket =
+      socket
+      |> assign(:offer_requests, new_offer_request)
+
+    payload = %{
+      event_name: "offer_requests",
+      event_data: %{offer_requests: new_offer_request}
+    }
+
+    {:noreply, push_event(socket, "react", payload)}
+    # {:noreply, socket}
+  end
+
+  def handle_info(
+        {:new_ice_candidate, %{"candidate" => nil, "to_user" => _to_user}},
+        socket
+      ) do
+    {:noreply, socket}
+  end
+
+  def handle_info(
+        {:new_ice_candidate,
+         %{"candidate" => _candidate, "from_user" => _from_user, "to_user" => _to_user} = payload},
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    receive_ice_candidate_offers = socket.assigns.ice_candidate_offers ++ [payload]
+
+    socket =
+      socket
+      |> assign(:ice_candidate_offers, receive_ice_candidate_offers)
+
+    payload = %{
+      event_name: "receive_ice_candidate_offers",
+      event_data: %{ice_candidate_offers: receive_ice_candidate_offers}
+    }
+
+    {:noreply, push_event(socket, "react", payload)}
+  end
+
+  def handle_info(
+        {:new_sdp_offer,
+         %{
+           "description" => %{"sdp" => _sdp, "type" => "offer"},
+           "from_user" => _from_user,
+           "to_user" => _to_user
+         } = payload},
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    receive_sdp_offers = socket.assigns.ice_candidate_offers ++ [payload]
+
+    socket =
+      socket
+      |> assign(:sdp_offer, receive_sdp_offers)
+
+    payload = %{
+      event_name: "receive_sdp_offers",
+      event_data: %{sdp_offer: receive_sdp_offers}
+    }
+
+    {:noreply, push_event(socket, "react", payload)}
+  end
+
+  def handle_info(
+        {:new_answer,
+         %{
+           "description" => %{"sdp" => _sdp, "type" => "answer"},
+           "from_user" => _from_user,
+           "to_user" => _to_user
+         } = payload},
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    receive_answers = socket.assigns.answers ++ [payload]
+
+    socket =
+      socket
+      |> assign(:answers, receive_answers)
+
+    payload = %{
+      event_name: "receive_answers",
+      event_data: %{answers: receive_answers}
     }
 
     {:noreply, push_event(socket, "react", payload)}
@@ -564,20 +657,52 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         %{"contact_name" => contact_name},
         %{assigns: %{user_info: user}} = socket
       ) do
-    {to_user, from_user} =
-      FriendRequest.determine_friend_request_users(contact_name, user.nickname)
-    IO.inspect("ENTROOOOOOO")
-    {:ok, private_chat} = PrivateChat.get(to_user, from_user)
-    chat_id = private_chat.chat_id
-    PubSub.subscribe(Pomoroom.PubSub, call_topic(chat_id))
-    {:ok, _ref} = Presence.track(self(), call_topic(chat_id), user.nickname, %{})
-    connected_users = list_present(chat_id)
+    socket = call(contact_name, user, socket)
 
-    socket =
-      socket
-      |> assign(:chat_id, chat_id)
-      |> assign(:connected_users, connected_users)
+    for user2 <- socket.assigns.connected_users do
+      send_direct_message(
+        socket.assigns.chat_id,
+        user2,
+        :request_offers,
+        %{
+          from_user: socket.assigns.user_info.nickname
+        }
+      )
+    end
 
+    {:noreply, socket}
+  end
+
+  # def handle_event("join_private_call", %{"contact_name" => contact_name}, %{assigns: %{user_info: user}} = socket) do
+  #   {:noreply, call(contact_name, user, socket)}
+  # end
+
+  def handle_event(
+        "action.new_ice_candidate",
+        %{"candidate" => _candidate, "to_user" => _to_user} = payload,
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    payload = Map.merge(payload, %{"from_user" => user.nickname})
+
+    send_direct_message(socket.assigns.chat_id, payload["to_user"], :new_ice_candidate, payload)
+    {:noreply, socket}
+  end
+
+  def handle_event(
+        "action.new_sdp_offer",
+        %{"description" => _description, "to_user" => _to_user} = payload,
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    payload = Map.merge(payload, %{"from_user" => user.nickname})
+
+    send_direct_message(socket.assigns.chat_id, payload["to_user"], :new_sdp_offer, payload)
+    {:noreply, socket}
+  end
+
+  def handle_event("action.new_answer", payload, %{assigns: %{user_info: user}} = socket) do
+    payload = Map.merge(payload, %{"from_user" => user.nickname})
+
+    send_direct_message(socket.assigns.chat_id, payload["to_user"], :new_answer, payload)
     {:noreply, socket}
   end
 
@@ -658,4 +783,30 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   end
 
   defp call_topic(chat_id), do: "call:#{chat_id}"
+
+  defp call(contact_name, user, socket) do
+    {to_user, from_user} =
+      FriendRequest.determine_friend_request_users(contact_name, user.nickname)
+
+    {:ok, private_chat} = PrivateChat.get(to_user, from_user)
+
+    chat_id = private_chat.chat_id
+    PubSub.subscribe(Pomoroom.PubSub, call_topic(chat_id) <> ":" <> user.nickname)
+    PubSub.subscribe(Pomoroom.PubSub, call_topic(chat_id))
+    {:ok, _ref} = Presence.track(self(), call_topic(chat_id), user.nickname, %{})
+    connected_users = list_present(chat_id)
+
+    socket
+    |> assign(:chat_id, chat_id)
+    |> assign(:connected_users, connected_users)
+  end
+
+  defp send_direct_message(chat_id, to_user, event, payload) do
+    PubSub.broadcast_from(
+      Pomoroom.PubSub,
+      self(),
+      call_topic(chat_id) <> ":" <> to_user,
+      {event, payload}
+    )
+  end
 end
