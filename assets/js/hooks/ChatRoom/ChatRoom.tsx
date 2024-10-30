@@ -47,6 +47,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
     const newIceCandidate = getEventData("new_ice_candidate");
     const newSdpOffer = getEventData("new_sdp_offer");
     const newAnswer = getEventData("new_answer");
+    const joinCall = getEventData("join_private_call");
 
     if (contactToDelete) {
       pushEventToLiveView("action.delete_contact", contactToDelete);
@@ -130,6 +131,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
     if (newAnswer) {
       pushEventToLiveView("action.new_answer", newAnswer);
       removeEvent("new_answer");
+    }
+    if (joinCall) {
+      pushEventToLiveView("action.join_private_call", joinCall);
+      removeEvent("join_private_call");
     }
   }, [addEvent]);
 
@@ -276,24 +281,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
   useEffect(() => {
     if (eventName === "offer_requests") {
+      console.log("[", userName,"]OFFER REq llego");
       addEvent(eventName, eventData.offer_requests);
     }
   }, [eventData.offer_requests]);
 
   useEffect(() => {
     if (eventName === "receive_ice_candidate_offers") {
+      console.log("[", userName,"] receive_ice_candidate_offers llego");
       addEvent(eventName, eventData.ice_candidate_offers);
     }
   }, [eventData.ice_candidate_offers]);
 
   useEffect(() => {
     if (eventName === "receive_sdp_offers") {
+      console.log("[", userName,"] receive_sdp_offers llego");
       addEvent(eventName, eventData.sdp_offer);
     }
   }, [eventData.sdp_offer]);
 
   useEffect(() => {
     if (eventName === "receive_answers") {
+      console.log("[", userName,"] receive_answers  llego");
       addEvent(eventName, eventData.answers);
     }
   }, [eventData.answers]);

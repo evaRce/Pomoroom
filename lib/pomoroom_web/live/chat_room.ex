@@ -91,24 +91,13 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     {:noreply, push_event(socket, "react", payload)}
   end
 
-  def handle_info(%Broadcast{topic: _topic, event: "presence_diff", payload: _payload}, socket) do
-    chat_id = socket.assigns.chat_id
-    connected_users = list_present(chat_id)
-
-    socket =
-      socket
-      |> assign(:connected_users, connected_users)
-
-    payload = %{
-      event_name: "connected_users",
-      event_data: %{connected_users: connected_users}
-    }
-
-    {:noreply, push_event(socket, "react", payload)}
-  end
-
   # Las request_offers solo le llegan al que INICIO la llamada
   def handle_info({:request_offers, %{from_user: request_from_user}}, socket) do
+    IO.inspect(socket.assigns.connected_users,
+      label:
+        "[#{socket.assigns.user_info.nickname}](PASO3){handle_info(:added_connected_users)} le llega oferta del sender"
+    )
+
     new_offer_request = socket.assigns.offer_requests ++ [request_from_user]
 
     socket =
@@ -121,23 +110,42 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     }
 
     {:noreply, push_event(socket, "react", payload)}
-    # {:noreply, socket}
   end
 
   def handle_info(
-        {:new_ice_candidate, %{"candidate" => nil, "to_user" => _to_user}},
-        socket
+        %Broadcast{topic: topic, event: "presence_diff", payload: payload},
+        %{assigns: %{user_info: %{nickname: nickname}, chat_id: chat_id}} = socket
       ) do
-    {:noreply, socket}
+    first_key_join =
+      Map.keys(payload.joins)
+      |> List.first()
+
+    # first_key_leave =
+    #   Map.keys(payload.leaves)
+    #   |> List.first()
+
+    connected_users = list_present(call_topic(chat_id))
+    IO.inspect(connected_users, label: "[#{nickname}]LIST PRESENT: ")
+
+    IO.inspect(
+      "[#{nickname}](PASO2){add_event('connected_users')} entra en el Broadcast (topic: #{topic}) (connected_users: #{connected_users}) (key: #{first_key_join})"
+    )
+
+    payload_to_client = %{
+      event_name: "connected_users",
+      event_data: %{connected_users: connected_users}
+    }
+
+    {:noreply, push_event(socket, "react", payload_to_client)}
   end
 
   def handle_info(
         {:new_ice_candidate,
          %{"candidate" => _candidate, "from_user" => _from_user, "to_user" => _to_user} = payload},
-        %{assigns: %{user_info: user}} = socket
+        socket
       ) do
     receive_ice_candidate_offers = socket.assigns.ice_candidate_offers ++ [payload]
-
+    IO.inspect("[#{socket.assigns.user_info.nickname}](PASO4.3)receive_ice_candidate_offers")
     socket =
       socket
       |> assign(:ice_candidate_offers, receive_ice_candidate_offers)
@@ -157,13 +165,13 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
            "from_user" => _from_user,
            "to_user" => _to_user
          } = payload},
-        %{assigns: %{user_info: user}} = socket
+        socket
       ) do
     receive_sdp_offers = socket.assigns.ice_candidate_offers ++ [payload]
-
+    IO.inspect("[#{socket.assigns.user_info.nickname}](PASO5)receive_sdp_offers")
     socket =
       socket
-      |> assign(:sdp_offer, receive_sdp_offers)
+      |> assign(:sdp_offers, receive_sdp_offers)
 
     payload = %{
       event_name: "receive_sdp_offers",
@@ -180,10 +188,10 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
            "from_user" => _from_user,
            "to_user" => _to_user
          } = payload},
-        %{assigns: %{user_info: user}} = socket
+        socket
       ) do
     receive_answers = socket.assigns.answers ++ [payload]
-
+    IO.inspect("[#{socket.assigns.user_info.nickname}](PASO3prima)receive_answers")
     socket =
       socket
       |> assign(:answers, receive_answers)
@@ -652,57 +660,83 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     end
   end
 
+  # Start call,
   def handle_event(
         "action.start_private_call",
         %{"contact_name" => contact_name},
         %{assigns: %{user_info: user}} = socket
       ) do
     socket = call(contact_name, user, socket)
+    connected_users = socket.assigns.connected_users
 
-    for user2 <- socket.assigns.connected_users do
+    IO.inspect(
+      connected_users, label: "[#{user.nickname}](PASO 1.2){action.start_private_call} -> connected_users: ["
+    )
+    Enum.with_index(connected_users)
+    |> Enum.each(fn {user_connected, index} ->
+      IO.inspect("[#{user.nickname}](PASO 1.3){bucle} enviar mensaje a #{user_connected} la i = #{index + 1}")
+
       send_direct_message(
         socket.assigns.chat_id,
-        user2,
+        user_connected,
         :request_offers,
         %{
-          from_user: socket.assigns.user_info.nickname
-        }
+          from_user: user.nickname
+        },
+        user.nickname
       )
-    end
-
+    end)
     {:noreply, socket}
   end
 
-  # def handle_event("join_private_call", %{"contact_name" => contact_name}, %{assigns: %{user_info: user}} = socket) do
-  #   {:noreply, call(contact_name, user, socket)}
-  # end
+  def handle_event(
+        "action.join_private_call",
+        %{"contact_name" => contact_name},
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    call(contact_name, user, socket)
+
+    payload = %{
+      event_name: "connected_users",
+      event_data: %{connected_users: socket.assigns.connected_users}
+    }
+
+    {:noreply, push_event(socket, "react", payload)}
+  end
 
   def handle_event(
         "action.new_ice_candidate",
-        %{"candidate" => _candidate, "to_user" => _to_user} = payload,
+        %{"candidate" => _candidate, "to_user" => to_user} = payload,
         %{assigns: %{user_info: user}} = socket
       ) do
+    IO.inspect("[#{socket.assigns.user_info.nickname}](PASO-4x){LLEGO action.new_ice_candidate}")
     payload = Map.merge(payload, %{"from_user" => user.nickname})
 
-    send_direct_message(socket.assigns.chat_id, payload["to_user"], :new_ice_candidate, payload)
+    send_direct_message(socket.assigns.chat_id, to_user, :new_ice_candidate, payload, socket.assigns.user_info.nickname)
     {:noreply, socket}
   end
 
   def handle_event(
         "action.new_sdp_offer",
-        %{"description" => _description, "to_user" => _to_user} = payload,
+        %{"description" => _description, "to_user" => to_user} = payload,
         %{assigns: %{user_info: user}} = socket
       ) do
+    IO.inspect("[#{socket.assigns.user_info.nickname}](PASO-3x){LLEGO action.new_sdp_offer enviar a -> #{to_user}}")
     payload = Map.merge(payload, %{"from_user" => user.nickname})
 
-    send_direct_message(socket.assigns.chat_id, payload["to_user"], :new_sdp_offer, payload)
+    send_direct_message(socket.assigns.chat_id, to_user, :new_sdp_offer, payload, socket.assigns.user_info.nickname)
     {:noreply, socket}
   end
 
-  def handle_event("action.new_answer", payload, %{assigns: %{user_info: user}} = socket) do
+  def handle_event(
+        "action.new_answer",
+        %{"description" => _description, "to_user" => to_user} = payload,
+        %{assigns: %{user_info: user}} = socket
+      ) do
+    IO.inspect("[#{socket.assigns.user_info.nickname}](PASO-5x){LLEGO action.new_answer}")
     payload = Map.merge(payload, %{"from_user" => user.nickname})
 
-    send_direct_message(socket.assigns.chat_id, payload["to_user"], :new_answer, payload)
+    send_direct_message(socket.assigns.chat_id, to_user, :new_answer, payload, socket.assigns.user_info.nickname)
     {:noreply, socket}
   end
 
@@ -711,8 +745,8 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     |> assign(:user_info, Map.get(session, "user_info", %{}))
   end
 
-  defp list_present(chat_id) do
-    Presence.list(call_topic(chat_id))
+  defp list_present(call_topic) do
+    Presence.list(call_topic)
     |> Enum.map(fn {nickname, _} -> nickname end)
   end
 
@@ -789,24 +823,30 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       FriendRequest.determine_friend_request_users(contact_name, user.nickname)
 
     {:ok, private_chat} = PrivateChat.get(to_user, from_user)
-
+    IO.inspect("[#{user.nickname}](PASO 1.1){suscribe, track}")
     chat_id = private_chat.chat_id
     PubSub.subscribe(Pomoroom.PubSub, call_topic(chat_id) <> ":" <> user.nickname)
     PubSub.subscribe(Pomoroom.PubSub, call_topic(chat_id))
     {:ok, _ref} = Presence.track(self(), call_topic(chat_id), user.nickname, %{})
-    connected_users = list_present(chat_id)
+    connected_users = list_present(call_topic(chat_id))
+    IO.inspect(connected_users, label: "Connected: ")
 
     socket
     |> assign(:chat_id, chat_id)
     |> assign(:connected_users, connected_users)
   end
 
-  defp send_direct_message(chat_id, to_user, event, payload) do
+  defp send_direct_message(chat_id, to_user, event, payload, user) do
+    topic = call_topic(chat_id) <> ":" <> to_user
+    IO.inspect("[#{user}](PASO 1.3.1){bucle1} topico= #{topic}")
+
     PubSub.broadcast_from(
       Pomoroom.PubSub,
       self(),
-      call_topic(chat_id) <> ":" <> to_user,
+      topic,
       {event, payload}
     )
+    |> IO.inspect(label: "PUBSUB: ")
   end
+
 end

@@ -110,7 +110,7 @@ export default function HeaderChat({ userLogin }) {
             title="Añadir miembros"
           />
         )}
-        <Call chatName={chatName} />
+        <Call chatName={chatName} userLogin={userLogin}/>
         <Button
           className="bg-white"
           icon={
