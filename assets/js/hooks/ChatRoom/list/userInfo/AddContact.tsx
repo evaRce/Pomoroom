@@ -48,22 +48,28 @@ export default function AddContact({ sendDataToParent, receiveDataFromParent }) 
       removeEvent("error_adding_contact");
       setLoading(false);
     }
+  }, [getEventData("error_adding_contact")]);
 
+  useEffect(() => {
     const successContact = getEventData("add_contact_to_list");
+    
     if (successContact) {
       const messageText = handleContactMessage(successContact);
       handleTypeContactMessage(messageText, successContact.request.status);
       removeEvent("add_contact_to_list");
       setLoading(false);
     }
+    
+  }, [getEventData("add_contact_to_list")]);
+
+  useEffect(() => {
     const successGroup = getEventData("add_group_to_list");
     if (successGroup) {
       message.success('Grupo creado exitosamente!', 2);
-      removeEvent("group_created");
+      removeEvent("add_group_to_list");
       setLoading(false);
     }
-  }, [getEventData]);
-
+  }, [getEventData("add_group_to_list")]);
 
   const handleContactMessage = (data) => {
     if (data.request.status === "accepted") {

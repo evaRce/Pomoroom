@@ -113,22 +113,15 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   end
 
   def handle_info(
-        %Broadcast{topic: topic, event: "presence_diff", payload: payload},
+        %Broadcast{topic: topic, event: "presence_diff", payload: _payload},
         %{assigns: %{user_info: %{nickname: nickname}, chat_id: chat_id}} = socket
       ) do
-    first_key_join =
-      Map.keys(payload.joins)
-      |> List.first()
-
-    # first_key_leave =
-    #   Map.keys(payload.leaves)
-    #   |> List.first()
 
     connected_users = list_present(call_topic(chat_id))
     IO.inspect(connected_users, label: "[#{nickname}]LIST PRESENT: ")
 
     IO.inspect(
-      "[#{nickname}](PASO2){add_event('connected_users')} entra en el Broadcast (topic: #{topic}) (connected_users: #{connected_users}) (key: #{first_key_join})"
+      "[#{nickname}](PASO2){push_event('connected_users')} entra en el Broadcast (topic: #{topic}) (connected_users: #{connected_users})"
     )
 
     payload_to_client = %{
@@ -663,27 +656,27 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   # Start call,
   def handle_event(
         "action.start_private_call",
-        %{"contact_name" => contact_name},
-        %{assigns: %{user_info: user}} = socket
+        %{"contact_name" => to_user},
+        %{assigns: %{user_info: from_user}} = socket
       ) do
-    socket = call(contact_name, user, socket)
+    socket = call(to_user, from_user.nickname, socket)
     connected_users = socket.assigns.connected_users
 
     IO.inspect(
-      connected_users, label: "[#{user.nickname}](PASO 1.2){action.start_private_call} -> connected_users: ["
+      connected_users, label: "[#{from_user.nickname}](PASO 1.2){action.start_private_call} -> connected_users: ["
     )
     Enum.with_index(connected_users)
-    |> Enum.each(fn {user_connected, index} ->
-      IO.inspect("[#{user.nickname}](PASO 1.3){bucle} enviar mensaje a #{user_connected} la i = #{index + 1}")
+    |> Enum.each(fn {connected_user, index} ->
+      IO.inspect("[#{from_user.nickname}](PASO 1.3){bucle} enviar mensaje a #{connected_user} la i = #{index + 1}")
 
       send_direct_message(
         socket.assigns.chat_id,
-        user_connected,
+        connected_user,
         :request_offers,
         %{
-          from_user: user.nickname
+          from_user: from_user.nickname
         },
-        user.nickname
+        from_user.nickname
       )
     end)
     {:noreply, socket}
@@ -818,27 +811,28 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
   defp call_topic(chat_id), do: "call:#{chat_id}"
 
-  defp call(contact_name, user, socket) do
-    {to_user, from_user} =
-      FriendRequest.determine_friend_request_users(contact_name, user.nickname)
+  defp call(to_user, from_user, socket) do
+    {to_nickname_request, from_nickname_request_} =
+      FriendRequest.determine_friend_request_users(to_user, from_user)
 
-    {:ok, private_chat} = PrivateChat.get(to_user, from_user)
-    IO.inspect("[#{user.nickname}](PASO 1.1){suscribe, track}")
+    {:ok, private_chat} = PrivateChat.get(to_nickname_request, from_nickname_request_)
+    IO.inspect("[#{from_user}](PASO 1.1){suscribe, track}")
     chat_id = private_chat.chat_id
-    PubSub.subscribe(Pomoroom.PubSub, call_topic(chat_id) <> ":" <> user.nickname)
     PubSub.subscribe(Pomoroom.PubSub, call_topic(chat_id))
-    {:ok, _ref} = Presence.track(self(), call_topic(chat_id), user.nickname, %{})
+    PubSub.subscribe(Pomoroom.PubSub, call_topic(chat_id) <> ":" <> from_user)
+    {:ok, _ref} = Presence.track(self(), call_topic(chat_id), from_user, %{})
     connected_users = list_present(call_topic(chat_id))
-    IO.inspect(connected_users, label: "Connected: ")
+    IO.inspect(connected_users, label: "[#{from_user}]Connected: ")
 
     socket
     |> assign(:chat_id, chat_id)
     |> assign(:connected_users, connected_users)
   end
 
-  defp send_direct_message(chat_id, to_user, event, payload, user) do
+  defp send_direct_message(chat_id, to_user, event, payload, from_user) do
     topic = call_topic(chat_id) <> ":" <> to_user
-    IO.inspect("[#{user}](PASO 1.3.1){bucle1} topico= #{topic}")
+
+    IO.inspect("[#{from_user}](PASO 1.3.1){bucle1} topico= #{topic}")
 
     PubSub.broadcast_from(
       Pomoroom.PubSub,

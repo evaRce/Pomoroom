@@ -18,11 +18,6 @@ export default function Call({ chatName, userLogin }) {
   // ###############################################################################################################################
   useEffect(() => {
     const connectUsersData = getEventData("connected_users");
-    const offerRequestData = getEventData("offer_requests");
-    const iceCandidatesData = getEventData("receive_ice_candidate_offers");
-    const sdpOffersData = getEventData("receive_sdp_offers");
-    const answersData = getEventData("receive_answers");
-
     if (connectUsersData) {
       const otherUsers = connectUsersData.filter((user) => user !== userLogin.nickname);
       console.log("[", userLogin.nickname,"]Connected users=", connectUsersData ," y otherUsers=",otherUsers, " excluding userLogin and is remoteUser=", otherUsers[0]);
@@ -33,7 +28,11 @@ export default function Call({ chatName, userLogin }) {
 
       removeEvent("connected_users");
     }
+  }, [getEventData("connected_users")]);
 
+  
+  useEffect(() => {
+    const offerRequestData = getEventData("offer_requests");
     if (offerRequestData) {
       offerRequestData.forEach((offerFromUser) => {
         console.log("[", userLogin.nickname,"]Initialize peer connection");
@@ -41,7 +40,11 @@ export default function Call({ chatName, userLogin }) {
       });
       removeEvent("offer_requests");
     }
+  }, [getEventData("offer_requests")]);
 
+
+  useEffect(() => {
+    const iceCandidatesData = getEventData("receive_ice_candidate_offers");
     if (iceCandidatesData) {
       iceCandidatesData.forEach(({ candidate: candidateData, from_user: fromUser }) => {
         const peerConnection = users[fromUser]?.peerConnection;
@@ -53,7 +56,11 @@ export default function Call({ chatName, userLogin }) {
       });
       removeEvent("receive_ice_candidate_offers");
     }
+  }, [getEventData("receive_ice_candidate_offers")]);
 
+
+  useEffect(() => {
+    const sdpOffersData = getEventData("receive_sdp_offers");
     if (sdpOffersData) {
       sdpOffersData.forEach(({ description: { sdp: sdpOffer }, from_user: fromUser }) => {
         if (sdpOffer) {
@@ -62,6 +69,10 @@ export default function Call({ chatName, userLogin }) {
       });
       removeEvent("receive_sdp_offers");
     }
+  }, [getEventData("receive_sdp_offers")]);
+
+  useEffect(() => {
+    const answersData = getEventData("receive_answers");
 
     if (answersData) {
       answersData.forEach(({ description: descriptionAnswer, from_user: fromUser }) => {
@@ -74,7 +85,7 @@ export default function Call({ chatName, userLogin }) {
       });
       removeEvent("receive_answers");
     }
-  }, [getEventData, removeEvent, users]);
+  }, [getEventData("receive_answers")]);
 
   // ###############################################################################################################################
   const handleGetMedia = async () => {

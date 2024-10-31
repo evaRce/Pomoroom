@@ -18,21 +18,28 @@ export default function HeaderChat({ userLogin }) {
 
   useEffect(() => {
     const privateChat = getEventData("open_private_chat");
-    const groupChat = getEventData("open_group_chat");
-    const adminData = getEventData("check_admin");
 
     if (privateChat) {
       setIsGroup(false);
       setChatData(privateChat);
     }
+  }, [getEventData("open_private_chat")]);
+
+  useEffect(() => {
+    const groupChat = getEventData("open_group_chat");
     if (groupChat) {
       setIsGroup(true);
       setChatData(groupChat);
     }
+  }, [getEventData("open_group_chat")]);
+
+  useEffect(() => {
+    const adminData = getEventData("check_admin");
+
     if (adminData) {
       setCheckAdmin(adminData);
     }
-  }, [getEventData]);
+  }, [getEventData("check_admin")]);
 
   useEffect(() => {
     if (chatData) {

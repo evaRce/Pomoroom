@@ -14,40 +14,57 @@ export default function ContactList() {
 
   useEffect(() => {
     const contact = getEventData("add_contact_to_list");
+
     if (contact) {
       addContact(contact);
       removeEvent("add_contact_to_list");
     }
+  }, [getEventData("add_contact_to_list")]);
 
+  useEffect(() => {
     const contactList = getEventData("show_list_contact");
+
     if (contactList) {
       contactList.forEach(contact => addContact(contact));
       removeEvent("show_list_contact");
     }
+  }, [getEventData("show_list_contact")]);
 
+  useEffect(() => {
     const contactToDelete = getEventData("delete_rejected_contact");
+
     if (contactToDelete) {
       deleteContact({ name: contactToDelete, is_group: false });
       removeEvent("delete_rejected_contact");
     }
+  }, [getEventData("delete_rejected_contact")]);
 
+
+  useEffect(() => {
     const userInfo = getEventData("show_user_info");
+
     if (userInfo) {
       setUserLogin(userInfo);
     }
+  }, [getEventData("show_user_info")]);
 
+  useEffect(() => {
     const updateRequest = getEventData("update_contact_status");
+    
     if (updateRequest) {
       updateContactStatus(updateRequest.request, updateRequest.new_status);
       removeEvent("update_contact_status");
     }
+  }, [getEventData("update_contact_status")]);
 
+  useEffect(() => {
     const group = getEventData("add_group_to_list");
+
     if (group) {
       addContact(group);
       removeEvent("add_group_to_list");
     }
-  }, [getEventData]);
+  }, [getEventData("add_group_to_list")]);
 
   useEffect(() => {
     const results = contacts.filter(contact =>

@@ -16,7 +16,7 @@ export default function AddMembersToGroup({ chatData, isModalVisibleFromAddConta
       setContacts(myContacts);
       removeEvent("show_my_contacts");
     }
-  }, [getEventData]);
+  }, [getEventData("show_my_contacts")]);
 
   useEffect(() => {
     const results = contacts.filter(contact =>

@@ -14,7 +14,7 @@ export default function RequestSend({ imageNumber }) {
       setRequestData(request);
       removeEvent("open_chat_request_send");
     }
-  }, [getEventData]);
+  }, [getEventData("open_chat_request_send")]);
 
   return (
     <div className="flex flex-col flex-1 justify-center items-center">
