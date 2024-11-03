@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Button, Flex } from "antd";
+import { Button } from "antd";
 import {
-  PhoneFilled,
-  InfoOutlined,
   UsergroupAddOutlined,
 } from "@ant-design/icons";
 import { useEventContext } from "../../EventContext";
 import AddMembersToGroup from "./AddMembersToGroup";
+import Call from "../../call/Call";
 
 export default function HeaderChat({ userLogin }) {
   const { addEvent, getEventData, removeEvent } = useEventContext();
@@ -14,34 +13,50 @@ export default function HeaderChat({ userLogin }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isGroup, setIsGroup] = useState(false);
   const [checkAdmin, setCheckAdmin] = useState({});
+  const [chatName, setChatName] = useState("");
+  const [chatImage, setChatImage] = useState("");
 
   useEffect(() => {
     const privateChat = getEventData("open_private_chat");
-    const groupChat = getEventData("open_group_chat");
-    const adminData = getEventData("check_admin");
 
     if (privateChat) {
       setIsGroup(false);
       setChatData(privateChat);
     }
+  }, [getEventData("open_private_chat")]);
+
+  useEffect(() => {
+    const groupChat = getEventData("open_group_chat");
     if (groupChat) {
       setIsGroup(true);
       setChatData(groupChat);
     }
+  }, [getEventData("open_group_chat")]);
+
+  useEffect(() => {
+    const adminData = getEventData("check_admin");
+
     if (adminData) {
       setCheckAdmin(adminData);
     }
-  }, [getEventData]);
+  }, [getEventData("check_admin")]);
+
+  useEffect(() => {
+    if (chatData) {
+      setChatName(setNameChat());
+      setChatImage(setImageProfile());
+    }
+  }, [chatData]);
 
   const showUserDetails = () => {
     addEvent("toggle_detail_visibility", {
       is_visible: true,
       is_group: isGroup,
-      group_name: setNamechat(),
+      group_name: chatName,
     });
     addEvent("show_detail", {
-      chat_name: setNamechat(),
-      image: setImageProfile(),
+      chat_name: chatName,
+      image: chatImage,
       is_group: isGroup,
     });
   };
@@ -50,21 +65,21 @@ export default function HeaderChat({ userLogin }) {
     if (chatData.group_data) {
       return chatData.group_data.image;
     } else {
-      if (userLogin.nickname == chatData.from_user_data.nickname) {
+      if (userLogin.nickname === chatData.from_user_data.nickname) {
         return chatData.to_user_data.image_profile;
-      } else if (userLogin.nickname == chatData.to_user_data.nickname) {
+      } else if (userLogin.nickname === chatData.to_user_data.nickname) {
         return chatData.from_user_data.image_profile;
       }
     }
   };
 
-  const setNamechat = () => {
+  const setNameChat = () => {
     if (chatData.group_data) {
       return chatData.group_data.name;
     } else {
-      if (userLogin.nickname == chatData.from_user_data.nickname) {
+      if (userLogin.nickname === chatData.from_user_data.nickname) {
         return chatData.to_user_data.nickname;
-      } else if (userLogin.nickname == chatData.to_user_data.nickname) {
+      } else if (userLogin.nickname === chatData.to_user_data.nickname) {
         return chatData.from_user_data.nickname;
       }
     }
@@ -85,12 +100,12 @@ export default function HeaderChat({ userLogin }) {
         <div className="flex items-center space-x-3">
           <img
             className="h-10 w-10 rounded-full bg-white cursor-pointer"
-            src={setImageProfile()}
+            src={chatImage}
             alt="default"
             onClick={showUserDetails}
             style={{ cursor: "pointer" }}
           />
-          <span className="text-grey-darkest ml-3">{setNamechat()}</span>
+          <span className="text-grey-darkest ml-3">{chatName}</span>
         </div>
       )}
       <div className="flex items-center gap-2">
@@ -102,10 +117,25 @@ export default function HeaderChat({ userLogin }) {
             title="Añadir miembros"
           />
         )}
-        <Button className="bg-white" icon={<PhoneFilled />} title="LLamar" />
+        <Call chatName={chatName} userLogin={userLogin}/>
         <Button
           className="bg-white"
-          icon={<InfoOutlined />}
+          icon={
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+              />
+            </svg>
+          }
           onClick={showUserDetails}
           title="Detalles del contacto"
         />

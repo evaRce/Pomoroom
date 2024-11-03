@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Avatar, Button, List } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 import { useEventContext } from "../EventContext";
-import Member from "./Member";
+import Member from "../chat/header/Member";
 
 export default function Detail() {
   const { addEvent, getEventData, removeEvent } = useEventContext();
@@ -12,20 +12,28 @@ export default function Detail() {
 
   useEffect(() => {
     const chat = getEventData("show_detail");
-    const membersData = getEventData("show_members");
-    const adminData = getEventData("check_admin");
 
     if (chat) {
       setChatData(chat);
     }
+  }, [getEventData("show_detail")]);
+
+  useEffect(() => {
+    const membersData = getEventData("show_members");
+
     if (membersData) {
       setMembers(membersData.members);
       removeEvent("show_members");
     }
+  }, [getEventData("show_members")]);
+
+  useEffect(() => {
+    const adminData = getEventData("check_admin");
+
     if (adminData) {
       setCheckAdmin(adminData.is_admin);
     }
-  }, [getEventData, removeEvent]);
+  }, [getEventData("check_admin")]);
 
   const hideUserDetails = () => {
     addEvent("toggle_detail_visibility", {

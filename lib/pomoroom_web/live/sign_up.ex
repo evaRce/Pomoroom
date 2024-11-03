@@ -11,7 +11,7 @@ defmodule PomoroomWeb.HomeLive.SignUp do
 
     case register_user do
       {:ok, _result} ->
-        {:noreply, redirect(socket, to: "/pomoroom/home")}
+        {:noreply, redirect(socket, to: "/home")}
 
       {:error, reason} ->
         {:noreply, push_event(socket, "react.error_save_user", %{errors: reason})}

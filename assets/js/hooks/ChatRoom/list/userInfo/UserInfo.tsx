@@ -17,7 +17,7 @@ export default function UserInfo() {
 			setUserLogin(user);
 			// removeEvent("show_user_info");
 		}
-	}, [getEventData]);
+	}, [getEventData("show_user_info")]);
 
 	const showAddEntryModal = () => {
 		setShowModal(true);

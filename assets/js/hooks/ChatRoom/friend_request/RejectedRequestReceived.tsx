@@ -14,7 +14,7 @@ export default function RejectedRequestReceived({ imageNumber }) {
       setRequestData(rejectedRequest);
       removeEvent("open_rejected_request_received");
     }
-  }, [getEventData]);
+  }, [getEventData("open_rejected_request_received")]);
 
   const handleRejectedRequest = () => {
     addEvent("delete_rejected_contact", requestData.to_user);

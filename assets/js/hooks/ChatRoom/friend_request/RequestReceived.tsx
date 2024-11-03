@@ -14,7 +14,7 @@ export default function RequestReceived({ imageNumber }) {
       setRequestData(request);
       removeEvent("open_chat_request_received");
     }
-  }, [getEventData]);
+  }, [getEventData("open_chat_request_received")]);
 
   const handleStatus = (newStatus) => {
     addEvent("update_status_request", { status: newStatus, contact_name: requestData.to_user, from_user_name: requestData.from_user });
