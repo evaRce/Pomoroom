@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button, Modal } from "antd";
 import { useEventContext } from "../EventContext";
-import Video from "./Video";
 
 export default function Call({ chatName, userLogin }) {
   const [modalVisible, setModalVisible] = useState(false);
@@ -229,6 +228,7 @@ export default function Call({ chatName, userLogin }) {
       localVideoRef.current.srcObject = null;
     }
     setModalVisible(false);
+    addEvent("end_private_call", {});
   };
 
 

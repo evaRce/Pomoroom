@@ -47,7 +47,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
     const newIceCandidate = getEventData("new_ice_candidate");
     const newSdpOffer = getEventData("new_sdp_offer");
     const newAnswer = getEventData("new_answer");
-    const joinCall = getEventData("join_private_call");
+    const endCall = getEventData("end_private_call");
 
     if (contactToDelete) {
       pushEventToLiveView("action.delete_contact", contactToDelete);
@@ -132,9 +132,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
       pushEventToLiveView("action.new_answer", newAnswer);
       removeEvent("new_answer");
     }
-    if (joinCall) {
-      pushEventToLiveView("action.join_private_call", joinCall);
-      removeEvent("join_private_call");
+    if (endCall) {
+      pushEventToLiveView("action.end_private_call", endCall);
+      removeEvent("end_private_call");
     }
   }, [addEvent]);
 
