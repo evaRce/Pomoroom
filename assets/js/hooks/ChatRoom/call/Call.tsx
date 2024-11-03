@@ -12,7 +12,7 @@ export default function Call({ chatName, userLogin }) {
   const [localStream, setLocalStream] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-
+  const [isOnCall, setIsOnCall] = useState(false);
 
   // Retrieves connected users data and initializes peer connections for each
   useEffect(() => {
@@ -27,7 +27,6 @@ export default function Call({ chatName, userLogin }) {
     }
   }, [getEventData("connected_users")]);
 
-
   // Handles incoming offer requests by creating a peer connection for each
   useEffect(() => {
     const offerRequestData = getEventData("offer_requests");
@@ -40,37 +39,38 @@ export default function Call({ chatName, userLogin }) {
     }
   }, [getEventData("offer_requests")]);
 
-
   // Adds received ICE candidates to peer connections
   useEffect(() => {
     const iceCandidatesData = getEventData("receive_ice_candidate_offers");
 
     if (iceCandidatesData) {
-      iceCandidatesData.forEach(({ candidate: candidateData, from_user: fromUser }) => {
-        const peerConnection = users[fromUser]?.peerConnection;
-        if (peerConnection && candidateData !== null) {
-          peerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
+      iceCandidatesData.forEach(
+        ({ candidate: candidateData, from_user: fromUser }) => {
+          const peerConnection = users[fromUser]?.peerConnection;
+          if (peerConnection && candidateData !== null) {
+            peerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
+          }
         }
-      });
+      );
       removeEvent("receive_ice_candidate_offers");
     }
   }, [getEventData("receive_ice_candidate_offers")]);
-
 
   // Handles incoming SDP offers by creating and setting peer connections
   useEffect(() => {
     const sdpOffersData = getEventData("receive_sdp_offers");
 
     if (sdpOffersData) {
-      sdpOffersData.forEach(({ description: { sdp: sdpOffer }, from_user: fromUser }) => {
-        if (sdpOffer) {
-          createPeerConnection(fromUser, sdpOffer);
+      sdpOffersData.forEach(
+        ({ description: { sdp: sdpOffer }, from_user: fromUser }) => {
+          if (sdpOffer) {
+            createPeerConnection(fromUser, sdpOffer);
+          }
         }
-      });
+      );
       removeEvent("receive_sdp_offers");
     }
   }, [getEventData("receive_sdp_offers")]);
-
 
   // Sets remote description for received SDP answers
   useEffect(() => {
@@ -89,7 +89,6 @@ export default function Call({ chatName, userLogin }) {
     }
   }, [getEventData("receive_answers")]);
 
-
   // Requests access to local media (video and audio) for call setup
   const handleGetMedia = async () => {
     const constraints = { video: true, audio: true };
@@ -102,12 +101,12 @@ export default function Call({ chatName, userLogin }) {
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
+      setIsOnCall(true);
       addEvent("start_private_call", { contact_name: chatName });
     } catch (error) {
       console.error("Error accessing media devices:", error);
     }
   };
-
 
   // Adds a new user to the connection list without a peer connection initially
   const addUserConnection = (userNickname) => {
@@ -118,7 +117,6 @@ export default function Call({ chatName, userLogin }) {
       }));
     }
   };
-
 
   // Creates a new peer connection with optional offer
   function createPeerConnection(fromUser, offer) {
@@ -183,7 +181,6 @@ export default function Call({ chatName, userLogin }) {
     return newPeerConnection;
   }
 
-
   // Toggles audio (mute/unmute) in the local stream
   const toggleAudio = () => {
     if (localStream) {
@@ -194,7 +191,6 @@ export default function Call({ chatName, userLogin }) {
     }
   };
 
-
   // Toggles video in the local stream
   const toggleVideo = () => {
     if (localStream) {
@@ -204,7 +200,6 @@ export default function Call({ chatName, userLogin }) {
       setIsVideoEnabled((prev) => !prev);
     }
   };
-
 
   // Ends the call by closing and removing the peer connection and stopping local media tracks
   const endCall = (user) => {
@@ -228,33 +223,57 @@ export default function Call({ chatName, userLogin }) {
       localVideoRef.current.srcObject = null;
     }
     setModalVisible(false);
+    setIsOnCall(false);
     addEvent("end_private_call", {});
   };
 
-
   return (
     <div>
-      <Button
-        className="bg-white"
-        icon={
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            className="size-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"
-            />
-          </svg>
-        }
-        title="LLamar"
-        onClick={handleGetMedia}
-      />
+      {isOnCall ? (
+        <Button
+          className="bg-green-300"
+          icon={
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              className="size-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"
+              />
+            </svg>
+          }
+          title="Mostrar llamada"
+          onClick={() => setModalVisible(true)}
+        />
+      ) : (
+        <Button
+          className="bg-white"
+          icon={
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              className="size-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"
+              />
+            </svg>
+          }
+          title="LLamar"
+          onClick={handleGetMedia}
+        />
+      )}
       <Modal
         open={modalVisible}
         title={`Llamando a ${chatName}`}
