@@ -40,7 +40,6 @@ defmodule Pomoroom.MixProject do
       {:phoenix_live_view, "~> 0.20.2"},
       {:mongodb, ">= 1.0.0"},
       {:ecto_sql, "~> 3.11"},
-      {:ngrok, "~> 1.0", only: [:dev]},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},

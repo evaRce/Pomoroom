@@ -25,18 +25,21 @@ export default function FooterChat({ addMessage }) {
 
   useEffect(() => {
     const privateChat = getEventData("open_private_chat");
-    const groupChat = getEventData("open_group_chat");
 
     if (privateChat) {
       setChatData(privateChat);
       removeEvent("open_private_chat");
     }
+  }, [getEventData("open_private_chat")]);
+
+  useEffect(() => {
+    const groupChat = getEventData("open_group_chat");
 
     if (groupChat) {
       setChatData(groupChat);
       removeEvent("open_group_chat");
     }
-  }, [getEventData]);
+  }, [getEventData("open_group_chat")]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();

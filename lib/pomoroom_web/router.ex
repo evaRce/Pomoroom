@@ -16,10 +16,10 @@ defmodule PomoroomWeb.Router do
 
   scope "/", PomoroomWeb do
     pipe_through :browser
-    get "/pomoroom/home", PageController, :home
-    live "/pomoroom/login", HomeLive.Login
-    live "/pomoroom/signup", HomeLive.SignUp
-    live "/pomoroom/chat", ChatLive.ChatRoom
+    get "/", PageController, :home
+    live "/login", HomeLive.Login
+    live "/signup", HomeLive.SignUp
+    live "/chat", ChatLive.ChatRoom
   end
 
   # Other scopes may use custom stacks.

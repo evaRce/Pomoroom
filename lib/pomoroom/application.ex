@@ -17,7 +17,6 @@ defmodule Pomoroom.Application do
        username: db_config[:username],
        password: db_config[:password]},
       {DNSCluster, query: Application.get_env(:pomoroom, :dns_cluster_query) || :ignore},
-      {Ngrok, port: 4000, name: MyApp.Ngrok},
       {Phoenix.PubSub, name: Pomoroom.PubSub},
       PomoroomWeb.Presence,
       # Start the Finch HTTP client for sending emails

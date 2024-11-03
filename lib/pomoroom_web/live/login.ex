@@ -25,7 +25,7 @@ defmodule PomoroomWeb.HomeLive.Login do
           {:ok, user_info} = User.get_by("nickname", user_changes.nickname)
 
           socket = PhoenixLiveSession.put_session(socket, "user_info", user_info)
-          {:noreply, redirect(socket, to: "/pomoroom/chat")}
+          {:noreply, redirect(socket, to: "/chat")}
         else
           {:noreply,
            push_event(socket, "react.error_login_user", %{

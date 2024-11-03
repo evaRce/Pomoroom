@@ -12,23 +12,27 @@ export default function Chat() {
 
   useEffect(() => {
     const msgs = getEventData("show_list_messages");
-    const msg = getEventData("show_message_to_send");
-    const user = getEventData("show_user_info");
-
     if (msgs) {
       setMessages(msgs.messages);
       removeEvent("show_list_messages");
     }
+  }, [getEventData("show_list_messages")]);
 
+  useEffect(() => {
+    const msg = getEventData("show_message_to_send");
     if (msg) {
       addMessage(msg.message);
       removeEvent("show_message_to_send");
     }
+  }, [getEventData("show_message_to_send")]);
 
+
+  useEffect(() => {
+    const user = getEventData("show_user_info")
     if (user) {
       setUserLogin(user);
     }
-  }, [getEventData]);
+  }, [getEventData("show_user_info")]);
 
   const addMessage = (message) => {
     if (!message || !message.data || message.data.text.trim() === "") {
