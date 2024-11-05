@@ -46,33 +46,34 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
       {:ok, all_contacts} ->
         all_contact_list =
-          Enum.map(all_contacts, fn contact ->
+          Enum.reduce(all_contacts, [], fn contact, acc ->
             if Map.has_key?(contact, :admin) do
-              %{
-                is_group: true,
-                group_data: contact,
-                status: "accepted"
-              }
+              [%{is_group: true, group_data: contact, status: "accepted"} | acc]
             else
               {to_user, from_user} =
                 FriendRequest.determine_friend_request_users(contact.nickname, user.nickname)
 
-              {:ok, request} = FriendRequest.get(to_user, from_user)
+              case FriendRequest.get(to_user, from_user) do
+                {:ok, request} ->
+                  [%{is_group: false, contact_data: contact, request: request} | acc]
 
-              %{
-                is_group: false,
-                contact_data: contact,
-                request: request
-              }
+                {:error, :not_found} ->
+                  acc
+              end
             end
           end)
+          |> Enum.reverse()
 
-        payload = %{
-          event_name: "show_list_contact",
-          event_data: %{all_contact_list: all_contact_list}
-        }
+        if all_contact_list != [] do
+          payload = %{
+            event_name: "show_list_contact",
+            event_data: %{all_contact_list: all_contact_list}
+          }
 
-        {:noreply, push_event(socket, "react", payload)}
+          {:noreply, push_event(socket, "react", payload)}
+        else
+          {:noreply, socket}
+        end
     end
   end
 
