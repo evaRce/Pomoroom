@@ -23,11 +23,13 @@ export default function RequestSend({ imageNumber }) {
         alt="background"
         className="object-cover w-full h-full opacity-45"
       />
-      <Text className="flex absolute justify-center items-center">
-        Has enviado una solicitud de amistad a {requestData ? requestData.to_user : '...'}.
-        <br></br>
-        Esperando respuesta.
-      </Text>
+      <div className="flex flex-col absolute justify-center items-center bg-white p-4 rounded-lg">
+        <Text className="text-base sm:text-base md:text-lg lg:text-xl">
+          Has enviado una solicitud de amistad a {requestData ? <strong>{requestData.to_user}</strong> : '...'}.
+          <br></br>
+          Esperando respuesta.
+        </Text>
+      </div>
     </div>
   );
 }

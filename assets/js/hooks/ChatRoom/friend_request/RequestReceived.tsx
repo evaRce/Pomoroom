@@ -28,8 +28,16 @@ export default function RequestReceived({ imageNumber }) {
         alt="background"
         className="object-cover w-full h-full opacity-45"
       />
-      <div className="flex flex-col absolute justify-center items-center">
-        <Text>{requestData ? `${requestData.from_user} te ha enviado una solicitud de amistad.` : 'Cargando...'}</Text>
+      <div className="flex flex-col absolute justify-center items-center bg-white p-4 rounded-lg">
+        <Text className="text-base sm:text-base md:text-lg lg:text-xl">
+          {requestData ? (
+            <>
+              <strong>{requestData.from_user}</strong> te ha enviado una solicitud de amistad.
+            </>
+          ) : (
+            'Cargando...'
+          )}
+        </Text>
         <Space style={{ marginTop: 16 }}>
           <Button onClick={() => handleStatus("accepted")}>
             Aceptar
