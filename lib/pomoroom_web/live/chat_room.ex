@@ -351,24 +351,20 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         %{"status" => status, "contact_name" => contact_name, "from_user_name" => from_user_name},
         %{assigns: %{user_info: user}} = socket
       ) do
-    {:ok, to_user_data} = User.get_by("nickname", contact_name)
-    {:ok, from_user_data} = User.get_by("nickname", from_user_name)
-    {:ok, request} = FriendRequest.get(contact_name, from_user_name)
-
     case status do
       "accepted" ->
         case PrivateChat.get(contact_name, from_user_name) do
           {:ok, private_chat} ->
+            {:ok, request} = FriendRequest.get(contact_name, from_user_name)
             ChatServer.join_chat(private_chat.chat_id)
             PubSub.subscribe(Pomoroom.PubSub, "chat:#{private_chat.chat_id}")
             FriendRequest.accept_friend_request(contact_name, from_user_name)
 
             payload = %{
-              event_name: "open_private_chat",
+              event_name: "update_contact_status_to_accepted",
               event_data: %{
-                from_user_data: from_user_data,
-                to_user_data: to_user_data,
-                messages: []
+                request: request,
+                new_status: status
               }
             }
 
@@ -380,6 +376,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
       "rejected" ->
         FriendRequest.reject_friend_request(contact_name, from_user_name)
+        {:ok, request} = FriendRequest.get(contact_name, from_user_name)
 
         payload =
           if FriendRequest.is_owner_request?(contact_name, user.nickname) do

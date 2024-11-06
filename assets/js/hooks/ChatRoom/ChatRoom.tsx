@@ -51,7 +51,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
     if (contactToDelete) {
       pushEventToLiveView("action.delete_contact", contactToDelete);
-      if (infoChatSelected?.contact_name === contactToDelete ) {
+      if (infoChatSelected?.contact_name === contactToDelete) {
         setComponent("");
         if (isVisibleDetail) {
           setIsVisibleDetail(false);
@@ -95,7 +95,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
     }
     if (groupToDelete) {
       pushEventToLiveView("action.delete_group", groupToDelete);
-      if (infoChatSelected?.group_name === groupToDelete){
+      if (infoChatSelected?.group_name === groupToDelete) {
         setComponent("");
         if (isVisibleDetail) {
           setIsVisibleDetail(false);
@@ -225,6 +225,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
       userName === eventData.rejected_request.to_user
     ) {
       addEvent(eventName, eventData.rejected_request);
+      addEvent("update_contact_status_to_rejected", {
+        request: eventData.rejected_request,
+        new_status: eventData.rejected_request.status,
+      });
       setComponent("RejectedRequestSend");
     }
     if (
@@ -232,6 +236,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
       userName === eventData.rejected_request.from_user
     ) {
       addEvent(eventName, eventData.rejected_request);
+      addEvent("update_contact_status_to_rejected", {
+        request: eventData.rejected_request,
+        new_status: eventData.rejected_request.status,
+      });
       setComponent("RejectedRequestReceived");
     }
   }, [eventData.rejected_request]);
@@ -278,6 +286,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
   }, [eventData.contact_list, eventData.members_data]);
 
   useEffect(() => {
+    if (eventName === "update_contact_status_to_accepted") {
+      addEvent(eventName, eventData);
+      setComponent("");
+      addEvent("deselect_contact", {
+        from_user: eventData.request.from_user,
+        to_user: eventData.request.to_user,
+      });
+    }
+  }, [eventData.request, eventData.new_status]);
+
+  useEffect(() => {
     if (eventName === "connected_users") {
       addEvent("connected_users", eventData.connected_users);
     }
@@ -285,28 +304,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
   useEffect(() => {
     if (eventName === "offer_requests") {
-      console.log("[", userName,"]OFFER REq llego");
+      console.log("[", userName, "]OFFER REq llego");
       addEvent(eventName, eventData.offer_requests);
     }
   }, [eventData.offer_requests]);
 
   useEffect(() => {
     if (eventName === "receive_ice_candidate_offers") {
-      console.log("[", userName,"] receive_ice_candidate_offers llego");
+      console.log("[", userName, "] receive_ice_candidate_offers llego");
       addEvent(eventName, eventData.ice_candidate_offers);
     }
   }, [eventData.ice_candidate_offers]);
 
   useEffect(() => {
     if (eventName === "receive_sdp_offers") {
-      console.log("[", userName,"] receive_sdp_offers llego");
+      console.log("[", userName, "] receive_sdp_offers llego");
       addEvent(eventName, eventData.sdp_offer);
     }
   }, [eventData.sdp_offer]);
 
   useEffect(() => {
     if (eventName === "receive_answers") {
-      console.log("[", userName,"] receive_answers  llego");
+      console.log("[", userName, "] receive_answers  llego");
       addEvent(eventName, eventData.answers);
     }
   }, [eventData.answers]);

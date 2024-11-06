@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useEventContext } from "../EventContext";
-import { Button, Space, Typography } from 'antd';
+import { Button, Space, Typography } from "antd";
 
 const { Text } = Typography;
 
@@ -17,8 +17,11 @@ export default function RequestReceived({ imageNumber }) {
   }, [getEventData("open_chat_request_received")]);
 
   const handleStatus = (newStatus) => {
-    addEvent("update_status_request", { status: newStatus, contact_name: requestData.to_user, from_user_name: requestData.from_user });
-    addEvent("update_contact_status", { request: requestData, new_status: newStatus });
+    addEvent("update_status_request", {
+      status: newStatus,
+      contact_name: requestData?.to_user,
+      from_user_name: requestData?.from_user,
+    });
   };
 
   return (
@@ -32,16 +35,15 @@ export default function RequestReceived({ imageNumber }) {
         <Text className="text-base sm:text-base md:text-lg lg:text-xl">
           {requestData ? (
             <>
-              <strong>{requestData.from_user}</strong> te ha enviado una solicitud de amistad.
+              <strong>{requestData?.from_user}</strong> te ha enviado una
+              solicitud de amistad.
             </>
           ) : (
-            'Cargando...'
+            "Cargando..."
           )}
         </Text>
         <Space style={{ marginTop: 16 }}>
-          <Button onClick={() => handleStatus("accepted")}>
-            Aceptar
-          </Button>
+          <Button onClick={() => handleStatus("accepted")}>Aceptar</Button>
           <Button danger onClick={() => handleStatus("rejected")}>
             Rechazar
           </Button>
@@ -49,4 +51,4 @@ export default function RequestReceived({ imageNumber }) {
       </div>
     </div>
   );
-};
+}
