@@ -43,8 +43,9 @@ export default function Contact({ contact, isSelected, onSelect, onDelete }) {
     }
   };
 
-  const handleMenuClick = (key) => {
-    if (key === "deleteMember") {
+  const handleMenuClick = (e, key) => {
+    e.domEvent.stopPropagation(); // Prevent container selection
+    if (key === "deleteChat") {
       onDelete(contact.nickname);
     }
     setDropdownVisible(false);
@@ -53,14 +54,14 @@ export default function Contact({ contact, isSelected, onSelect, onDelete }) {
   const items = [
     {
       label: contact.is_group ? "Eliminar grupo" : "Eliminar contacto",
-      key: "deleteMember",
+      key: "deleteChat",
       icon: <DeleteOutlined />,
     },
   ];
 
   const menuProps = {
     items,
-    onClick: (e) => handleMenuClick(e.key),
+    onClick: (e) => handleMenuClick(e, e.key),
   };
 
   const handleDropdownVisibility = (visible) => {
@@ -68,7 +69,7 @@ export default function Contact({ contact, isSelected, onSelect, onDelete }) {
   };
 
   const handleButtonClick = (e) => {
-    e.stopPropagation(); // Prevent the click from bubbling up to the contact div
+    e.stopPropagation(); // Prevent click from propagating to the contact container
     setDropdownVisible(!dropdownVisible); // Toggle dropdown visibility
   };
 
@@ -104,6 +105,7 @@ export default function Contact({ contact, isSelected, onSelect, onDelete }) {
                 onOpenChange={handleDropdownVisibility}
               >
                 <Button
+                  className="hover:bg-gray-700"
                   icon={<DownOutlined />}
                   onClick={handleButtonClick}
                 />

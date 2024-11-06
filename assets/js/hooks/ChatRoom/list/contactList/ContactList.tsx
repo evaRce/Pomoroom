@@ -107,7 +107,6 @@ export default function ContactList() {
   };
 
   const deleteContact = (contact) => {
-    console.log("CONTACTO: ", contact);
     const index = contacts.findIndex(contactFind => contactFind.name === contact.name);
     if (index !== -1) {
       if (contact.is_group) {

@@ -17,11 +17,11 @@ export interface ChatRoomProps {
 export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
   const { eventName, eventData, pushEventToLiveView } = props;
   const { addEvent, getEventData, removeEvent } = useEventContext();
-  const [isSelectedContact, setIsSelectedContact] = useState(false);
   const [component, setComponent] = useState("");
   const [imageNumber, setImageNumber] = useState(1);
   const [userName, setUserName] = useState("");
   const [isVisibleDetail, setIsVisibleDetail] = useState(false);
+  const [infoChatSelected, setInfoChatSelected] = useState({});
 
   useEffect(() => {
     const randomImageNumber = Math.floor(Math.random() * 5) + 1;
@@ -51,15 +51,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
 
     if (contactToDelete) {
       pushEventToLiveView("action.delete_contact", contactToDelete);
-      setComponent("");
-      if (isVisibleDetail) {
-        setIsVisibleDetail(false);
+      if (infoChatSelected?.contact_name === contactToDelete ) {
+        setComponent("");
+        if (isVisibleDetail) {
+          setIsVisibleDetail(false);
+        }
+        setInfoChatSelected({});
       }
-      setIsSelectedContact(false);
       removeEvent("delete_contact");
     }
     if (selectedPrivateChat) {
-      setIsSelectedContact(true);
+      setInfoChatSelected(selectedPrivateChat);
       pushEventToLiveView("action.selected_private_chat", selectedPrivateChat);
       removeEvent("selected_private_chat");
     }
@@ -87,17 +89,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
       removeEvent("add_group");
     }
     if (selectedGroupChat) {
-      setIsSelectedContact(true);
+      setInfoChatSelected(selectedGroupChat);
       pushEventToLiveView("action.selected_group_chat", selectedGroupChat);
       removeEvent("selected_group_chat");
     }
     if (groupToDelete) {
       pushEventToLiveView("action.delete_group", groupToDelete);
-      setComponent("");
-      if (isVisibleDetail) {
-        setIsVisibleDetail(false);
+      if (infoChatSelected?.group_name === groupToDelete){
+        setComponent("");
+        if (isVisibleDetail) {
+          setIsVisibleDetail(false);
+        }
+        setInfoChatSelected({});
       }
-      setIsSelectedContact(false);
       removeEvent("delete_group");
     }
     if (showMyContactsInGroup) {
@@ -321,7 +325,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
       {component === "RejectedRequestReceived" && (
         <RejectedRequestReceived imageNumber={imageNumber} />
       )}
-      {!isSelectedContact && <BackGround imageNumber={imageNumber} />}
+      {component === "" && <BackGround imageNumber={imageNumber} />}
       {isVisibleDetail === true && <Detail />}
     </div>
   );
