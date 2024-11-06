@@ -228,71 +228,68 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         ensure_chat_server_exists(private_chat.chat_id)
         {:ok, to_user_data} = User.get_by("nickname", contact_name)
         {:ok, from_user_data} = User.get_by("nickname", user.nickname)
-        {:ok, request} = FriendRequest.get(to_user, from_user)
 
-        {payload, socket} =
-          case FriendRequest.get_status(contact_name, user.nickname) do
-            "accepted" ->
-              messages = ChatServer.get_messages(private_chat.chat_id, 20)
+        case FriendRequest.get(to_user, from_user) do
+          {:ok, request} ->
+            case request.status do
+              "accepted" ->
+                messages = ChatServer.get_messages(private_chat.chat_id, 20)
 
-              messages_with_images_user =
-                Enum.map(messages, fn msg ->
-                  image_user =
-                    if msg.from_user == user.nickname do
-                      from_user_data.image_profile
-                    else
-                      to_user_data.image_profile
-                    end
+                messages_with_images_user =
+                  Enum.map(messages, fn msg ->
+                    image_user =
+                      if msg.from_user == user.nickname do
+                        from_user_data.image_profile
+                      else
+                        to_user_data.image_profile
+                      end
 
-                  %{
-                    data: msg,
-                    image_user: image_user
+                    %{data: msg, image_user: image_user}
+                  end)
+
+                socket = assign(socket, :chat_id, private_chat.chat_id)
+
+                payload = %{
+                  event_name: "open_private_chat",
+                  event_data: %{
+                    from_user_data: from_user_data,
+                    to_user_data: to_user_data,
+                    messages: messages_with_images_user
                   }
-                end)
+                }
 
-              socket = assign(socket, :chat_id, private_chat.chat_id)
+                {:noreply, push_event(socket, "react", payload)}
 
-              {%{
-                 event_name: "open_private_chat",
-                 event_data: %{
-                   from_user_data: from_user_data,
-                   to_user_data: to_user_data,
-                   messages: messages_with_images_user
-                 }
-               }, socket}
+              "pending" ->
+                payload =
+                  if FriendRequest.is_owner_request?(contact_name, user.nickname) do
+                    %{event_name: "open_chat_request_send", event_data: %{request: request}}
+                  else
+                    %{event_name: "open_chat_request_received", event_data: %{request: request}}
+                  end
 
-            "pending" ->
-              if FriendRequest.is_owner_request?(contact_name, user.nickname) do
-                {%{
-                   event_name: "open_chat_request_send",
-                   event_data: %{request: request}
-                 }, socket}
-              else
-                {%{
-                   event_name: "open_chat_request_received",
-                   event_data: %{request: request}
-                 }, socket}
-              end
+                {:noreply, push_event(socket, "react", payload)}
 
-            "rejected" ->
-              if FriendRequest.is_owner_request?(contact_name, user.nickname) do
-                {%{
-                   event_name: "open_rejected_request_received",
-                   event_data: %{
-                     rejected_request: request
-                   }
-                 }, socket}
-              else
-                {%{
-                   event_name: "open_rejected_request_send",
-                   event_data: %{
-                     rejected_request: request
-                   }
-                 }, socket}
-              end
-          end
+              "rejected" ->
+                payload =
+                  if FriendRequest.is_owner_request?(contact_name, user.nickname) do
+                    %{
+                      event_name: "open_rejected_request_received",
+                      event_data: %{rejected_request: request}
+                    }
+                  else
+                    %{
+                      event_name: "open_rejected_request_send",
+                      event_data: %{rejected_request: request}
+                    }
+                  end
 
-        {:noreply, push_event(socket, "react", payload)}
+                {:noreply, push_event(socket, "react", payload)}
+            end
+
+          {:error, :not_found} ->
+            {:noreply, socket}
+        end
 
       {:error, _reason} ->
         {:noreply, socket}
