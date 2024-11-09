@@ -17,6 +17,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       send(self(), :get_list_contact)
 
       user_nickname = socket.assigns.user_info.nickname
+      PubSub.subscribe(Pomoroom.PubSub, "friend_request:#{user_nickname}")
       all_chats_id = User.get_all_my_chats_id(user_nickname)
 
       Enum.each(all_chats_id, fn chat_id ->
@@ -96,8 +97,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   def handle_info({:request_offers, %{from_user: request_from_user}}, socket) do
     IO.inspect(socket.assigns.connected_users,
       label:
-        "[#{socket.assigns.user_info.nickname}](PASO3){handle_info(:added_connected_users)} le llega oferta del sender"
-    )
+        "[#{socket.assigns.user_info.nickname}](PASO3){handle_info(:added_connected_users)} le llega oferta del sender")
 
     new_offer_request = socket.assigns.offer_requests ++ [request_from_user]
 
@@ -110,6 +110,16 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       event_data: %{offer_requests: new_offer_request}
     }
 
+    {:noreply, push_event(socket, "react", payload)}
+  end
+
+  def handle_info({:friend_request_sent, payload}, socket) do
+    IO.inspect(payload, label: "[friend_request_sent:#{socket.assigns.user_info.nickname}]AÑADO")
+    {:noreply, push_event(socket, "react", payload)}
+  end
+
+  def handle_info({:friend_request_accepted, payload}, socket) do
+    IO.inspect(payload, label: "[friend_request_accepted:#{socket.assigns.user_info.nickname}]")
     {:noreply, push_event(socket, "react", payload)}
   end
 
@@ -348,17 +358,17 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
   def handle_event(
         "action.update_status_request",
-        %{"status" => status, "contact_name" => contact_name, "from_user_name" => from_user_name},
-        %{assigns: %{user_info: user}} = socket
+        %{"status" => status, "contact_name" => to_user_name, "from_user_name" => from_user_name},
+        socket
       ) do
     case status do
       "accepted" ->
-        case PrivateChat.get(contact_name, from_user_name) do
+        case PrivateChat.get(to_user_name, from_user_name) do
           {:ok, private_chat} ->
-            {:ok, request} = FriendRequest.get(contact_name, from_user_name)
             ChatServer.join_chat(private_chat.chat_id)
+            FriendRequest.accept_friend_request(to_user_name, from_user_name)
             PubSub.subscribe(Pomoroom.PubSub, "chat:#{private_chat.chat_id}")
-            FriendRequest.accept_friend_request(contact_name, from_user_name)
+            {:ok, request} = FriendRequest.get(to_user_name, from_user_name)
 
             payload = %{
               event_name: "update_contact_status_to_accepted",
@@ -368,6 +378,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               }
             }
 
+            PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{from_user_name}", {:friend_request_accepted, payload})
             {:noreply, push_event(socket, "react", payload)}
 
           {:error, _reason} ->
@@ -375,11 +386,11 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         end
 
       "rejected" ->
-        FriendRequest.reject_friend_request(contact_name, from_user_name)
-        {:ok, request} = FriendRequest.get(contact_name, from_user_name)
+        FriendRequest.reject_friend_request(to_user_name, from_user_name)
+        {:ok, request} = FriendRequest.get(to_user_name, from_user_name)
 
         payload =
-          if FriendRequest.is_owner_request?(contact_name, user.nickname) do
+          if FriendRequest.is_owner_request?(to_user_name, from_user_name) do
             %{
               event_name: "open_rejected_request_received",
               event_data: %{
@@ -394,7 +405,8 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               }
             }
           end
-
+        IO.inspect(payload, label: "[#{socket.assigns.user_info.nickname}]NEW_STATE:")
+        PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{from_user_name}", {:friend_request_accepted, payload})
         {:noreply, push_event(socket, "react", payload)}
 
       _ ->
@@ -474,7 +486,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       {:noreply, push_event(socket, "react", payload)}
     else
       if User.exists?(to_user_arg) do
-        {:ok, contact_data} = User.get_by("nickname", to_user_arg)
+        {:ok, to_user_data} = User.get_by("nickname", to_user_arg)
 
         case FriendRequest.get_status(to_user_arg, user_nickname) do
           :not_found ->
@@ -484,12 +496,16 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                   event_name: "add_contact_to_list",
                   event_data: %{
                     is_group: false,
-                    contact_data: contact_data,
+                    contact_data: to_user_data,
                     request: request
                   }
                 }
 
+                payload_from_user =
+
+                PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{to_user_arg}", {:friend_request_sent, payload})
                 {:noreply, push_event(socket, "react", payload)}
+                # {:noreply, socket}
 
               _ ->
                 {:noreply, socket}
@@ -519,18 +535,17 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                     event_name: "add_contact_to_list",
                     event_data: %{
                       is_group: false,
-                      contact_data: contact_data,
+                      contact_data: to_user_data,
                       request: request
                     }
                   }
               end
-
             {:noreply, push_event(socket, "react", payload)}
         end
       else
         payload = %{
           event_name: "error_adding_contact",
-          event_data: %{error: "El usuario `#{to_user_arg}` no existe"}
+          event_data: %{error: "El usuario #{to_user_arg} no existe"}
         }
 
         {:noreply, push_event(socket, "react", payload)}
@@ -874,5 +889,12 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
       {event, payload}
     )
     |> IO.inspect(label: "PUBSUB: ")
+  end
+
+  def get_user_pid(user_name) do
+    case Registry.lookup(Registry.Chat, user_name) do
+      [{pid, _value}] -> {:ok, pid}
+      [] -> {:error, :user_not_found}
+    end
   end
 end
