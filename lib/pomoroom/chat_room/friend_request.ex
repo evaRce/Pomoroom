@@ -148,6 +148,11 @@ defmodule Pomoroom.ChatRoom.FriendRequest do
     request_query = %{"to_user" => to_user, "from_user" => from_user}
 
     Mongo.delete_one(:mongo, "friend_requests", request_query)
+    :ok
+  end
+
+  def delete_all_request() do
+    Mongo.delete_many(:mongo, "friend_requests", %{})
   end
 
   def request_is_pending?(to_user, from_user) do
