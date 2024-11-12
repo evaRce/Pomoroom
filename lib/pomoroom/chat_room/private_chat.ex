@@ -91,6 +91,10 @@ defmodule Pomoroom.ChatRoom.PrivateChat do
     end
   end
 
+  def delete_all_private_chats() do
+    Mongo.delete_many(:mongo, "private_chats", %{})
+  end
+
   def get(chat_id) do
     query = %{"chat_id" => chat_id}
 
