@@ -48,8 +48,8 @@ defmodule Pomoroom.User do
         insert_user = Mongo.insert_one(:mongo, "users", user_changeset.changes)
 
         case insert_user do
-          {:ok, result} ->
-            {:ok, result}
+          {:ok, _result} ->
+            {:ok, user_changeset.changes}
 
           {:error, %Mongo.WriteError{write_errors: [%{"code" => 11000, "errmsg" => errmsg}]}} ->
             {:error, parse_duplicate_key_error(errmsg)}
@@ -58,6 +58,10 @@ defmodule Pomoroom.User do
       false ->
         {:error, %{error: "Falta un campo"}}
     end
+  end
+
+  def delete_all_users() do
+    Mongo.delete_many(:mongo, "users", %{})
   end
 
   defp parse_duplicate_key_error(errmsg) do
@@ -123,27 +127,6 @@ defmodule Pomoroom.User do
           |> Enum.reject(&is_nil/1)
 
         {:ok, contacts}
-    end
-  end
-
-  def get_contacts_name(user) do
-    query = %{"members" => user}
-
-    case Mongo.find(:mongo, "private_chats", query) |> Enum.to_list() do
-      [] ->
-        {:ok, []}
-
-      chat_list ->
-        contacts_name =
-          chat_list
-          |> Enum.flat_map(fn chat ->
-            chat["members"]
-            |> Enum.filter(fn contact ->
-              contact != user and not Enum.member?(chat["deleted_by"], user)
-            end)
-          end)
-
-        {:ok, contacts_name}
     end
   end
 

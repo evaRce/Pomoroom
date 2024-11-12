@@ -7,6 +7,9 @@ config :pomoroom, PomoroomWeb.Endpoint,
   secret_key_base: "jtqKwfp8oHkTNqTBN7gKfDsHfXr1R/TiJiG6ZUW9wVckmwM6o0HhaCMDrL0bXvSQ",
   server: false
 
+# Configure MongoDB
+config :pomoroom, :db, database: "pomoroom_dev", username: "mongo", password: "abc123."
+
 # In test we don't send emails.
 config :pomoroom, Pomoroom.Mailer, adapter: Swoosh.Adapters.Test
 
