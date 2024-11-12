@@ -71,12 +71,18 @@ defmodule Pomoroom.ChatRoom.Message do
     msg_query = %{"msg_id" => msg_id}
 
     Mongo.delete_one(:mongo, "messages", msg_query)
+    :ok
   end
 
   def delete_all_belongs_to_chat(chat_id) do
     msg_query = %{"chat_id" => chat_id}
 
     Mongo.delete_many(:mongo, "messages", msg_query)
+    :ok
+  end
+
+  def delete_all_messages() do
+    Mongo.delete_many(:mongo, "messages", %{})
   end
 
   def get_by_id(""), do: {:error, :not_found}
