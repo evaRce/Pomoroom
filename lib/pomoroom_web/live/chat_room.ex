@@ -118,8 +118,8 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     {:noreply, push_event(socket, "react", payload)}
   end
 
-  def handle_info({:friend_request_accepted, payload}, socket) do
-    IO.inspect(payload, label: "[friend_request_accepted:#{socket.assigns.user_info.nickname}]")
+  def handle_info({:friend_request_change_status, payload}, socket) do
+    IO.inspect(payload, label: "[friend_request_change_status:#{socket.assigns.user_info.nickname}]")
     {:noreply, push_event(socket, "react", payload)}
   end
 
@@ -378,7 +378,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               }
             }
 
-            PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{from_user_name}", {:friend_request_accepted, payload})
+            PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{from_user_name}", {:friend_request_change_status, payload})
             {:noreply, push_event(socket, "react", payload)}
 
           {:error, _reason} ->
@@ -406,7 +406,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
             }
           end
         IO.inspect(payload, label: "[#{socket.assigns.user_info.nickname}]NEW_STATE:")
-        PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{from_user_name}", {:friend_request_accepted, payload})
+        PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{from_user_name}", {:friend_request_change_status, payload})
         {:noreply, push_event(socket, "react", payload)}
 
       _ ->
@@ -501,9 +501,16 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                   }
                 }
 
-                payload_from_user =
+                payload_from_user = %{
+                  event_name: "add_contact_to_list",
+                  event_data: %{
+                    is_group: false,
+                    contact_data: user,
+                    request: request
+                  }
+                }
 
-                PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{to_user_arg}", {:friend_request_sent, payload})
+                PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{to_user_arg}", {:friend_request_sent, payload_from_user})
                 {:noreply, push_event(socket, "react", payload)}
                 # {:noreply, socket}
 
