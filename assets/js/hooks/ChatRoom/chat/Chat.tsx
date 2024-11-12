@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import HeaderChat from "./header/HeaderChat";
-import Message from "./body/Message"
+import Message from "./body/Message";
 import FooterChat from "./footer/FooterChat";
 import { useEventContext } from "../EventContext";
 

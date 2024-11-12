@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Avatar, Button, List } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 import { useEventContext } from "../EventContext";
-import Member from "../chat/header/Member";
+import Member from "./Member";
 
 export default function Detail() {
   const { addEvent, getEventData, removeEvent } = useEventContext();
