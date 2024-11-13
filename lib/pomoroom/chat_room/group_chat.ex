@@ -167,6 +167,10 @@ defmodule Pomoroom.ChatRoom.GroupChat do
     end
   end
 
+  def delete_all_group_chats() do
+    Mongo.delete_many(:mongo, "group_chats", %{})
+  end
+
   def get_by(field, value) do
     query = %{field => value}
 
