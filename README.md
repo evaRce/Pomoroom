@@ -25,28 +25,22 @@ Make sure you have the following installed on your system:
 
 1. **Clone the repository**:
    ```bash
-	git clone https://github.com/your-username/pomoroom.git
+	git clone git@github.com:evaRce/Pomoroom.git
 	cd pomoroom
    
-2. **Install frontend dependencies**:
+2. **Install dependencies**:
    ```bash
 	cd assets
 	npm install
-
-3. **Install backend dependencies**:
-   ```bash
 	cd ..
 	mix deps.get
 	
-4. **Generate Docker image**:
+3. **Generate Docker image and container**:
    ```bash
-   docker load
+   docker build -t pomoroom:latest .
+   docker run -p 27017:27017 -d pomoroom:latest
 
-5. **Start the Docker container**:
-   ```bash
-   docker start <image_id>
-
-6. **Start the Docker container**:
+4. **Start the Docker container**:
    ```bash
    mix phx.server	# or	 iex -S mix phx.server
 
