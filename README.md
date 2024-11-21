@@ -25,7 +25,7 @@ Make sure you have the following installed on your system:
 
 1. **Clone the repository**:
    ```bash
-	git clone git@github.com:evaRce/Pomoroom.git
+	git clone git@github.com:evaRce/pomoroom.git
 	cd pomoroom
    
 2. **Install dependencies**:
