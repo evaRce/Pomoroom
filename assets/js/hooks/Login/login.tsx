@@ -100,8 +100,7 @@ export const Login: React.FC<LoginProps> = (props: LoginProps) => {
               </Form.Item>
               <Form.Item>
                 <a
-                  href="retrieve-password"
-                  className="text-blue-600 hover:underline font-semibold"
+                  className="text-blue-600 underline font-semibold"
                 >
                   Olvidaste tu contraseña?
                 </a>
@@ -118,7 +117,7 @@ export const Login: React.FC<LoginProps> = (props: LoginProps) => {
                   ¿No tienes una cuenta?
                   <a
                     href="signup"
-                    className="text-blue-600 hover:underline ml-1 whitespace-nowrap font-semibold"
+                    className="text-blue-600 underline ml-1 whitespace-nowrap font-semibold"
                   >
                     Registrate aquí
                   </a>

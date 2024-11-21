@@ -177,7 +177,7 @@ export const SignUp: React.FC<SignUpProps> = (props: SignUpProps) => {
               Ya
               <a
                 href="login"
-                className="text-blue-600 hover:underline ml-1 whitespace-nowrap font-semibold"
+                className="text-blue-600 underline ml-1 whitespace-nowrap font-semibold"
               >
                 tengo una cuenta
               </a>
