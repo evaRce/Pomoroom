@@ -208,6 +208,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
       userName === eventData.request.from_user
     ) {
       addEvent(eventName, eventData.request);
+      setIsVisibleDetail(false);
       setComponent("RequestSend");
     }
     if (
@@ -215,6 +216,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
       userName === eventData.request.to_user
     ) {
       addEvent(eventName, eventData.request);
+      setIsVisibleDetail(false);
       setComponent("RequestReceived");
     }
   }, [eventData.request]);
@@ -224,6 +226,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
       eventName === "open_rejected_request_send" &&
       userName === eventData.rejected_request.to_user
     ) {
+      setIsVisibleDetail(false);
       addEvent(eventName, eventData.rejected_request);
       addEvent("update_contact_status_to_rejected", {
         request: eventData.rejected_request,
@@ -239,6 +242,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
       eventName === "open_rejected_request_received" &&
       userName === eventData.rejected_request.from_user
     ) {
+      setIsVisibleDetail(false);
       addEvent(eventName, eventData.rejected_request);
       addEvent("update_contact_status_to_rejected", {
         request: eventData.rejected_request,

@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "antd";
-import {
-  UsergroupAddOutlined,
-} from "@ant-design/icons";
+import { UsergroupAddOutlined } from "@ant-design/icons";
 import { useEventContext } from "../../EventContext";
 import AddMembersToGroup from "./AddMembersToGroup";
 import Call from "../../call/Call";
@@ -117,7 +115,9 @@ export default function HeaderChat({ userLogin }) {
             title="Añadir miembros"
           />
         )}
-        <Call chatName={chatName} userLogin={userLogin}/>
+        {!chatData?.group_data && (
+          <Call chatName={chatName} userLogin={userLogin} />
+        )}
         <Button
           className="bg-white"
           icon={
