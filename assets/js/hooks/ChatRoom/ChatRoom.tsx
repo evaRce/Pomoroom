@@ -229,7 +229,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
         request: eventData.rejected_request,
         new_status: eventData.rejected_request.status,
       });
-      setComponent("RejectedRequestSend");
+      if (
+        infoChatSelected?.contact_name === eventData?.rejected_request.from_user
+      ) {
+        setComponent("RejectedRequestSend");
+      }
     }
     if (
       eventName === "open_rejected_request_received" &&
@@ -240,7 +244,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props: ChatRoomProps) => {
         request: eventData.rejected_request,
         new_status: eventData.rejected_request.status,
       });
-      setComponent("RejectedRequestReceived");
+      if (
+        infoChatSelected?.contact_name === eventData?.rejected_request.to_user
+      ) {
+        setComponent("RejectedRequestReceived");
+      }
     }
   }, [eventData.rejected_request]);
 

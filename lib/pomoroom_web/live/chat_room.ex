@@ -97,7 +97,8 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   def handle_info({:request_offers, %{from_user: request_from_user}}, socket) do
     IO.inspect(socket.assigns.connected_users,
       label:
-        "[#{socket.assigns.user_info.nickname}](PASO3){handle_info(:added_connected_users)} le llega oferta del sender")
+        "[#{socket.assigns.user_info.nickname}](PASO3){handle_info(:added_connected_users)} le llega oferta del sender"
+    )
 
     new_offer_request = socket.assigns.offer_requests ++ [request_from_user]
 
@@ -114,12 +115,28 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   end
 
   def handle_info({:friend_request_sent, payload}, socket) do
-    IO.inspect(payload, label: "[friend_request_sent:#{socket.assigns.user_info.nickname}]AÑADO")
     {:noreply, push_event(socket, "react", payload)}
   end
 
-  def handle_info({:friend_request_change_status, payload}, socket) do
-    IO.inspect(payload, label: "[friend_request_change_status:#{socket.assigns.user_info.nickname}]")
+  def handle_info(
+        {:friend_request_change_status,
+         %{
+           event_name: "update_contact_status_to_accepted",
+           event_data: %{request: _request, new_status: "accepted"}
+         } = payload},
+        socket
+      ) do
+    {:noreply, push_event(socket, "react", payload)}
+  end
+
+  def handle_info(
+        {:friend_request_change_status,
+         %{
+           event_name: "open_rejected_request_received",
+           event_data: %{rejected_request: %{to_user: _to_user, status: "rejected"}}
+         } = payload},
+        socket
+      ) do
     {:noreply, push_event(socket, "react", payload)}
   end
 
@@ -359,7 +376,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   def handle_event(
         "action.update_status_request",
         %{"status" => status, "contact_name" => to_user_name, "from_user_name" => from_user_name},
-        socket
+        %{assigns: %{user_info: %{nickname: user_nickname}}} = socket
       ) do
     case status do
       "accepted" ->
@@ -378,7 +395,12 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               }
             }
 
-            PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{from_user_name}", {:friend_request_change_status, payload})
+            PubSub.broadcast(
+              Pomoroom.PubSub,
+              "friend_request:#{from_user_name}",
+              {:friend_request_change_status, payload}
+            )
+
             {:noreply, push_event(socket, "react", payload)}
 
           {:error, _reason} ->
@@ -389,15 +411,13 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
         FriendRequest.reject_friend_request(to_user_name, from_user_name)
         {:ok, request} = FriendRequest.get(to_user_name, from_user_name)
 
+        {to_user_name, from_user_name} =
+          FriendRequest.determine_friend_request_users(to_user_name, from_user_name)
+
         payload =
-          if FriendRequest.is_owner_request?(to_user_name, from_user_name) do
-            %{
-              event_name: "open_rejected_request_received",
-              event_data: %{
-                rejected_request: request
-              }
-            }
-          else
+          if to_user_name == user_nickname do
+            IO.inspect("[open_rejected_request_send === #{socket.assigns.user_info.nickname}]")
+
             %{
               event_name: "open_rejected_request_send",
               event_data: %{
@@ -405,8 +425,21 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
               }
             }
           end
-        IO.inspect(payload, label: "[#{socket.assigns.user_info.nickname}]NEW_STATE:")
-        PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{from_user_name}", {:friend_request_change_status, payload})
+
+        payload_to_broadcast =
+          %{
+            event_name: "open_rejected_request_received",
+            event_data: %{
+              rejected_request: request
+            }
+          }
+
+        PubSub.broadcast(
+          Pomoroom.PubSub,
+          "friend_request:#{from_user_name}",
+          {:friend_request_change_status, payload_to_broadcast}
+        )
+
         {:noreply, push_event(socket, "react", payload)}
 
       _ ->
@@ -510,9 +543,15 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                   }
                 }
 
-                PubSub.broadcast(Pomoroom.PubSub, "friend_request:#{to_user_arg}", {:friend_request_sent, payload_from_user})
+                PubSub.broadcast(
+                  Pomoroom.PubSub,
+                  "friend_request:#{to_user_arg}",
+                  {:friend_request_sent, payload_from_user}
+                )
+
                 {:noreply, push_event(socket, "react", payload)}
-                # {:noreply, socket}
+
+              # {:noreply, socket}
 
               _ ->
                 {:noreply, socket}
@@ -547,6 +586,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                     }
                   }
               end
+
             {:noreply, push_event(socket, "react", payload)}
         end
       else
