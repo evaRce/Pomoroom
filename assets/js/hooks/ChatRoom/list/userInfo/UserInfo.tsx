@@ -81,6 +81,7 @@ export default function UserInfo() {
 	const handleButtonClick = (e) => {
 		e.stopPropagation(); // Prevent click from propagating to the contact container
 		setDropdownVisible(!dropdownVisible); // Toggle dropdown visibility
+		console.log("Boton otros")
 	};
 
 	return (
@@ -89,7 +90,7 @@ export default function UserInfo() {
 				<div className="flex relative rounded-lg items-center space-x-2 mb-1">
 					<div className="flex-shrink-0">
 						<img
-							className="h-10 w-10 rounded-full bg-pink-50"
+							className="h-10 w-10 rounded-full bg-gray-100/25"
 							src={userLogin.image_profile}
 							alt="default" />
 					</div>
@@ -109,9 +110,7 @@ export default function UserInfo() {
 							>
 								<Button
 									icon={<MoreOutlined />}
-									onClick={() => {
-										console.log("Boton otros");
-									}}
+									onClick={handleButtonClick}
 									title="Otros"
 								/>
 							</Dropdown>

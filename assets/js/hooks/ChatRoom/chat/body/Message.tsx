@@ -15,7 +15,7 @@ export default function Message({ message, userLogin }) {
   return (
     <div className={`chat ${messagePosition}`}>
       <div className="chat-image avatar">
-        <Avatar className="bg-red-50" src={message.image_user} size={45} />
+        <Avatar className="bg-gray-50" src={message.image_user} size={45} />
       </div>
       <div className="chat-header">{message.data.from_user}</div>
       <div
