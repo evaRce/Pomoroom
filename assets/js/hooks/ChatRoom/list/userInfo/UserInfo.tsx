@@ -92,16 +92,18 @@ export default function UserInfo() {
 						<img
 							className="h-10 w-10 rounded-full bg-gray-100/25"
 							src={userLogin.image_profile}
-							alt="default" />
+							alt="default"
+							title={userLogin.nickname}
+						/>
 					</div>
 
 					<div className="flex w-[18vw] items-center justify-between">
-						<span className="overflow-ellipsis overflow-hidden whitespace-nowrap truncate  w-[3vw] md:w-[4vw] xl:w-[7vw]" title={userLogin.nickname}>
+						<span className="hidden md:block lg:block overflow-ellipsis overflow-hidden whitespace-nowrap truncate  w-[2vw] md:w-[4vw] xl:w-[7vw]" title={userLogin.nickname}>
 							{userLogin.nickname}
 						</span>
 						<div className="flex gap-1">
 							<Button icon={<UserAddOutlined />} onClick={showAddEntryModal} title="Añadir contacto/grupo" />
-							<Button icon={<ClockCircleOutlined />} onClick={showTimerModalHandler} title="Temporizador Pomodoro" />
+							<Button className="hidden lg:block" icon={<ClockCircleOutlined />} onClick={showTimerModalHandler} title="Temporizador Pomodoro" />
 							<Dropdown
 								menu={menuProps}
 								trigger={["click"]}
