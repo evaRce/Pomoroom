@@ -3,15 +3,12 @@ import { Button, Modal, message } from "antd";
 import EmojiPicker from "emoji-picker-react";
 import {
   PictureOutlined,
-  AudioOutlined,
-  AudioMutedOutlined,
   SendOutlined,
   SmileOutlined,
 } from "@ant-design/icons";
 import { useEventContext } from "../../EventContext";
 
 export default function FooterChat({ addMessage }) {
-  const [addMode, setAddMode] = useState(true);
   const [inputStr, setInputStr] = useState("");
   const [showPicker, setShowPicker] = useState(false);
   const { addEvent, getEventData, removeEvent } = useEventContext();
@@ -67,11 +64,6 @@ export default function FooterChat({ addMessage }) {
       <form className="flex w-full gap-3" onSubmit={handleSendMessage}>
         <div className="flex items-center gap-2">
           <Button className="bg-gray-100" icon={<PictureOutlined />} />
-          <Button
-            className="bg-gray-100"
-            icon={addMode ? <AudioOutlined /> : <AudioMutedOutlined />}
-            onClick={() => setAddMode((prev) => !prev)}
-          />
         </div>
         <div className="flex items-center w-full justify-center">
           <input
@@ -91,7 +83,7 @@ export default function FooterChat({ addMessage }) {
           <div className="flex">
             <Button
               className="bg-gray-100 rounded-none"
-              onClick={() => setShowPicker((val) => !val)}
+              onClick={() => setShowPicker(true)}
               icon={<SmileOutlined />}
             />
             <Button
@@ -99,10 +91,19 @@ export default function FooterChat({ addMessage }) {
               icon={<SendOutlined />}
               onClick={(e) => handleSendMessage(e)}
             />
-            {showPicker && <EmojiPicker onEmojiClick={onEmojiClick} />}
           </div>
         </div>
       </form>
+      <Modal
+        title="Elige los emojis"
+        open={showPicker}
+        onCancel={() => setShowPicker(false)}
+        footer={null}
+        width={400}
+        centered
+      >
+        <EmojiPicker onEmojiClick={onEmojiClick} />
+      </Modal>
       <Modal
         title="Límite de caracteres excedido"
         open={modalVisible}
