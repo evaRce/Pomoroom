@@ -2,7 +2,7 @@ defmodule Pomoroom.ChatRoom.Chat do
   use Ecto.Schema
   import Ecto.Changeset
   alias Pomoroom.ChatRoom.GroupChat
-  @max_num 1000
+  @max_num 100000
 
   def get_public_id_chat() do
     :rand.uniform(@max_num)

@@ -123,9 +123,10 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
          %{
            event_name: "update_contact_status_to_accepted",
            event_data: %{request: _request, new_status: "accepted"}
-         } = payload},
+         } = payload, chat_id},
         socket
       ) do
+    PubSub.subscribe(Pomoroom.PubSub, "chat:#{chat_id}")
     {:noreply, push_event(socket, "react", payload)}
   end
 
@@ -239,6 +240,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
     {:ok, private_chat} = PrivateChat.get(to_user, from_user)
 
     PrivateChat.delete_contact(private_chat.chat_id, user.nickname)
+    PubSub.unsubscribe(Pomoroom.PubSub, "chat:#{private_chat.chat_id}")
     {:noreply, socket}
   end
 
@@ -398,7 +400,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
             PubSub.broadcast(
               Pomoroom.PubSub,
               "friend_request:#{from_user_name}",
-              {:friend_request_change_status, payload}
+              {:friend_request_change_status, payload, private_chat.chat_id}
             )
 
             {:noreply, push_event(socket, "react", payload)}
@@ -416,7 +418,6 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
 
         payload =
           if to_user_name == user_nickname do
-            IO.inspect("[open_rejected_request_send === #{socket.assigns.user_info.nickname}]")
 
             %{
               event_name: "open_rejected_request_send",
@@ -576,7 +577,7 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
                       from_user,
                       user_nickname
                     )
-
+                  PubSub.subscribe(Pomoroom.PubSub, "chat:#{private_chat.chat_id}")
                   %{
                     event_name: "add_contact_to_list",
                     event_data: %{
@@ -629,7 +630,9 @@ defmodule PomoroomWeb.ChatLive.ChatRoom do
   end
 
   def handle_event("action.delete_group", group_name, %{assigns: %{user_info: user}} = socket) do
+    {:ok, group_chat} = GroupChat.get_by("name", group_name)
     GroupChat.delete(group_name, user.nickname)
+    PubSub.unsubscribe(Pomoroom.PubSub, "chat:#{group_chat.chat_id}")
     {:noreply, socket}
   end
 

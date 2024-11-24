@@ -1,7 +1,7 @@
 defmodule Pomoroom.ChatRoom.Message do
   use Ecto.Schema
   import Ecto.Changeset
-  @max_num 1000
+  @max_num 3000
 
   schema "messages" do
     field :msg_id, :string
