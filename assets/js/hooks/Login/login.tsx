@@ -45,7 +45,7 @@ export const Login: React.FC<LoginProps> = (props: LoginProps) => {
         backgroundBlendMode: "overlay",
       }}
     > 
-      <a href="home">
+      <a href="/">
         <Button 
           className="absolute top-8 left-8 shadow bg-white" 
           icon={<HomeOutlined />} 
