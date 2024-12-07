@@ -13,6 +13,7 @@ Pomoroom is a web application designed to enhance productivity and time manageme
 ## Installation
 
 Follow these steps to set up the project in your local environment:
+> **Note**: *This setup has only been tested on Linux.*
 
 ### Prerequisites
 
